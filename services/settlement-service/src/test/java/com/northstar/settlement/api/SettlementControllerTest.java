@@ -73,6 +73,18 @@ class SettlementControllerTest {
     }
 
     @Test
+    @DisplayName("SETTLE-R01: legacy quirk - the calculate mapping also answers GET, as the"
+            + " settlement.claim.<id>.amount probe relies on")
+    void settleR01CalculateAnswersGet() throws Exception {
+        when(service.calculate(any(SettlementRequest.class)))
+                .thenReturn(new CalculatedSettlement(119, 1000.0, CAPPED));
+        mvc.perform(get("/api/settlement/calculate").param("claimId", "119"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.legacyForward").value("/WEB-INF/jsp/settlement/calculate.jsp"))
+                .andExpect(jsonPath("$.fields.settlementAmount").value("1000.00"));
+    }
+
+    @Test
     @DisplayName("SETTLE-R02 / SETTLE-R08 / SETTLE-R20: save forwards to save.jsp with settlementAmount and savedBy")
     void settleR02R08R20SaveScreen() throws Exception {
         when(service.save(any(SettlementRequest.class))).thenReturn(new SettlementRow(

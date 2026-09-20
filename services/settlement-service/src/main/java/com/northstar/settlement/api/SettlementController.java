@@ -37,7 +37,7 @@ public class SettlementController {
         this.service = service;
     }
 
-    /** {@code POST /settlement/calculate.do}. */
+    /** {@code POST /settlement/calculate.do} (SETTLE-R01). */
     @PostMapping("/calculate")
     public ScreenResponse<CalculatedSettlement> calculate(
             @RequestParam(required = false) String claimId,
@@ -48,6 +48,21 @@ public class SettlementController {
         CalculatedSettlement calculated = service.calculate(
                 new SettlementRequest(claimId, coveredAmount, deductible, depreciation, policyLimit));
         return ScreenResponse.of(ScreenResponse.CALCULATE_JSP, calculateFields(calculated.result()), calculated);
+    }
+
+    /**
+     * {@code GET /settlement/calculate.do?claimId=}. Struts action mappings answer any
+     * HTTP method (SETTLE-R01) and the transcript probe {@code settlement.claim.<id>.amount}
+     * is a GET with only {@code claimId}, so the same recalculation is reachable by GET.
+     */
+    @GetMapping("/calculate")
+    public ScreenResponse<CalculatedSettlement> calculateByGet(
+            @RequestParam(required = false) String claimId,
+            @RequestParam(required = false) String coveredAmount,
+            @RequestParam(required = false) String deductible,
+            @RequestParam(required = false) String depreciation,
+            @RequestParam(required = false) String policyLimit) {
+        return calculate(claimId, coveredAmount, deductible, depreciation, policyLimit);
     }
 
     /** {@code POST /settlement/save.do}. */

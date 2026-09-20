@@ -1,0 +1,102 @@
+# Declarative replay routes for parity/replay.py.
+#
+# The golden transcripts under transcripts/ were recorded against the running
+# Struts monolith and are the contract; nothing here may change them. This file
+# says, per transcripts/index.json module, whether a Spring service exists yet,
+# and for every extracted legacy *.do path, which service endpoint answers it and
+# how the recorded outcome maps onto the service's JSON screen response.
+
+# One entry per distinct "module" value in transcripts/index.json.
+#   status: extracted  -> scenarios are replayed against the service
+#   status: legacy     -> scenarios are reported SKIP (not yet extracted)
+modules:
+  policy:
+    status: legacy
+  intake:
+    status: legacy
+  workbench:
+    status: legacy
+  reporting:
+    status: legacy
+  settlement:
+    status: extracted
+    service: settlement-service
+    default_base_url: http://localhost:8083
+    # transcripts/index.json files payment_issue and payment_history under
+    # module "settlement", but /claims/payment/*.do belongs to IssuePaymentAction,
+    # PaymentHistoryAction and PaymentDAO, which are not part of the extracted
+    # settlement seam (SPEC-SETTLE-001 scope). They have no route below and are
+    # reported "SKIP (route not extracted)" rather than silently passed or failed.
+
+# The JSON screen envelope every service endpoint returns (ScreenResponse):
+#   legacyForward     the JSP the monolith forwarded to  -> transcript "result"
+#   fields            the f_* spans, already formatted    -> "business_fields"
+#   validationErrors  ApplicationResources keys, ordered  -> "validation_errors"
+response:
+  forward_key: legacyForward
+  fields_key: fields
+  validation_key: validationErrors
+  # The monolith's global exception forward renders error.jsp, which the capture
+  # tool records as "error:errors.system" instead of "forward:<jsp>".
+  error_forwards:
+    /WEB-INF/jsp/error.jsp: error:errors.system
+
+# One declarative route per legacy path. `legacy.path` is matched against the
+# transcript request path (context-qualified, /claims/...); `service.path` is
+# relative to the module base URL. Form fields are forwarded by name, url-encoded,
+# exactly as the browser posted them (SETTLE-R05: no field is renamed or typed).
+routes:
+  - name: settlement_calculate
+    rules: [SETTLE-R01, SETTLE-R07]
+    legacy:
+      method: POST
+      path: /claims/settlement/calculate.do
+      action: com.northstar.claims.web.SettlementCalculateAction
+    service:
+      method: POST
+      path: /api/settlement/calculate
+      encoding: form
+
+  - name: settlement_save
+    rules: [SETTLE-R02, SETTLE-R08]
+    legacy:
+      method: POST
+      path: /claims/settlement/save.do
+      action: com.northstar.claims.web.SettlementSaveAction
+    service:
+      method: POST
+      path: /api/settlement/save
+      encoding: form
+
+  - name: settlement_detail
+    rules: [SETTLE-R03, SETTLE-R09]
+    legacy:
+      method: GET
+      path: /claims/settlement/detail.do
+      action: com.northstar.claims.web.SettlementDetailAction
+    service:
+      method: GET
+      path: /api/settlement/detail
+      encoding: query
+
+# Probe definitions for the transcript db_state vocabulary. Each pattern is a
+# Python regex over the dotted probe key; the request path may use named groups.
+# `field` names the f_* span (service `fields` entry) whose value is the probe
+# result, mirroring tools/capture/capture.py::probe.
+probes:
+  # capture.py resolves settlement.claim.<id>.amount through
+  # /settlement/calculate.do?claimId=<id>, i.e. a recalculation with the legacy
+  # defaults (SETTLE-R12, SETTLE-R13, SETTLE-R16), not a read of the saved row.
+  - pattern: '^settlement\.claim\.(?P<id>\d+)\.amount$'
+    module: settlement
+    request:
+      method: GET
+      path: /api/settlement/calculate?claimId={id}
+    field: settlementAmount
+
+  - pattern: '^claim\.(?P<id>\d+)\.status$'
+    module: settlement
+    request:
+      method: GET
+      path: /api/settlement/claims/{id}
+    field: claimStatus
