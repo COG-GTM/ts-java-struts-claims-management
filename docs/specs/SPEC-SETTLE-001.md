@@ -50,7 +50,7 @@ scenario name.
 | SETTLE-R03 | `/claims/settlement/detail.do` is handled by `SettlementDetailAction` and forwards to `/WEB-INF/jsp/settlement/detail.jsp`. | `struts-config.xml:356-363`; `SettlementDetailAction.java:19-23` | Inferred |
 | SETTLE-R04 | None of the three mappings runs Struts validation (`validate="false"`), so no settlement request produces validation errors. | `struts-config.xml:210,219,359`; `validation_errors: []` in all six scenarios | Observed |
 | SETTLE-R05 | The `settlementForm` bean is declared on the calculate and save mappings but is not read by the actions, which take every input from `request.getParameter`. | `struts-config.xml:208,217`; `SettlementForm.java:11-75`; `SettlementCalculateAction.java:23-34`; `SettlementSaveAction.java:24-29` | Inferred |
-| SETTLE-R06 | The detail mapping declares no form bean and the action reads no input other than a `claimId` request parameter, which the container supplies from the query string or a form body under any HTTP method. | `struts-config.xml:356-363`; `SettlementDetailAction.java:17-22` | Inferred |
+| SETTLE-R06 | The detail mapping declares no form bean and the action reads no input other than a `claimId` request parameter, which the container supplies from the query string or an `application/x-www-form-urlencoded` POST body. | `struts-config.xml:356-363`; `SettlementDetailAction.java:17-22` | Inferred |
 
 ## 4. Calculation
 
