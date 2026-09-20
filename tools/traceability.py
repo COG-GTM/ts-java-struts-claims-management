@@ -1,0 +1,165 @@
+#!/usr/bin/env python3
+"""Regenerate docs/TRACEABILITY.md.
+
+For every rule in docs/specs/SPEC-SETTLE-001.md the matrix shows: the
+specification version that last changed the rule, the last commit whose diff
+mentions the rule id, the tests that cite the rule in the comment above
+@Test (legacy characterisation tests and service tests), the transcripts the
+parity harness maps to the rule (parity/routes.json), the verdict of the last
+parity run (parity/report.json), and any change record under docs/changes
+that names the rule. Everything is read from files; nothing is typed in.
+"""
+
+import glob
+import json
+import os
+import re
+import subprocess
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SPEC = os.path.join(ROOT, "docs", "specs", "SPEC-SETTLE-001.md")
+ROUTES = os.path.join(ROOT, "parity", "routes.json")
+REPORT = os.path.join(ROOT, "parity", "report.json")
+OUTPUT = os.path.join(ROOT, "docs", "TRACEABILITY.md")
+TEST_GLOBS = ["src/test/java/**/*.java",
+              "services/*/src/test/java/**/*.java"]
+CHANGE_GLOB = "docs/changes/CHG-*.md"
+RULE_RE = re.compile(r"SETTLE-R\d{2}(?: v\d+)?")
+
+
+def read(path):
+    with open(path) as handle:
+        return handle.read()
+
+
+def spec_rules(text):
+    rules = []
+    for match in re.finditer(r"^### (SETTLE-R\d{2}(?: v\d+)?) (.+)$", text,
+                             re.M):
+        rules.append((match.group(1), match.group(2).strip()))
+    version = re.search(r"^Version: (\S+)", text, re.M).group(1)
+    return rules, version
+
+
+def rule_versions(text, rule_ids):
+    """Latest spec version that touched each rule, from the history table."""
+    versions = {rule: "0.1" for rule in rule_ids}
+    history = text.split("## Rule history", 1)[-1]
+    for line in history.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) < 3 or not re.match(r"\d+\.\d+", cells[1]):
+            continue
+        targets = []
+        if cells[0] == "all":
+            targets = list(rule_ids)
+        else:
+            for token in re.split(r",\s*", cells[0]):
+                token = token.strip()
+                if token.startswith("R"):
+                    token = "SETTLE-" + token
+                for rule in rule_ids:
+                    if rule == token or rule.startswith(token + " "):
+                        targets.append(rule)
+        for rule in targets:
+            if tuple(map(int, cells[1].split("."))) > tuple(
+                    map(int, versions[rule].split("."))):
+                versions[rule] = cells[1]
+    return versions
+
+
+def tests_by_rule():
+    cited = {}
+    for pattern in TEST_GLOBS:
+        for path in glob.glob(os.path.join(ROOT, pattern), recursive=True):
+            text = read(path)
+            relative = os.path.relpath(path, ROOT)
+            class_name = os.path.splitext(os.path.basename(path))[0]
+            for block in re.finditer(
+                    r"/\*\*(.*?)\*/\s*@Test(?:\([^)]*\))?\s*(?:public\s+)?void\s+(\w+)",
+                    text, re.S):
+                comment, method = block.group(1), block.group(2)
+                for rule in RULE_RE.findall(comment):
+                    cited.setdefault(rule, []).append(
+                        "%s.%s (%s)" % (class_name, method,
+                                        relative.split("/")[0]))
+    return cited
+
+
+def scenarios_by_rule(routes):
+    result = {}
+    for module in routes["modules"].values():
+        for scenario, rules in module["scenarios"].items():
+            for rule in rules:
+                result.setdefault(rule, []).append(scenario)
+    return result
+
+
+def parity_by_scenario():
+    if not os.path.exists(REPORT):
+        return {}, "no parity run recorded"
+    report = json.load(open(REPORT))
+    verdicts = {row["scenario"]: row["verdict"] for row in report["scenarios"]}
+    return verdicts, report["base_url"]
+
+
+def changes_by_rule():
+    result = {}
+    for path in sorted(glob.glob(os.path.join(ROOT, CHANGE_GLOB))):
+        text = read(path)
+        name = os.path.basename(path)
+        header = text.split("\n## ", 1)[0]
+        for rule in set(RULE_RE.findall(header)):
+            result.setdefault(rule, []).append(name)
+    return result
+
+
+def last_commit(rule):
+    base = rule.split(" ")[0]
+    out = subprocess.run(
+        ["git", "log", "-1", "--format=%h %ad", "--date=short",
+         "-G", base + r"\b", "--", "docs/specs", "docs/changes", "services",
+         "src/test", "parity/routes.json"],
+        cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    return out or "none"
+
+
+def main():
+    text = read(SPEC)
+    rules, version = spec_rules(text)
+    rule_ids = [r for r, _ in rules]
+    versions = rule_versions(text, rule_ids)
+    tests = tests_by_rule()
+    routes = json.load(open(ROUTES))
+    scenarios = scenarios_by_rule(routes)
+    verdicts, base_url = parity_by_scenario()
+    changes = changes_by_rule()
+    head = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
+                          capture_output=True, text=True).stdout.strip()
+
+    lines = ["# Traceability: SPEC-SETTLE-001 v%s" % version, "",
+             "Generated by `tools/traceability.py` at commit `%s`. Parity "
+             "verdicts come from `parity/report.json` (service `%s`). "
+             "Do not edit by hand; run `make traceability`." % (head, base_url),
+             "",
+             "| Rule | Title | Spec version | Last commit touching the rule | Tests citing the rule | Transcripts | Parity | Change record |",
+             "| --- | --- | --- | --- | --- | --- | --- | --- |"]
+    for rule, title in rules:
+        rule_scenarios = scenarios.get(rule, [])
+        parity = ", ".join("%s: %s" % (s, verdicts.get(s, "not run"))
+                           for s in rule_scenarios) or "no transcript"
+        lines.append("| %s | %s | %s | %s | %s | %s | %s | %s |" % (
+            rule, title, versions[rule], last_commit(rule),
+            "<br>".join(tests.get(rule, [])) or "none",
+            ", ".join(rule_scenarios) or "none", parity,
+            ", ".join(changes.get(rule, [])) or ""))
+    uncited = sorted(set(tests) - set(rule_ids))
+    if uncited:
+        lines += ["", "Tests cite rule ids that are not in the specification: "
+                  + ", ".join(uncited)]
+    with open(OUTPUT, "w") as handle:
+        handle.write("\n".join(lines) + "\n")
+    print("\n".join(lines))
+
+
+if __name__ == "__main__":
+    main()
