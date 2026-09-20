@@ -1,0 +1,19 @@
+server:
+  port: ${SERVER_PORT:8083}
+
+northstar:
+  legacy-root: ${LEGACY_ROOT:../..}
+  operator: ${OPERATOR:supervisor}
+
+spring:
+  application:
+    name: settlement-service
+  datasource:
+    url: jdbc:hsqldb:mem:settlement
+    username: SA
+    password: ""
+  sql:
+    init:
+      mode: always
+      schema-locations: file:${northstar.legacy-root}/src/main/resources/db/schema.sql
+      data-locations: file:${northstar.legacy-root}/src/main/resources/db/seed.sql
