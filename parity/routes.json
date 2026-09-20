@@ -29,7 +29,8 @@
           "SETTLE-R10"
         ],
         "settlement_bad_deductible": [
-          "SETTLE-R06"
+          "SETTLE-R06",
+          "SETTLE-R06 v2"
         ]
       },
       "approved_differences": {

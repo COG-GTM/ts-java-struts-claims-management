@@ -104,7 +104,8 @@
       ],
       "note": "",
       "rules": [
-        "SETTLE-R06"
+        "SETTLE-R06",
+        "SETTLE-R06 v2"
       ],
       "scenario": "settlement_bad_deductible",
       "unprobed": [],
