@@ -3,8 +3,8 @@
 | Field    | Value                                                                 |
 |----------|-----------------------------------------------------------------------|
 | ID       | SPEC-SETTLE-001                                                       |
-| Version  | 0.1                                                                   |
-| Status   | Draft, derived from the transcripts and source files in section 2 only; each rule's status says which (see 2.3) |
+| Version  | 0.2                                                                   |
+| Status   | Draft, derived from the transcripts, execution evidence and source files in section 2 only; each rule's status says which (see 2.3 and 2.4) |
 | Module   | Settlement (`/settlement/calculate`, `/settlement/save`, `/settlement/detail`) |
 | Baseline | `main` at commit `225c8d3`                                            |
 
@@ -12,16 +12,19 @@
 
 This document records what the NorthStar settlement module *does today*. It is
 not a statement of what the module *should* do. Every rule is derived from one
-of two kinds of evidence and nothing else:
+of three kinds of evidence and nothing else:
 
 1. The six settlement transcripts under `transcripts/` (see section 2), which
    are deterministic captures of real requests against the seeded application.
-2. The source files listed in section 2.
+2. Execution evidence (`E:` citations, section 2.3): a request made by a
+   reviewer against the running legacy application, recorded with the exact
+   request and the observed response.
+3. The source files listed in section 2.
 
-Where the code implies a behaviour that no transcript exercises, the rule is
-recorded but flagged as such. Where a behaviour looks accidental and cannot be
-adopted as a requirement without a decision from the business, the rule is
-flagged `Open` and cross-referenced to section 5.
+Where the code implies a behaviour that no transcript or execution exercises,
+the rule is recorded but flagged as such. Where a behaviour looks accidental
+and cannot be adopted as a requirement without a decision from the business,
+the rule keeps its evidence status and the decision is recorded in section 5.
 
 Out of scope: payment issue and payment history (`/payment/*`), authentication
 (`AuthFilter`), the workbench and reporting screens, and the HSQLDB schema.
@@ -63,13 +66,27 @@ and the `db_state` probe vocabulary.
 
 Line numbers below refer to these files at the baseline commit.
 
-### 2.3 Status legend
+### 2.3 Citation kinds
+
+| Kind                 | Form                                                        | Meaning                                                                                    |
+|----------------------|-------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| Transcript scenario  | `` `settlement_calculate` `` (a scenario name from 2.1)      | The behaviour is asserted by that transcript's `result`, `status`, `business_fields` or `db_state`. |
+| Source line          | `` `SCA` 23 `` (a short name from 2.2 and line numbers)     | The behaviour is read from that source location at the baseline commit.                    |
+| Execution evidence   | `E:` followed by actor, method, path and the exact parameters | The behaviour was reproduced by a reviewer against the running legacy application; the response status and forward are recorded in the rule. |
+
+### 2.4 Status legend
+
+The status column uses exactly three markers.
 
 | Status     | Meaning                                                                                                   |
 |------------|-----------------------------------------------------------------------------------------------------------|
-| `Observed` | The behaviour is exercised by at least one transcript in section 2.1.                                     |
-| `Inferred` | The behaviour is read from code only; no transcript exercises it.                                         |
-| `Open`     | The current behaviour (observed or inferred) cannot be adopted as a requirement without a business decision; see section 5. |
+| `Observed` | The behaviour is exercised by at least one transcript in section 2.1 or by execution evidence (`E:`).     |
+| `Inferred` | The behaviour is read from code only; no transcript or execution exercises it.                            |
+| `Open`     | The behaviour has neither transcript, execution nor source evidence and only records that a business decision is pending. |
+
+Pending business decisions are not carried in the status column; they are
+recorded in section 5 and cross-referenced from the rule. At version 0.2 no
+rule carries `Open`.
 
 ## 3. Behavioural rules
 
@@ -86,20 +103,20 @@ Line numbers below refer to these files at the baseline commit.
 | SETTLE-R07 | The calculate screen renders the five business fields `coveredAmount`, `deductibleApplied`, `depreciation`, `cappedAtLimit` and `settlementAmount` as `<span id="f_NAME">` elements. | All five `calculate` scenarios (`business_fields`); `calculate.jsp` 20-28                         | Observed |
 | SETTLE-R08 | The save screen renders exactly two business fields, `settlementAmount` and `savedBy`, where `savedBy` is the session `user` attribute rather than a value read back from the saved row. | `settlement_save` (`business_fields`); `save.jsp` 19-22; `SSA` 41-42                              | Observed |
 | SETTLE-R09 | The "Settlement detail" link on the calculate screen is rendered from a `claimId` request attribute that `SettlementCalculateAction` never sets, so the link is emitted as `detail.do?claimId=`. | `calculate.jsp` 17; `SCA` 38-42 (sets only `settlement`, `policyLimit`, `screenName`)             | Inferred |
-| SETTLE-R10 | The "Save settlement" link on the calculate screen points at `save.do` with no parameters, so following it saves a settlement built entirely from the fallback values in SETTLE-R11, R12, R13 and R17 rather than the figures displayed. | `calculate.jsp` 30; `SSA` 24-33; `CAS` 31-45                                                      | Open     |
+| SETTLE-R10 | The "Save settlement" link on the calculate screen points at `save.do` with no parameters, so following it saves a settlement built entirely from the fallback values in SETTLE-R11, R12, R13 and R17 rather than the figures displayed (OQ-08). | `calculate.jsp` 30; `SSA` 24-33; `CAS` 31-45                                                      | Inferred |
 
 ### 3.2 Input handling
 
 | ID         | Rule                                                                                                                                                       | Evidence                                                                                         | Status   |
 |------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|----------|
-| SETTLE-R11 | `claimId` is parsed with `Integer.parseInt`, and a missing or unparseable value silently falls back to claim 119 on all three settlement actions.            | `SCA` 23; `SSA` 24; `SDA` 17; `CAS` 31-37                                                         | Open     |
-| SETTLE-R12 | `coveredAmount` is parsed with `Double.parseDouble`, and a missing or unparseable value silently falls back to 5000.                                        | `SCA` 32; `SSA` 27; `CAS` 39-45                                                                   | Open     |
+| SETTLE-R11 | `claimId` is parsed with `Integer.parseInt`, and a missing or unparseable value silently falls back to claim 119 on all three settlement actions (OQ-01).    | `SCA` 23; `SSA` 24; `SDA` 17; `CAS` 31-37                                                         | Inferred |
+| SETTLE-R12 | `coveredAmount` is parsed with `Double.parseDouble`, and a missing or unparseable value silently falls back to 5000 (OQ-02).                                | `SCA` 32; `SSA` 27; `CAS` 39-45                                                                   | Inferred |
 | SETTLE-R13 | `depreciation` is parsed with `Double.parseDouble`, and a missing or unparseable value silently falls back to 0.                                            | `SCA` 33; `SSA` 28; `CAS` 39-45                                                                   | Inferred |
-| SETTLE-R14 | On `/settlement/calculate`, the policy limit is the `policy_limit` of the policy referenced by the claim, and falls back to 10000 when the claim or its policy cannot be found. | `settlement_calculate`, `settlement_policy_cap` (claim 119 capped at 1000.00); `SCA` 25-31; `CAS` 93-100; `PolicyDAO` 26-44, 173 | Open     |
+| SETTLE-R14 | On `/settlement/calculate`, the policy limit is the `policy_limit` of the policy referenced by the claim, and falls back to 10000 when the claim or its policy cannot be found (OQ-03; the fallback itself is source-derived). | `settlement_calculate`, `settlement_policy_cap` (claim 119 capped at 1000.00); `SCA` 25-31; `CAS` 93-100; `PolicyDAO` 26-44, 173 | Observed |
 | SETTLE-R15 | On `/settlement/save`, a claim that cannot be found, or a claim whose policy cannot be found, causes a `NullPointerException` and the request fails rather than falling back to any limit. | `SSA` 25-26, 33 (no null checks)                                                                  | Inferred |
 | SETTLE-R16 | A `deductible` parameter that is absent or an empty string is treated as a deductible of 0.00.                                                             | `settlement_blank_deductible`, `settlement_half_cent` (`deductibleApplied: 0.00`); `SCA` 34-38; `Calculator` 26-30 | Observed |
 | SETTLE-R17 | A `deductible` consisting only of whitespace passes the action's empty check but is trimmed by the calculator and also treated as 0.00.                     | `SCA` 36-37 (`length() == 0` only); `Calculator` 28                                              | Inferred |
-| SETTLE-R18 | A non-blank `deductible` is parsed with `Double.parseDouble` and no fallback, so a value such as `abc` or `1,000` throws `NumberFormatException` and the request fails. | `Calculator` 28-29; contrast with `CAS` 39-45 which is not used for the deductible                | Open     |
+| SETTLE-R18 | A non-blank `deductible` that is not a number (for example `abc`) is parsed with `Double.parseDouble` and no fallback, and the resulting `NumberFormatException` is caught by the Struts global exception handler, so the request returns HTTP 200 with the forward `/WEB-INF/jsp/error.jsp` rather than an HTTP 500 or a redisplay of the calculate screen (OQ-04). | `E:` as `supervisor`, POST `/claims/settlement/calculate.do` `claimId=120&coveredAmount=1000&deductible=abc&depreciation=0` gives HTTP 200, forward `/WEB-INF/jsp/error.jsp`; `Calculator` 28-29; `struts-config` 59-60 (`global-exceptions` for `java.lang.Exception`); contrast with `CAS` 39-45 which is not used for the deductible | Observed |
 | SETTLE-R19 | No range or sign checks are applied to any settlement input; negative or very large amounts are calculated as submitted.                                    | `SCA` 23-38; `SSA` 24-33; `CAS` 328-330 (`financialAmount` exists but is not called)              | Inferred |
 | SETTLE-R20 | Operator identity for the settlement screens is the session attribute `user`, which the transcripts show as `supervisor`.                                  | `settlement_save` (`savedBy: supervisor`); `SSA` 36-37; `save.jsp` 21-22                          | Observed |
 
@@ -118,7 +135,7 @@ after section 3.2. The calculator then applies the following rules in order.
 | SETTLE-R26 | `cappedAtLimit` is `false` whenever the amount after deductible is at or below the policy limit, including when it has been floored to 0.00.               | `settlement_blank_deductible`, `settlement_half_cent`, `settlement_deductible_floor` (`cappedAtLimit: false`); `Calculator` 35 | Observed |
 | SETTLE-R27 | A policy limit of 0 forces the settlement to 0.00 for any positive amount after deductible.                                                                | `Calculator` 35-36 (0 < amount so `capped` is true and `amount = 0`)                             | Inferred |
 | SETTLE-R28 | The settlement amount is rounded to cents with `Math.round(amount * 100.0) / 100.0` in binary double arithmetic, so a covered amount of 1.005 with no deductible or depreciation yields 1.00, not 1.01. | `settlement_half_cent` (`coveredAmount: 1.01`, `settlementAmount: 1.00`); `Calculator` 37         | Observed |
-| SETTLE-R29 | The correct rounding mode for money (legacy double `Math.round` as in R28, or decimal half-up as the display uses) is undecided.                            | `settlement_half_cent` (the same request shows 1.01 for the input and 1.00 for the result); `Calculator` 37, 48-50 | Open     |
+| SETTLE-R29 | The display and the calculation round the same value differently: the input 1.005 is displayed as 1.01 by the money formatter while the settlement computed from it is 1.00 (OQ-05). | `settlement_half_cent` (the same request shows 1.01 for the input and 1.00 for the result); `Calculator` 37, 48-50 | Observed |
 | SETTLE-R30 | `deductibleApplied` reports the full parsed deductible even when only part of it (or none of it) reduced the settlement.                                   | `settlement_deductible_floor` (`deductibleApplied: 2000.00` with `settlementAmount: 0.00`); `Calculator` 40 | Observed |
 | SETTLE-R31 | `coveredAmount` and `depreciation` are echoed back as the raw parsed doubles, unrounded; only the settlement amount is rounded.                            | `settlement_half_cent` (input 1.005 echoed and displayed as 1.01); `Calculator` 39, 41            | Observed |
 | SETTLE-R32 | The result is rounded only once, after capping and flooring; intermediate values are not rounded.                                                          | `Calculator` 30-37                                                                                | Inferred |
@@ -143,7 +160,7 @@ after section 3.2. The calculator then applies the following rules in order.
 | SETTLE-R41 | The saved row records the fixed `calculated_date` `2019-04-01` regardless of the actual date.                                                              | `SSA` 38                                                                                           | Inferred |
 | SETTLE-R42 | The saved row stores `covered_amount`, `deductible_applied`, `depreciation`, `capped_at_limit` and `settlement_amount` exactly as produced by the calculator. | `SettlementDAO` 128-136                                                                            | Inferred |
 | SETTLE-R43 | After `settlement_save` for claim 119 the `settlement.claim.119.amount` probe reads `1000.00`.                                                              | `settlement_save` (`db_state`)                                                                     | Observed |
-| SETTLE-R44 | Neither calculate nor save modifies the `CLAIM` row (status, reserve or otherwise).                                                                         | `SCA` 23-43 and `SSA` 24-45 contain no claim update; consistent with `settlement_blank_deductible` probing `claim.120.status` = `CLOSED` after calculate | Inferred |
+| SETTLE-R44 | Calculating a settlement leaves the `CLAIM` row unchanged (claim 120 still reads `CLOSED` afterwards), and the save action likewise contains no claim update.   | `settlement_blank_deductible` (`db_state` probe `claim.120.status` = `CLOSED`); `SCA` 23-43 and `SSA` 24-45 contain no claim update | Observed |
 | SETTLE-R45 | The detail screen shows the settlement with the highest `settlement_id` for the claim, which is the most recent save only if ids are always allocated in increasing order, something neither the DAO nor the schema enforces (compare the allocators in R39 and R47). | `SettlementDAO` 100-109 (`order by settlement_id desc`, first row); `SDA` 18; `SettlementService` 25 | Inferred |
 | SETTLE-R46 | When a claim has no saved settlement the detail action forwards with a null `settlement` attribute, and `detail.jsp` line 24 (`<bean:write name="settlement" .../>`) fails on the missing bean. | `SDA` 18-23; `SettlementDAO` 109 (returns `null`); `detail.jsp` 24                                  | Inferred |
 | SETTLE-R47 | `SettlementService.calculateAndSave` is not called by any settlement action and uses different defaults (`settlementId = claimId + 10000`, `calculatedBy = "supervisor"`, `calculatedDate = "2019-03-01"`) from `SettlementSaveAction`. | `SettlementService` 19-31; `SCA` and `SSA` import only `SettlementCalculator` and `SettlementDAO`   | Inferred |
@@ -155,10 +172,11 @@ after section 3.2. The calculator then applies the following rules in order.
 |---------------------------------|--------------------------------------------------------|------------|--------------------------------------------------------------------------------------------------|---------------------------------------------------|
 | `settlement_calculate`          | 5000.00 / 500.00 / 0.00, claim 119                     | 1000.00    | covered 5000.00, deductible 500.00, depreciation 0.00, capped true, settlement 1000.00           | R01, R04, R07, R14, R21, R22, R24, R34, R35       |
 | `settlement_save`               | 5000.00 / 500.00 / 0.00, claim 119                     | 1000.00    | settlement 1000.00, savedBy supervisor; probe `settlement.claim.119.amount = 1000.00`             | R02, R08, R20, R37, R40, R43                       |
-| `settlement_blank_deductible`   | 5000.00 / "" / 500.00, claim 120                        | (not capped)| covered 5000.00, deductible 0.00, depreciation 500.00, capped false, settlement 4500.00          | R16, R21, R26                                      |
+| `settlement_blank_deductible`   | 5000.00 / "" / 500.00, claim 120                        | (not capped)| covered 5000.00, deductible 0.00, depreciation 500.00, capped false, settlement 4500.00; probe `claim.120.status = CLOSED` | R16, R21, R26, R44                                 |
 | `settlement_half_cent`          | 1.005 / "" / 0.00, claim 120                            | (not capped)| covered 1.01, deductible 0.00, depreciation 0.00, capped false, settlement 1.00                  | R16, R28, R29, R31, R34                            |
 | `settlement_policy_cap`         | 20000.00 / 100.00 / 0.00, claim 119                     | 1000.00    | covered 20000.00, deductible 100.00, depreciation 0.00, capped true, settlement 1000.00          | R14, R22, R24                                      |
 | `settlement_deductible_floor`   | 1000.00 / 2000.00 / 0.00, claim 120                     | (not capped)| covered 1000.00, deductible 2000.00, depreciation 0.00, capped false, settlement 0.00            | R23, R26, R30, R33                                 |
+| `E:` non-numeric deductible (not a transcript) | 1000 / `abc` / 0, claim 120                | n/a        | HTTP 200, forward `/WEB-INF/jsp/error.jsp`, no business fields                                   | R18                                                |
 
 The policy limit of 1000.00 for claim 119 is not stated in any transcript; it
 is inferred from the two capped scenarios, both of which settle at exactly
@@ -167,15 +185,15 @@ the transcripts beyond being at least 4500.00.
 
 ## 5. Open questions
 
-Each item needs a business decision before the corresponding rule can be
-promoted from `Open` (or `Inferred`) to a requirement.
+Each item needs a business decision before the corresponding rule, whatever
+its evidence status, can be adopted as a requirement.
 
 | ID     | Question                                                                                                                                                                                                                          | Related rules        |
 |--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|
 | OQ-01  | **Default claim 119.** `SettlementCalculateAction`, `SettlementSaveAction` and `SettlementDetailAction` all fall back to claim 119 when `claimId` is missing or not an integer (`SCA` 23, `SSA` 24, `SDA` 17). Should a missing claim be an error instead, and if a default is kept, is 119 the intended value or a leftover from testing? | R11, R10             |
 | OQ-02  | **Default covered amount 5000.** A missing or non-numeric `coveredAmount` silently becomes 5000 (`SCA` 32, `SSA` 27), which on `/settlement/save` writes a real settlement row. Should a missing covered amount be rejected, default to 0, or default to a claim-derived value (for example the reserve)? | R12, R10             |
 | OQ-03  | **Default policy limit 10000 when the policy is missing.** On calculate only, a claim that does not exist or has no policy is capped at 10000 (`SCA` 25-31); on save the same condition throws (`SSA` 26, 33). Which behaviour is intended, and should the two actions agree? | R14, R15             |
-| OQ-04  | **Non-blank, non-numeric deductible.** `deductible` is the only input parsed without a fallback (`Calculator` 28-29); `abc` or `1,000` produces an unhandled `NumberFormatException`. Should it be rejected with a validation error, treated as 0 like a blank, or parsed leniently like the other amounts? No transcript covers this case. | R18, R16, R17        |
+| OQ-04  | **Non-blank, non-numeric deductible.** `deductible` is the only input parsed without a fallback (`Calculator` 28-29); `abc` produces a `NumberFormatException` that the global exception handler turns into HTTP 200 with the generic `error.jsp` (R18). Should it instead be rejected with a field-level validation error on the calculate screen, treated as 0 like a blank, or parsed leniently like the other amounts? No transcript covers this case; the current behaviour is known from execution evidence only. | R18, R16, R17        |
 | OQ-05  | **Money rounding method.** The settlement amount is rounded with `Math.round(amount * 100.0) / 100.0` in double arithmetic (`Calculator` 37), which turns 1.005 into 1.00, while the same screen displays the 1.005 input as 1.01 (`settlement_half_cent`). Is the required rule round-half-up on the decimal value, round-half-even, or the current binary behaviour, and should inputs be rounded on entry so display and calculation agree? | R28, R29, R31, R34   |
 | OQ-06  | **Cap at exactly the limit.** An amount after deductible exactly equal to the policy limit is reported as not capped (`Calculator` 35). Is `cappedAtLimit` meant to describe "reached the limit" or "exceeded the limit"?               | R24, R25             |
 | OQ-07  | **Zero or negative inputs.** No settlement input is checked for sign or magnitude (R19), so a negative covered amount, negative deductible or negative depreciation is calculated as submitted. Should `financialAmount` (`CAS` 328-330) or an equivalent be applied?                          | R19                  |
@@ -192,3 +210,4 @@ promoted from `Open` (or `Inferred`) to a requirement.
 | Version | Date       | Author | Change                                                                                             |
 |---------|------------|--------|----------------------------------------------------------------------------------------------------|
 | 0.1     | 2026-09-20 | Devin  | Initial draft derived from the six settlement transcripts and the settlement source files listed in section 2. 48 rules (SETTLE-R01 to SETTLE-R48), 14 open questions. No code or transcript changes. |
+| 0.2     | 2026-09-20 | Devin (reviewer: Ben Lau) | Reviewer corrections. R18 rewritten from execution evidence: non-numeric deductible returns HTTP 200 with forward `/WEB-INF/jsp/error.jsp` via the Struts global exception handler; new `E:` citation kind (2.3). Status column restricted to evidence only: R14, R29, R44 become `Observed` (transcript-evidenced), R10, R11, R12 become `Inferred` (source-only); pending decisions live solely in section 5 (OQ-01 to OQ-05, OQ-08). Rule count unchanged. |
