@@ -1,7 +1,7 @@
 # SPEC-SETTLE-001: settlement calculation
 
-Version: 0.1
-Status: draft
+Version: 0.2
+Status: draft, reviewed by the engineer
 Source of truth for behaviour: `transcripts/settlement_*.json`, captured with
 `make capture` against the Struts application at commit `225c8d3`.
 Code cited: `src/main/java/com/northstar/claims/web/SettlementCalculateAction.java`,
@@ -38,7 +38,12 @@ A blank or missing `deductible` is treated as `0.00` and shown as
 
 ### SETTLE-R05 Policy limit
 The policy limit is the `policy_limit` of the policy attached to the claim.
-Observed: `settlement_calculate` (claim 119, policy 9001, limit 1000).
+If the claim does not exist, or its policy does not exist, the limit is
+`10000` and the calculation still runs. Observed: `settlement_calculate`
+(claim 119, policy 9001, limit 1000). Read: `SettlementCalculateAction`,
+`double limit = 10000;` before the lookups; confirmed by a manual request with
+`claimId=9999`, which returned `settlementAmount 90.00` for covered 100 and
+deductible 10. Open question: OQ-01.
 
 ### SETTLE-R06 Non-numeric deductible
 A `deductible` that is not a number ends in the system error screen
@@ -93,3 +98,4 @@ highest `settlement_id` for that claim. Read: `SettlementDAO.findByClaim`
 | Rule | Version | Change |
 | --- | --- | --- |
 | all | 0.1 | first draft from transcripts and code |
+| SETTLE-R05 | 0.2 | engineer added the `10000` fallback the draft missed; raised OQ-01 |
