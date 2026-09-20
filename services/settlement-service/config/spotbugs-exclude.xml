@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!-- Spring injects repositories and the JdbcClient; SpotBugs cannot see the container. -->
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+  </Match>
+  <!-- find-sec-bugs informational marker that flags every @RestController method as an
+       attack surface to review; the controller is the module's inbound contract. -->
+  <Match>
+    <Class name="com.northstar.settlement.api.SettlementController"/>
+    <Bug pattern="SPRING_ENDPOINT"/>
+  </Match>
+</FindBugsFilter>
