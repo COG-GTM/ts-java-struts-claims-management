@@ -1,0 +1,43 @@
+# Legacy request -> settlement-service route, one entry per settlement transcript scenario.
+#
+# The service answers the legacy paths unchanged, so the mapping is one to one; it is written
+# out per scenario anyway so a scenario can be repointed or skipped without touching replay.py.
+
+service:
+  base_url: http://localhost:8083
+
+# Scenarios listed in transcripts/index.json that this service does not implement are reported
+# as SKIP with this reason.
+skip:
+  reason: not part of the settlement extraction (SPEC-SETTLE-001 section 2.1)
+
+scenarios:
+  - scenario: settlement_calculate
+    legacy: {method: POST, path: /claims/settlement/calculate.do}
+    service: {method: POST, path: /claims/settlement/calculate.do}
+    rules: [SETTLE-R01, SETTLE-R07, SETTLE-R14, SETTLE-R21, SETTLE-R24, SETTLE-R34, SETTLE-R35]
+
+  - scenario: settlement_save
+    legacy: {method: POST, path: /claims/settlement/save.do}
+    service: {method: POST, path: /claims/settlement/save.do}
+    rules: [SETTLE-R02, SETTLE-R08, SETTLE-R20, SETTLE-R37, SETTLE-R43]
+
+  - scenario: settlement_blank_deductible
+    legacy: {method: POST, path: /claims/settlement/calculate.do}
+    service: {method: POST, path: /claims/settlement/calculate.do}
+    rules: [SETTLE-R16, SETTLE-R21, SETTLE-R26, SETTLE-R44]
+
+  - scenario: settlement_half_cent
+    legacy: {method: POST, path: /claims/settlement/calculate.do}
+    service: {method: POST, path: /claims/settlement/calculate.do}
+    rules: [SETTLE-R28, SETTLE-R29, SETTLE-R31, SETTLE-R34]
+
+  - scenario: settlement_policy_cap
+    legacy: {method: POST, path: /claims/settlement/calculate.do}
+    service: {method: POST, path: /claims/settlement/calculate.do}
+    rules: [SETTLE-R14, SETTLE-R22, SETTLE-R24]
+
+  - scenario: settlement_deductible_floor
+    legacy: {method: POST, path: /claims/settlement/calculate.do}
+    service: {method: POST, path: /claims/settlement/calculate.do}
+    rules: [SETTLE-R23, SETTLE-R30]

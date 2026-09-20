@@ -1,0 +1,46 @@
+# Settlement extraction stack: PostgreSQL plus services/settlement-service.
+#
+# NS names the stack and PORT_OFFSET shifts every published port, so a second stack runs beside
+# the first:
+#
+#   make up                          # settlement on 8083, postgres on 5432
+#   NS=b PORT_OFFSET=100 make up     # settlement on 8183, postgres on 5532
+#
+# The service jar must exist before the image is built (make service-build).
+
+name: northstar-settlement-${NS:-a}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: settlement
+      POSTGRES_USER: settlement
+      POSTGRES_PASSWORD: settlement
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U settlement -d settlement"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  settlement-service:
+    build:
+      context: ./services/settlement-service
+    environment:
+      SERVER_PORT: 8083
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/settlement
+      SPRING_DATASOURCE_USERNAME: settlement
+      SPRING_DATASOURCE_PASSWORD: settlement
+      SETTLEMENT_SCHEMA: settlement
+    ports:
+      - "${SETTLEMENT_HOST_PORT:-8083}:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:

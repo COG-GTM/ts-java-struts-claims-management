@@ -3,3 +3,4 @@ data/
 *.log
 *.lck
 *.properties.tmp
+parity/report.md

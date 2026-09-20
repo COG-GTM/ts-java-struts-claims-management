@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter xmlns="https://github.com/spotbugs/filter/3.0.0">
+
+  <!-- Informational findsecbugs marker on every @RestController method. -->
+  <Match>
+    <Bug pattern="SPRING_ENDPOINT"/>
+  </Match>
+
+  <!-- Constructor-injected singleton collaborators; storing the bean is the intended wiring. -->
+  <Match>
+    <Or>
+      <Class name="com.northstar.settlement.web.SettlementController"/>
+      <Package name="com.northstar.settlement.persistence"/>
+    </Or>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <!--
+    ScreenRenderer builds the legacy field spans by concatenation, which findsecbugs reports as
+    XML injection. Every name and value passes through ScreenRenderer.escape first, the same
+    escaping the legacy FieldTag applies, and the markup shape is fixed by the parity contract.
+  -->
+  <Match>
+    <Class name="com.northstar.settlement.web.ScreenRenderer"/>
+    <Bug pattern="POTENTIAL_XML_INJECTION"/>
+  </Match>
+</FindBugsFilter>
