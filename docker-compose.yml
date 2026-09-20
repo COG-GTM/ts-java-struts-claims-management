@@ -1,0 +1,56 @@
+# Settlement service stack (services/settlement-service + PostgreSQL).
+#
+#   NS          namespace: compose project name, container names, volume and network,
+#               so two stacks can run side by side (default: settlement)
+#   PORT_OFFSET added to the host ports 8083 (service) and 5433 (postgres)
+#   MAVEN_MIRROR optional Maven repository mirror for the image build
+#
+#   make up NS=settlement PORT_OFFSET=100   -> service on 8183, postgres on 5533
+name: ${NS:-settlement}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ${NS:-settlement}-postgres
+    environment:
+      POSTGRES_DB: settlement
+      POSTGRES_USER: settlement
+      POSTGRES_PASSWORD: settlement
+    ports:
+      - "${POSTGRES_HOST_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U settlement -d settlement"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  settlement-service:
+    build:
+      context: ./services/settlement-service
+      args:
+        MAVEN_MIRROR: ${MAVEN_MIRROR:-}
+    image: northstar/settlement-service:${NS:-settlement}
+    container_name: ${NS:-settlement}-settlement-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: "8083"
+      DB_URL: jdbc:postgresql://postgres:5432/settlement
+      DB_USER: settlement
+      DB_PASSWORD: settlement
+      SETTLEMENT_OPERATOR: supervisor
+    ports:
+      - "${SERVICE_HOST_PORT:-8083}:8083"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8083/actuator/health | grep -q UP"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+      start_period: 10s
+
+volumes:
+  pgdata:
+    name: ${NS:-settlement}-pgdata
