@@ -1,7 +1,7 @@
 # SPEC-SETTLE-001: settlement calculation
 
-Version: 0.2
-Status: draft, reviewed by the engineer
+Version: 0.3
+Status: draft, reviewed by the engineer, checked by parity replay
 Source of truth for behaviour: `transcripts/settlement_*.json`, captured with
 `make capture` against the Struts application at commit `225c8d3`.
 Code cited: `src/main/java/com/northstar/claims/web/SettlementCalculateAction.java`,
@@ -47,8 +47,8 @@ deductible 10. Open question: OQ-01.
 
 ### SETTLE-R06 Non-numeric deductible
 A `deductible` that is not a number ends in the system error screen
-(`errors.system`, HTTP 200, no business fields). Observed:
-`settlement_bad_deductible`.
+(`error.jsp`, HTTP 200, no business fields, no validation error markers).
+Observed: `settlement_bad_deductible`. Quirk: QUIRK-05.
 
 ## Calculation
 
@@ -64,14 +64,18 @@ If `net` exceeds the policy limit, the settlement amount is the limit and
 (19900 capped to `1000.00`), `settlement_half_cent` (`false`).
 
 ### SETTLE-R09 Rounding
-The settlement amount is rounded to the nearest cent. Observed:
-`settlement_half_cent` (input `1.005` gives `1.00`).
+The settlement amount is rounded with `double` arithmetic,
+`Math.round(amount * 100.0) / 100.0`. This is not decimal half-up rounding:
+input `1.005` gives `1.00`, because the nearest `double` to `1.005` is below
+it. Observed: `settlement_half_cent`. Quirk: QUIRK-01.
 
 ### SETTLE-R10 Display format
 Money fields (`coveredAmount`, `deductibleApplied`, `depreciation`,
-`settlementAmount`) are shown with exactly two decimals. `cappedAtLimit` is
-shown as `true` or `false`. Observed: every settlement transcript with a
-result screen.
+`settlementAmount`) are shown with `String.format("%.2f", double)`, which
+rounds the decimal form half up, so the input `1.005` is echoed as
+`coveredAmount 1.01` on the same screen that shows `settlementAmount 1.00`.
+`cappedAtLimit` is shown as `true` or `false`. Observed: every settlement
+transcript with a result screen. Quirk: QUIRK-02.
 
 ## Persistence
 
@@ -81,7 +85,9 @@ empty for every calculate transcript; Read: no DAO write in
 `SettlementCalculateAction`.
 
 ### SETTLE-R12 Save
-`POST /settlement/save.do` recalculates with the same rules, inserts one
+`POST /settlement/save.do` recalculates with the same rules, except that a
+missing claim or policy is a system error rather than the `10000` fallback
+(QUIRK-04). It inserts one
 `SETTLEMENT` row with `settlement_id = max(settlement_id) + 1`,
 `calculated_by` set to the logged-in user and `calculated_date` fixed at
 `2019-04-01`, and shows `settlementAmount` and the user. Observed:
@@ -99,3 +105,5 @@ highest `settlement_id` for that claim. Read: `SettlementDAO.findByClaim`
 | --- | --- | --- |
 | all | 0.1 | first draft from transcripts and code |
 | SETTLE-R05 | 0.2 | engineer added the `10000` fallback the draft missed; raised OQ-01 |
+| SETTLE-R09, R10 | 0.3 | parity run showed `1.00` vs `1.01`; rule now names the `double` arithmetic and the separate display rounding; decision: keep legacy behaviour |
+| SETTLE-R06, R12 | 0.3 | error screen carries no validation markers; save has no limit fallback |

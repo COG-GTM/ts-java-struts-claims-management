@@ -2,7 +2,7 @@
 
 Service: `http://localhost:8083`. Fixtures: `transcripts/settlement_*.json`.
 
-Result: FAIL 2, PASS 5, SKIP 2.
+Result: PASS 7, SKIP 2.
 
 | Scenario | Rules | Verdict | Differences (legacy -> service) | Note |
 | --- | --- | --- | --- | --- |
@@ -11,7 +11,7 @@ Result: FAIL 2, PASS 5, SKIP 2.
 | payment_issue |  | SKIP |  | screen not routed to this service |
 | payment_history |  | SKIP |  | screen not routed to this service |
 | settlement_blank_deductible | SETTLE-R04, SETTLE-R07 | PASS |  | db_state not checked (screen outside the slice): claim.120.status |
-| settlement_half_cent | SETTLE-R09, SETTLE-R10 | FAIL | field settlementAmount: `1.00` -> `1.01` |  |
+| settlement_half_cent | SETTLE-R09, SETTLE-R10 | PASS |  |  |
 | settlement_policy_cap | SETTLE-R08 | PASS |  |  |
 | settlement_deductible_floor | SETTLE-R07 | PASS |  |  |
-| settlement_bad_deductible | SETTLE-R06 | FAIL | validation_errors: `[]` -> `['errors.system']` |  |
+| settlement_bad_deductible | SETTLE-R06 | PASS |  |  |

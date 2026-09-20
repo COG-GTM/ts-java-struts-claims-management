@@ -57,13 +57,7 @@
       "verdict": "PASS"
     },
     {
-      "differences": [
-        {
-          "legacy": "1.00",
-          "service": "1.01",
-          "what": "field settlementAmount"
-        }
-      ],
+      "differences": [],
       "note": "",
       "rules": [
         "SETTLE-R09",
@@ -71,7 +65,7 @@
       ],
       "scenario": "settlement_half_cent",
       "unprobed": [],
-      "verdict": "FAIL"
+      "verdict": "PASS"
     },
     {
       "differences": [],
@@ -94,27 +88,18 @@
       "verdict": "PASS"
     },
     {
-      "differences": [
-        {
-          "legacy": [],
-          "service": [
-            "errors.system"
-          ],
-          "what": "validation_errors"
-        }
-      ],
+      "differences": [],
       "note": "",
       "rules": [
         "SETTLE-R06"
       ],
       "scenario": "settlement_bad_deductible",
       "unprobed": [],
-      "verdict": "FAIL"
+      "verdict": "PASS"
     }
   ],
   "summary": {
-    "FAIL": 2,
-    "PASS": 5,
+    "PASS": 7,
     "SKIP": 2
   }
 }

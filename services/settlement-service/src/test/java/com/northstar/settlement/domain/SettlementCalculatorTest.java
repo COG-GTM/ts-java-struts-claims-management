@@ -41,6 +41,21 @@ class SettlementCalculatorTest {
                 .isEqualTo("0.00");
     }
 
+    /**
+     * SETTLE-R09, QUIRK-01: transcripts/settlement_half_cent.json. Legacy
+     * double arithmetic settles 1.005 at 1.00; BigDecimal HALF_UP would say
+     * 1.01 and the parity run caught exactly that.
+     */
+    @Test
+    void halfCentUsesLegacyDoubleMath() {
+        SettlementResult result = calculator.calculate(d("1.005"),
+                BigDecimal.ZERO, d("0.00"), d("100000"));
+        assertThat(LegacyDisplay.money(result.settlementAmount()))
+                .isEqualTo("1.00");
+        assertThat(LegacyDisplay.money(result.coveredAmount()))
+                .isEqualTo("1.01");
+    }
+
     /** SETTLE-R08: transcripts/settlement_policy_cap.json. */
     @Test
     void capReportsCapped() {
