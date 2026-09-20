@@ -1,0 +1,120 @@
+{
+  "base_url": "http://localhost:8083",
+  "module": "settlement",
+  "scenarios": [
+    {
+      "differences": [],
+      "note": "",
+      "rules": [
+        "SETTLE-R01",
+        "SETTLE-R05",
+        "SETTLE-R07",
+        "SETTLE-R08",
+        "SETTLE-R10",
+        "SETTLE-R11"
+      ],
+      "scenario": "settlement_calculate",
+      "unprobed": [],
+      "verdict": "PASS"
+    },
+    {
+      "differences": [],
+      "note": "",
+      "rules": [
+        "SETTLE-R12"
+      ],
+      "scenario": "settlement_save",
+      "unprobed": [],
+      "verdict": "PASS"
+    },
+    {
+      "differences": [],
+      "note": "screen not routed to this service",
+      "rules": [],
+      "scenario": "payment_issue",
+      "unprobed": [],
+      "verdict": "SKIP"
+    },
+    {
+      "differences": [],
+      "note": "screen not routed to this service",
+      "rules": [],
+      "scenario": "payment_history",
+      "unprobed": [],
+      "verdict": "SKIP"
+    },
+    {
+      "differences": [],
+      "note": "db_state not checked (screen outside the slice): claim.120.status",
+      "rules": [
+        "SETTLE-R04",
+        "SETTLE-R07"
+      ],
+      "scenario": "settlement_blank_deductible",
+      "unprobed": [
+        "claim.120.status"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "differences": [
+        {
+          "legacy": "1.00",
+          "service": "1.01",
+          "what": "field settlementAmount"
+        }
+      ],
+      "note": "",
+      "rules": [
+        "SETTLE-R09",
+        "SETTLE-R10"
+      ],
+      "scenario": "settlement_half_cent",
+      "unprobed": [],
+      "verdict": "FAIL"
+    },
+    {
+      "differences": [],
+      "note": "",
+      "rules": [
+        "SETTLE-R08"
+      ],
+      "scenario": "settlement_policy_cap",
+      "unprobed": [],
+      "verdict": "PASS"
+    },
+    {
+      "differences": [],
+      "note": "",
+      "rules": [
+        "SETTLE-R07"
+      ],
+      "scenario": "settlement_deductible_floor",
+      "unprobed": [],
+      "verdict": "PASS"
+    },
+    {
+      "differences": [
+        {
+          "legacy": [],
+          "service": [
+            "errors.system"
+          ],
+          "what": "validation_errors"
+        }
+      ],
+      "note": "",
+      "rules": [
+        "SETTLE-R06"
+      ],
+      "scenario": "settlement_bad_deductible",
+      "unprobed": [],
+      "verdict": "FAIL"
+    }
+  ],
+  "summary": {
+    "FAIL": 2,
+    "PASS": 5,
+    "SKIP": 2
+  }
+}

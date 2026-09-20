@@ -1,0 +1,41 @@
+{
+  "legacy_context": "/claims",
+  "modules": {
+    "settlement": {
+      "scenarios": {
+        "settlement_calculate": [
+          "SETTLE-R01",
+          "SETTLE-R05",
+          "SETTLE-R07",
+          "SETTLE-R08",
+          "SETTLE-R10",
+          "SETTLE-R11"
+        ],
+        "settlement_save": [
+          "SETTLE-R12"
+        ],
+        "settlement_blank_deductible": [
+          "SETTLE-R04",
+          "SETTLE-R07"
+        ],
+        "settlement_deductible_floor": [
+          "SETTLE-R07"
+        ],
+        "settlement_policy_cap": [
+          "SETTLE-R08"
+        ],
+        "settlement_half_cent": [
+          "SETTLE-R09",
+          "SETTLE-R10"
+        ],
+        "settlement_bad_deductible": [
+          "SETTLE-R06"
+        ]
+      },
+      "approved_differences": {},
+      "unrouted_probes": [
+        "claim."
+      ]
+    }
+  }
+}
