@@ -8,9 +8,12 @@ Spring Boot 3 on Java 21, port 8083, PostgreSQL schema `settlement` managed by F
 
 | Route | Legacy action | Forward it declares |
 | --- | --- | --- |
-| `POST /claims/settlement/calculate.do` | `SettlementCalculateAction` | `/WEB-INF/jsp/settlement/calculate.jsp` |
-| `POST /claims/settlement/save.do` | `SettlementSaveAction` | `/WEB-INF/jsp/settlement/save.jsp` |
-| `POST /claims/settlement/detail.do` | `SettlementDetailAction` | `/WEB-INF/jsp/settlement/detail.jsp` |
+| `GET,POST /claims/settlement/calculate.do` | `SettlementCalculateAction` | `/WEB-INF/jsp/settlement/calculate.jsp` |
+| `GET,POST /claims/settlement/save.do` | `SettlementSaveAction` | `/WEB-INF/jsp/settlement/save.jsp` |
+| `GET,POST /claims/settlement/detail.do` | `SettlementDetailAction` | `/WEB-INF/jsp/settlement/detail.jsp` |
+
+The Struts mappings restrict no method, so each route answers GET as well as POST, and each
+also answers the extensionless form (`/calculate`, `/save`, `/detail`).
 
 Responses are not JSON: each carries the `<!-- ns:view PATH -->` marker and the
 `<span id="f_NAME">` field spans of the legacy screens, so `parity/replay.py` compares the

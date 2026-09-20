@@ -239,6 +239,39 @@ class SettlementControllerTest {
         assertThat(fields(body)).containsEntry("settlementAmount", "1000.00");
     }
 
+    /**
+     * SETTLE-R02, SETTLE-R38: the save mapping restricts no method either, so a GET inserts
+     * exactly as the POST does.
+     */
+    @Test
+    void settleR02GetSaveInsertsLikeThePost() throws Exception {
+        String body = body(mvc.perform(get("/claims/settlement/save.do")
+                .param("claimId", "119").param("coveredAmount", "5000.00")
+                .param("deductible", "500.00").param("depreciation", "0.00")).andReturn());
+
+        assertThat(view(body)).isEqualTo("/WEB-INF/jsp/settlement/save.jsp");
+        assertThat(fields(body)).containsEntry("settlementAmount", "1000.00")
+                .containsEntry("savedBy", "supervisor");
+
+        ArgumentCaptor<Settlement> saved = ArgumentCaptor.forClass(Settlement.class);
+        verify(settlements).insert(saved.capture());
+        assertThat(saved.getValue().settlementId()).isEqualTo(121);
+    }
+
+    /** SETTLE-R03, SETTLE-R45: the detail mapping answers a GET with the same screen. */
+    @Test
+    void settleR03GetDetailRendersTheLatestSettlement() throws Exception {
+        when(settlements.findLatestByClaim(119)).thenReturn(new Settlement(
+                121, 119, 5000.00, 500.00, 0.00, true, 1000.00, "supervisor", "2019-04-01"));
+
+        String body = body(mvc.perform(get("/claims/settlement/detail.do")
+                .param("claimId", "119")).andReturn());
+
+        assertThat(view(body)).isEqualTo("/WEB-INF/jsp/settlement/detail.jsp");
+        assertThat(fields(body)).containsEntry("detailSettlementId", "121")
+                .containsEntry("detailAmount", "1000.00");
+    }
+
     private static String body(MvcResult result) throws Exception {
         return result.getResponse().getContentAsString();
     }
