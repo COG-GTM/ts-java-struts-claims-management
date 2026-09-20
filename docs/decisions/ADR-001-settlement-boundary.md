@@ -149,17 +149,32 @@ extracted from the Struts application into a Spring Boot service:
   for the policy limit (SETTLE-R14, SETTLE-R49) and does not write them
   (SETTLE-R44, SETTLE-R51). Because file-mode HSQLDB is single-process, the
   database is run in server mode for the transition and both applications
-  connect over JDBC to it (the legacy `ConnectionPool` already prefers a
-  configured data source over the file path).
-- Identity: the service accepts the operator identity established by the
-  legacy login, so `calculated_by` and `savedBy` still show `supervisor`
-  in the transcripts (SETTLE-R20, SETTLE-R40).
+  connect over JDBC to it. Every legacy JDBC entry point must follow: not
+  only `ConnectionPool` (which already prefers a configured data source over
+  the file path) but also `ClaimsActionSupport.openConnection`, which
+  `nextId`, `findClaim` and the other action helpers use to open
+  `jdbc:hsqldb:file:` directly and which would fail once the server owns the
+  catalog files. The server binds to `127.0.0.1` only, the `SA` password is
+  replaced by a credential read from the environment, and this topology is
+  for local development and CI; the deployed topology is decided in a later
+  ADR before the service leaves the transition.
+- Identity: the service never takes the operator from a request parameter.
+  The legacy application forwards the session `user` to the service in a
+  signed header (`X-NorthStar-User` plus an HMAC over user and timestamp
+  with a shared secret from the environment); the service rejects requests
+  without a valid signature with HTTP 401 and listens on `127.0.0.1` during
+  the transition, so only the legacy proxy and the replay tool (which signs
+  with the transcript's `actor`) can reach it. `calculated_by` and `savedBy`
+  therefore still show `supervisor` in the transcripts (SETTLE-R20,
+  SETTLE-R40).
 - Not moved: `SettlementService.calculateAndSave`, which is dead code with
   conflicting defaults (SETTLE-R47, OQ-13), is not ported.
 - Stays in Struts for now: payments, workbench, reporting, policy and intake.
 
 Acceptance: the six settlement transcripts replay green against the service
-(see Verification). Nothing else is required to call the extraction done.
+and the three supplementary checks in Verification (persistence, detail
+route, SETTLE-R18 error page) pass. Nothing else is required to call the
+extraction done.
 
 ## Consequences
 
@@ -214,15 +229,32 @@ Acceptance: the six settlement transcripts replay green against the service
    routes by path prefix: `/claims/settlement/*` to `localhost:8083`,
    everything else to `localhost:8080`, sharing one cookie jar.
 6. **The legacy settlement code stays until the switch-over step.** The
-   Struts `/settlement/*` mappings are first shadowed by a forward to port
-   8083 and only removed after `make capture` through the legacy front door
-   is stable with the forward in place, so `make test` and `make capture`
-   keep passing at every step.
+   Struts `/settlement/*` mappings are first shadowed by a transparent
+   reverse proxy inside the legacy WAR (Jetty's `ProxyServlet.Transparent`
+   from `jetty-proxy`, mapped to `/settlement/*` in `web.xml` behind
+   `AuthFilter`, forwarding method, query string, body and cookies to
+   `127.0.0.1:8083` and adding the signed identity header) and only removed
+   after `make capture` through the legacy front door is stable with the
+   proxy on, so `make test` and `make capture` keep passing at every step.
 7. **CI grows a second job.** The existing job (Maven verify, `make
    capture`, `git diff --exit-code transcripts/`) is unchanged; a new job
-   builds, lints, tests and replays the service.
-8. **What is not decided here.** The ownership of `CLAIM`, the future of
-   payments, the answers to OQ-01 to OQ-14, and any change to the HSQLDB
+   builds, lints, tests and replays the service. Replay needs HSQLDB, the
+   legacy application and the service up together, so the job starts each
+   in the background, waits on an explicit readiness check for each (JDBC
+   connect; `GET /claims/login.do` containing `Claims Login`, the same
+   check `capture.py` uses; `GET /claims/actuator/health` returning 200)
+   and tears all three down in an `if: always()` step.
+8. **Transcripts alone do not prove persistence or the detail route.** The
+   `settlement.claim.119.amount` probe reads the calculate endpoint, not the
+   saved row (OQ-12), and no transcript calls `/settlement/detail.do`. A
+   service that rendered correctly but never inserted would pass the six
+   replays and step 10 would then retire the only working writer while
+   `PaymentIssueAction` still reads `SETTLEMENT`. The replay therefore
+   carries the supplementary checks listed in Verification, and they are
+   part of the acceptance gate.
+9. **What is not decided here.** The ownership of `CLAIM`, the future of
+   payments, the answers to OQ-01 to OQ-14, the deployed database and
+   network topology after the transition, and any change to the HSQLDB
    engine beyond running it in server mode for the transition.
 
 ## Verification
@@ -241,19 +273,27 @@ the service and comparing every field the harness records: `status`, `result`,
 | `settlement_policy_cap`         | 19900 after deductible is capped to 1000.00                                                                     | R24, R30           |
 | `settlement_deductible_floor`   | Deductible above the loss floors to 0.00 and `deductibleApplied` still reports 2000.00                          | R23, R30, R33      |
 
+The `settlement.claim.119.amount` probe in `settlement_save` is a GET to
+`/settlement/calculate.do?claimId=119` with no other parameters, so a green
+replay also proves the defaults of SETTLE-R12, SETTLE-R13 and SETTLE-R16 and
+GET handling on the calculate route.
+
+Supplementary checks run by the replay tool after the six transcripts, and
+required for acceptance:
+
+| Check         | What it does                                                                                                                                                                                                                                                                                              | Rules              |
+|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------|
+| `persistence` | Reads `count(*)` and `max(settlement_id)` from `SETTLEMENT` over JDBC (server mode, so this is allowed) before and after `settlement_save`; requires count +1, id = previous max + 1, and the new row's `settlement_amount = 1000.00`, `calculated_by = 'supervisor'`, `calculated_date = 2019-04-01`      | R38, R39, R40, R41, R42 |
+| `detail`      | `GET /claims/settlement/detail.do?claimId=119` after the save; requires forward `/WEB-INF/jsp/settlement/detail.jsp`, `detailSettlementId` equal to the id from `persistence`, `detailAmount = 1000.00`, `detailCapped = true`, `detailDate = 2019-04-01`, and `detailClaimId = 119`                      | R03, R34, R45      |
+| `r18-error`   | `POST /claims/settlement/calculate.do` `claimId=120&coveredAmount=1000&deductible=abc&depreciation=0`; requires HTTP 200 and forward `/WEB-INF/jsp/error.jsp` (the execution evidence of SETTLE-R18, which no transcript covers)                                                                      | R18                |
+
 In addition:
 
-- The `settlement.claim.119.amount` probe in `settlement_save` is a GET to
-  `/settlement/calculate.do?claimId=119` with no other parameters, so a green
-  replay also proves the defaults of SETTLE-R12, SETTLE-R13 and SETTLE-R16 and
-  GET handling on the calculate route.
-- The execution evidence of SETTLE-R18 (`POST /claims/settlement/calculate.do`
-  `claimId=120&coveredAmount=1000&deductible=abc&depreciation=0` gives HTTP 200
-  and forward `/WEB-INF/jsp/error.jsp`) is added to the service's test suite
-  as a seventh replay case, because no transcript covers it.
-- `Inferred`-only rules that the transcripts cannot reach (SETTLE-R15,
-  SETTLE-R17, SETTLE-R25, SETTLE-R27, SETTLE-R41, SETTLE-R46, SETTLE-R48) are
-  covered by unit tests in the service, each named after its rule id.
+- `Inferred`-only rules that the transcripts and checks cannot reach
+  (SETTLE-R15, SETTLE-R17, SETTLE-R25, SETTLE-R27, SETTLE-R46, SETTLE-R48) are
+  covered by unit tests in the service, each named after its rule id, as is
+  the identity rule (a request without a valid signed identity header is
+  rejected with HTTP 401).
 - The legacy oracle itself must stay green throughout: `make test` and
   `make capture && git diff --exit-code transcripts/` pass at every step.
 - Replay is run in both directions before switch-over: against the legacy
@@ -261,8 +301,9 @@ In addition:
   pass, proving the extraction).
 
 The replay is exposed as `make -C services/settlement-service replay`. Its
-output lists every selected scenario with `pass`, `fail` (with the first
-differing field) or `out-of-boundary`, and exits non-zero on any `fail`.
+output lists every selected scenario and supplementary check with `pass`,
+`fail` (with the first differing field) or `out-of-boundary`, and exits
+non-zero on any `fail`.
 
 ## Migration plan
 
@@ -288,8 +329,9 @@ its command exits 0 on this branch.
    Boot, `server.port=8083`, context path `/claims`) with a `Makefile`
    defining `build` (`mvn -B clean package`), `test` (`mvn -B verify`),
    `lint` (`mvn -B checkstyle:check`), `start` (run the packaged jar on
-   8083) and `replay` (`python3 tools/replay/replay.py`, see step 7). Add a
-   health endpoint only.
+   8083 and wait for readiness) and `replay` (`python3
+   tools/replay/replay.py`, see step 7). Add the actuator health endpoint
+   (`/claims/actuator/health`) only.
    Proof: `make -C services/settlement-service build && make -C services/settlement-service lint`.
 
 4. **Port the calculator with rule-named tests.** Copy the semantics of
@@ -298,38 +340,52 @@ its command exits 0 on this branch.
    edge cases (R25 exact-limit, R27 zero limit, R17 whitespace deductible).
    Proof: `make -C services/settlement-service test`.
 
-5. **Implement the three routes and the field-span rendering.** Serve
-   `/claims/settlement/calculate.do`, `save.do` and `detail.do` with the
-   `ns:view` marker, `f_NAME` spans, two-decimal money formatting
-   (SETTLE-R34), the defaults of SETTLE-R11 to SETTLE-R13 and SETTLE-R49, the
-   HTTP 200 error page of SETTLE-R18, and the fixed date of SETTLE-R41.
-   Proof: `make -C services/settlement-service start` and, in a second
-   shell, `curl -s -o /dev/null -w '%{http_code}\n' 'http://localhost:8083/claims/settlement/calculate.do?claimId=119'`
-   prints `200`; `make -C services/settlement-service test` passes with the
-   route tests added.
+5. **Implement the three routes, the field-span rendering and the identity
+   check.** Serve `/claims/settlement/calculate.do`, `save.do` and
+   `detail.do` with the `ns:view` marker, `f_NAME` spans, two-decimal money
+   formatting (SETTLE-R34), the defaults of SETTLE-R11 to SETTLE-R13 and
+   SETTLE-R49, the HTTP 200 error page of SETTLE-R18, the fixed date of
+   SETTLE-R41, and the signed `X-NorthStar-User` header (401 without it).
+   Proof: `make -C services/settlement-service start` (the target blocks
+   until `GET http://127.0.0.1:8083/claims/actuator/health` returns 200)
+   and, in a second shell, a signed
+   `curl 'http://127.0.0.1:8083/claims/settlement/calculate.do?claimId=119'`
+   prints `200` while the same request without the header prints `401`;
+   `make -C services/settlement-service test` passes with the route and
+   identity tests added.
 
-6. **Share the database in server mode.** Start HSQLDB as a server on the
-   seeded `target/db/northstar` catalog, point the service at it, and point
-   the legacy `ConnectionPool` at the same server URL through its configured
-   data source. The service owns writes to `SETTLEMENT`; the legacy
-   application keeps its reads.
-   Proof: `make seed && make run` with the server-mode data source, then
-   `make capture && git diff --exit-code transcripts/` (the legacy oracle is
-   unchanged by the connection change), and
-   `make -C services/settlement-service start` connects to the same catalog.
+6. **Move every legacy JDBC entry point to a configurable URL, then share
+   the database in server mode.** First make `ConnectionPool` and
+   `ClaimsActionSupport.openConnection` (used by `nextId`, `findClaim` and
+   the other action helpers) read one `claims.db.url` property that defaults
+   to today's `jdbc:hsqldb:file:` URL, so behaviour is unchanged when the
+   property is unset. Then start HSQLDB as a server bound to `127.0.0.1` on
+   the seeded `target/db/northstar` catalog with a non-default credential
+   from the environment, and point the service and the legacy application
+   (`claims.db.url` and the `jdbc/ClaimsDB` data source) at it. The service
+   owns writes to `SETTLEMENT`; the legacy application keeps its reads.
+   Proof: with the property unset, `make test && make capture && git diff --exit-code transcripts/`
+   (no behaviour change); then with the server running and
+   `claims.db.url` pointing at it, `make capture && git diff --exit-code transcripts/`
+   again, which exercises a legacy `settlement_save` (and therefore `nextId`)
+   through the server, and `make -C services/settlement-service start`
+   connects to the same catalog.
 
 7. **Add the replay tool and replay against both sides.** Add
    `tools/replay/replay.py`, reusing the harness's `request`, `fields`,
    `result` and `probe` functions from `tools/capture/capture.py`, selecting
    scenarios whose `request.path` starts with `/claims/settlement/`, routing
-   those to `localhost:8083` and all other requests (login, workbench probe)
-   to `localhost:8080` with a shared cookie jar, and reporting `module ==
-   "settlement"` scenarios outside that prefix as `out-of-boundary`.
+   those to `127.0.0.1:8083` with the signed identity header and all other
+   requests (login, workbench probe) to `localhost:8080` with a shared
+   cookie jar, reporting `module == "settlement"` scenarios outside that
+   prefix as `out-of-boundary`, and running the `persistence`, `detail` and
+   `r18-error` checks from Verification after the six scenarios.
    Proof: `make -C services/settlement-service replay` prints six `pass`
-   lines, two `out-of-boundary` lines for `payment_issue` and
-   `payment_history`, and exits 0; run first with
+   lines for the transcripts, three `pass` lines for the checks, two
+   `out-of-boundary` lines for `payment_issue` and `payment_history`, and
+   exits 0; run first with
    `REPLAY_SETTLEMENT_BASE=http://localhost:8080/claims` (legacy, proves the
-   tool) and then with the default `http://localhost:8083/claims` (service,
+   tool) and then with the default `http://127.0.0.1:8083/claims` (service,
    proves the extraction).
 
 8. **Re-file the two payment scenarios.** Change the module of
@@ -340,24 +396,40 @@ its command exits 0 on this branch.
    `transcripts/index.json`, and `make -C services/settlement-service replay`
    no longer reports any `out-of-boundary` scenario.
 
-9. **Shadow the legacy routes.** Make the Struts `/settlement/*` mappings
-   forward to the service on 8083 (strangler style) while leaving the legacy
-   actions in place behind a switch.
-   Proof: with the forward enabled, `make capture && git diff --exit-code transcripts/`
+9. **Shadow the legacy routes through a transparent proxy.** Add
+   `jetty-proxy` to the legacy WAR and map `ProxyServlet.Transparent` to
+   `/settlement/*` in `web.xml`, behind `AuthFilter` and ahead of the Struts
+   `ActionServlet`, enabled only when the system property
+   `settlement.proxy.target` (for example `http://127.0.0.1:8083/claims`) is
+   set. The proxy preserves method, query string, body, `Cookie` and
+   `Set-Cookie`, rewrites only the host and port, and adds the signed
+   `X-NorthStar-User` header from the session `user`. With the property
+   unset the legacy actions still answer, so the switch is reversible.
+   Proof: with the property set, `make capture && git diff --exit-code transcripts/`
    is empty (the six transcripts are byte-identical through the legacy front
-   door) and `make -C services/settlement-service replay` passes.
+   door, now served by the service) and `make -C services/settlement-service replay`
+   passes; with the property unset the same two commands still pass.
 
 10. **Retire the legacy settlement code.** Remove `SettlementCalculateAction`,
     `SettlementSaveAction`, `SettlementDetailAction`, `SettlementForm`, the
     settlement JSPs and the dead `SettlementService` (SETTLE-R47, OQ-13);
-    keep `SettlementDAO.findByClaim` read path for `PaymentIssueAction`.
+    keep the `SettlementDAO.findByClaim` read path for `PaymentIssueAction`.
+    This step is allowed only after step 7's `persistence` and `detail`
+    checks pass against the service, since they, not the six transcripts,
+    prove the service is writing the rows payments will read.
     Proof: `make build && make test && make capture && git diff --exit-code transcripts/`
     and `make -C services/settlement-service replay` all pass.
 
 11. **Extend CI.** Add a `settlement-service` job to
-    `.github/workflows/` running `make -C services/settlement-service build`,
-    `lint`, `test`, `start` (in the background) and `replay` after the
-    existing legacy verification job.
+    `.github/workflows/` that runs `make -C services/settlement-service build`,
+    `lint` and `test`, then `make seed`, starts HSQLDB in server mode, `make
+    run` and `make -C services/settlement-service start` in the background,
+    waits on the three readiness checks (JDBC connect to the server;
+    `GET /claims/login.do` containing `Claims Login`; `GET
+    /claims/actuator/health` returning 200, each with a timeout), runs `make
+    -C services/settlement-service replay`, and stops all three processes in
+    an `if: always()` step so a failed replay cannot leave the runner
+    occupied. The existing `verify` job is unchanged.
     Proof: both jobs are green on the pull request (`git_pr_checks` or the
     GitHub checks tab), and locally
     `make -C services/settlement-service build lint test` exits 0.
