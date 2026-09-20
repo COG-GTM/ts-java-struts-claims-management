@@ -1,7 +1,8 @@
 # SPEC-SETTLE-001: settlement calculation
 
-Version: 0.3
-Status: draft, reviewed by the engineer, checked by parity replay
+Version: 0.4
+Status: draft, reviewed by the engineer, checked by parity replay, one
+approved change (CHG-001)
 Source of truth for behaviour: `transcripts/settlement_*.json`, captured with
 `make capture` against the Struts application at commit `225c8d3`.
 Code cited: `src/main/java/com/northstar/claims/web/SettlementCalculateAction.java`,
@@ -45,10 +46,19 @@ If the claim does not exist, or its policy does not exist, the limit is
 `claimId=9999`, which returned `settlementAmount 90.00` for covered 100 and
 deductible 10. Open question: OQ-01.
 
-### SETTLE-R06 Non-numeric deductible
+### SETTLE-R06 Non-numeric deductible (legacy, superseded by v2)
 A `deductible` that is not a number ends in the system error screen
 (`error.jsp`, HTTP 200, no business fields, no validation error markers).
-Observed: `settlement_bad_deductible`. Quirk: QUIRK-05.
+Observed: `settlement_bad_deductible`. Quirk: QUIRK-05. This is what the
+Struts application still does.
+
+### SETTLE-R06 v2 Non-numeric deductible (approved future state)
+A `deductible` that is not blank and does not parse as a number answers
+status 200 on the calculate screen with no business fields and one
+validation error, key `settlement.deductible.invalid`. Save applies the same
+check before writing. Blank still means zero (SETTLE-R04). Change record:
+CHG-001. Verified by: `SettlementControllerTest.nonNumericDeductibleIsValidationError`;
+parity reports `settlement_bad_deductible` as `CHANGED (CHG-001)`.
 
 ## Calculation
 
@@ -107,3 +117,4 @@ highest `settlement_id` for that claim. Read: `SettlementDAO.findByClaim`
 | SETTLE-R05 | 0.2 | engineer added the `10000` fallback the draft missed; raised OQ-01 |
 | SETTLE-R09, R10 | 0.3 | parity run showed `1.00` vs `1.01`; rule now names the `double` arithmetic and the separate display rounding; decision: keep legacy behaviour |
 | SETTLE-R06, R12 | 0.3 | error screen carries no validation markers; save has no limit fallback |
+| SETTLE-R06 v2 | 0.4 | CHG-001: non-numeric deductible becomes a validation error in the service; v1 text kept for the legacy application |

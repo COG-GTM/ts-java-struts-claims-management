@@ -44,17 +44,37 @@ class SettlementControllerTest {
                 .andExpect(jsonPath("$.fields.cappedAtLimit").value("false"));
     }
 
-    /** SETTLE-R06: transcripts/settlement_bad_deductible.json. */
+    /**
+     * SETTLE-R06 v2, CHG-001: the legacy transcript
+     * settlement_bad_deductible.json shows the system error screen; the
+     * approved change answers on the calculate screen with a field key.
+     */
     @Test
-    void nonNumericDeductibleIsSystemError() throws Exception {
+    void nonNumericDeductibleIsValidationError() throws Exception {
         mvc.perform(post("/settlement/calculate")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("claimId", "119").param("coveredAmount", "5000.00")
                 .param("deductible", "abc").param("depreciation", "0.00"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.screen").value("error"))
+                .andExpect(jsonPath("$.screen").value("settlement/calculate"))
                 .andExpect(jsonPath("$.fields").isEmpty())
-                .andExpect(jsonPath("$.errors").isEmpty());
+                .andExpect(jsonPath("$.errors[0]")
+                        .value("settlement.deductible.invalid"));
+    }
+
+    /** SETTLE-R06 v2, CHG-001: save checks before writing. */
+    @Test
+    void nonNumericDeductibleOnSaveWritesNothing() throws Exception {
+        mvc.perform(post("/settlement/save")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("claimId", "119").param("coveredAmount", "5000.00")
+                .param("deductible", "abc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.screen").value("settlement/calculate"))
+                .andExpect(jsonPath("$.errors[0]")
+                        .value("settlement.deductible.invalid"));
+        mvc.perform(get("/settlement/detail").param("claimId", "119"))
+                .andExpect(jsonPath("$.fields.detailSettlementId").value("119"));
     }
 
     /** SETTLE-R12, SETTLE-R13: transcripts/settlement_save.json then detail. */

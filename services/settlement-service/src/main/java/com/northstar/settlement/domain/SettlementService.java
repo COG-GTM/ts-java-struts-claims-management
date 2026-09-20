@@ -79,7 +79,12 @@ public class SettlementService {
                 DEFAULT_COVERED);
         BigDecimal depreciationValue = LegacyCoercions.decimal(depreciation,
                 DEFAULT_DEPRECIATION);
-        BigDecimal deductibleValue = LegacyCoercions.deductible(deductible);
+        BigDecimal deductibleValue;
+        try {
+            deductibleValue = LegacyCoercions.deductible(deductible);
+        } catch (NumberFormatException failure) {
+            throw new InvalidDeductibleException(deductible);
+        }
         return calculator.calculate(covered, deductibleValue,
                 depreciationValue, limit);
     }

@@ -2,7 +2,7 @@
 
 Service: `http://localhost:8083`. Fixtures: `transcripts/settlement_*.json`.
 
-Result: PASS 7, SKIP 2.
+Result: CHANGED 1, PASS 6, SKIP 2.
 
 | Scenario | Rules | Verdict | Differences (legacy -> service) | Note |
 | --- | --- | --- | --- | --- |
@@ -14,4 +14,4 @@ Result: PASS 7, SKIP 2.
 | settlement_half_cent | SETTLE-R09, SETTLE-R10 | PASS |  |  |
 | settlement_policy_cap | SETTLE-R08 | PASS |  |  |
 | settlement_deductible_floor | SETTLE-R07 | PASS |  |  |
-| settlement_bad_deductible | SETTLE-R06 | PASS |  |  |
+| settlement_bad_deductible | SETTLE-R06 | CHANGED (CHG-001) | result: `error` -> `settlement/calculate`<br>validation_errors: `[]` -> `['settlement.deductible.invalid']` |  |

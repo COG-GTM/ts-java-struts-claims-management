@@ -32,7 +32,17 @@
           "SETTLE-R06"
         ]
       },
-      "approved_differences": {},
+      "approved_differences": {
+        "settlement_bad_deductible": {
+          "change": "CHG-001",
+          "expect": {
+            "result": "settlement/calculate",
+            "validation_errors": [
+              "settlement.deductible.invalid"
+            ]
+          }
+        }
+      },
       "unrouted_probes": [
         "claim."
       ]

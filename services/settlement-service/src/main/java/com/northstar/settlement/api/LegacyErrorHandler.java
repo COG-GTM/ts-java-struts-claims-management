@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import com.northstar.settlement.domain.InvalidDeductibleException;
 
 /**
  * The Struts application declares a global exception mapping for
@@ -19,5 +20,12 @@ class LegacyErrorHandler {
     @ExceptionHandler(Exception.class)
     ScreenResponse systemError(Exception failure) {
         return new ScreenResponse("error", Map.of(), List.of());
+    }
+
+    /** SETTLE-R06 v2 (CHG-001): stay on the calculate screen, name the field. */
+    @ExceptionHandler(InvalidDeductibleException.class)
+    ScreenResponse invalidDeductible(InvalidDeductibleException failure) {
+        return new ScreenResponse("settlement/calculate", Map.of(),
+                List.of(InvalidDeductibleException.KEY));
     }
 }

@@ -88,18 +88,32 @@
       "verdict": "PASS"
     },
     {
-      "differences": [],
+      "differences": [
+        {
+          "legacy": "error",
+          "service": "settlement/calculate",
+          "what": "result"
+        },
+        {
+          "legacy": [],
+          "service": [
+            "settlement.deductible.invalid"
+          ],
+          "what": "validation_errors"
+        }
+      ],
       "note": "",
       "rules": [
         "SETTLE-R06"
       ],
       "scenario": "settlement_bad_deductible",
       "unprobed": [],
-      "verdict": "PASS"
+      "verdict": "CHANGED (CHG-001)"
     }
   ],
   "summary": {
-    "PASS": 7,
+    "CHANGED": 1,
+    "PASS": 6,
     "SKIP": 2
   }
 }
