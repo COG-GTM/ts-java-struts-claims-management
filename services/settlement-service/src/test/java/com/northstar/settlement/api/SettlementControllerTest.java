@@ -21,6 +21,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -123,6 +124,19 @@ class SettlementControllerTest {
         mvc.perform(post("/api/settlement/save").param("claimId", "999"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.legacyForward").value("/WEB-INF/jsp/error.jsp"));
+    }
+
+    @Test
+    @DisplayName("SETTLE-R15 / SETTLE-R39: legacy quirk - a database failure on save (e.g. duplicate id from"
+            + " max+1) returns HTTP 200 and the error.jsp forward, without echoing SQL")
+    void settleR15R39DataAccessFailureIsErrorScreenWith200() throws Exception {
+        when(service.save(any(SettlementRequest.class)))
+                .thenThrow(new DuplicateKeyException("INSERT INTO settlement ... duplicate key 121"));
+        mvc.perform(post("/api/settlement/save").param("claimId", "119"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.legacyForward").value("/WEB-INF/jsp/error.jsp"))
+                .andExpect(jsonPath("$.data.errorKey").value("errors.system"))
+                .andExpect(jsonPath("$.data.detail").value("DuplicateKeyException"));
     }
 
     @Test
