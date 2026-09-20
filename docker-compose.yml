@@ -15,7 +15,7 @@ services:
     environment:
       POSTGRES_DB: settlement
       POSTGRES_USER: settlement
-      POSTGRES_PASSWORD: settlement
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-settlement}
     ports:
       - "${POSTGRES_HOST_PORT:-5433}:5432"
     volumes:
@@ -40,7 +40,7 @@ services:
       SERVER_PORT: "8083"
       DB_URL: jdbc:postgresql://postgres:5432/settlement
       DB_USER: settlement
-      DB_PASSWORD: settlement
+      DB_PASSWORD: ${DB_PASSWORD:-settlement}
       SETTLEMENT_OPERATOR: supervisor
     ports:
       - "${SERVICE_HOST_PORT:-8083}:8083"
