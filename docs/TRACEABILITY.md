@@ -26,7 +26,7 @@ Evidenced by execution (`E:` citation in the spec) rather than by a transcript, 
 | SETTLE-R16 | 0.3 | Observed | `settlement_blank_deductible`, `settlement_half_cent` | `ADR-001-settlement-boundary.md` | `5edb291` | none | none | `Ben Lau` |
 | SETTLE-R17 | 0.3 | Inferred | none | `ADR-001-settlement-boundary.md` | none | none | none | `Ben Lau` |
 | SETTLE-R18 | 0.3 | Observed | none | `ADR-001-settlement-boundary.md` | `02da3b5`, `c881799`, `7c4e402` | none | none | `Ben Lau` |
-| SETTLE-R18 v2 | 0.3 | Open | none | `ADR-001-settlement-boundary.md` | `5edb291`, `7c4e402` | none | none | `Ben Lau` |
+| SETTLE-R18 v2 | 0.3 | Open | none | `ADR-001-settlement-boundary.md` | `5edb291`, `7c4e402`, `059441d` | none | none | `Ben Lau` |
 | SETTLE-R19 | 0.3 | Inferred | none | none | none | none | none | none |
 | SETTLE-R20 | 0.3 | Observed | `settlement_save` | `ADR-001-settlement-boundary.md` | none | none | none | none |
 | SETTLE-R21 | 0.3 | Observed | `settlement_blank_deductible` | `ADR-001-settlement-boundary.md` | none | none | none | none |
