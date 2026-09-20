@@ -50,7 +50,7 @@ scenario name.
 | SETTLE-R03 | `/claims/settlement/detail.do` is handled by `SettlementDetailAction` and forwards to `/WEB-INF/jsp/settlement/detail.jsp`. | `struts-config.xml:356-363`; `SettlementDetailAction.java:19-23` | Inferred |
 | SETTLE-R04 | None of the three mappings runs Struts validation (`validate="false"`), so no settlement request produces validation errors. | `struts-config.xml:210,219,359`; `validation_errors: []` in all six scenarios | Observed |
 | SETTLE-R05 | The `settlementForm` bean is declared on the calculate and save mappings but is not read by the actions, which take every input from `request.getParameter`. | `struts-config.xml:208,217`; `SettlementForm.java:11-75`; `SettlementCalculateAction.java:23-34`; `SettlementSaveAction.java:24-29` | Inferred |
-| SETTLE-R06 | The detail mapping declares no form bean, so the detail screen is read-only and takes only `claimId` from the query string. | `struts-config.xml:356-363`; `SettlementDetailAction.java:17-22` | Inferred |
+| SETTLE-R06 | The detail mapping declares no form bean and the action reads no input other than a `claimId` request parameter, which the container supplies from the query string or a form body under any HTTP method. | `struts-config.xml:356-363`; `SettlementDetailAction.java:17-22` | Inferred |
 
 ## 4. Calculation
 
@@ -65,7 +65,7 @@ All arithmetic is performed by `SettlementCalculator.calculate` on primitive `do
 | SETTLE-R11 | `cappedAtLimit` is `false` whenever the limit did not bind, including when the amount was floored to zero. | `SettlementCalculator.java:35-36`; scenarios `settlement_deductible_floor`, `settlement_blank_deductible`, `settlement_half_cent` | Observed |
 | SETTLE-R12 | A missing or empty `deductible` parameter is treated as zero and reported as `deductibleApplied = 0.00`. | `SettlementCalculateAction.java:34-37`; `SettlementCalculator.java:26-29`; scenarios `settlement_blank_deductible`, `settlement_half_cent` | Observed |
 | SETTLE-R13 | `deductibleApplied` echoes the full submitted deductible even when the floor means only part of it was absorbed. | `SettlementCalculator.java:40`; scenario `settlement_deductible_floor` (`deductibleApplied=2000.00` against a 1000.00 loss) | Observed |
-| SETTLE-R14 | `coveredAmount`, `deductibleApplied` and `depreciation` are echoed as submitted and are never capped, floored or re-rounded. | `SettlementCalculator.java:39-41`; scenario `settlement_policy_cap` (`coveredAmount=20000.00` alongside a 1000.00 settlement) | Observed |
+| SETTLE-R14 | `coveredAmount`, `deductibleApplied` and `depreciation` are carried onto the settlement exactly as submitted, with no cap, floor or rounding applied by the calculator; the view still reformats them for display (SETTLE-R35). | `SettlementCalculator.java:39-41`; scenario `settlement_policy_cap` (`coveredAmount=20000.00` alongside a 1000.00 settlement) | Observed |
 | SETTLE-R15 | The settlement amount is rounded to cents as `Math.round(amount * 100.0) / 100.0`, which rounds the binary `double`, so the decimal half-cent 1.005 settles at 1.00. | `SettlementCalculator.java:37`; scenario `settlement_half_cent` (`settlementAmount=1.00` from a 1.005 loss) | Observed |
 | SETTLE-R16 | The policy limit used by calculate is the `policy_limit` of the policy referenced by the claim. | `SettlementCalculateAction.java:24-31`; `PolicyDAO.java:26-44`; scenario `settlement_policy_cap` (claim 119 caps at 1000.00) | Observed |
 | SETTLE-R17 | When the claim cannot be loaded, or the claim has no policy row, calculate falls back to a policy limit of 10000. | `SettlementCalculateAction.java:25-31`; `ClaimsActionSupport.java:93-100` | Inferred |
@@ -93,7 +93,7 @@ All arithmetic is performed by `SettlementCalculator.calculate` on primitive `do
 | SETTLE-R29 | `calculatedBy` is the session `user` attribute, and the save screen shows it back as `savedBy`. | `SettlementSaveAction.java:36-37`; `save.jsp:21-22`; scenario `settlement_save` (`savedBy = supervisor`) | Observed |
 | SETTLE-R30 | `calculatedDate` is stored as the constant `2019-04-01` and not as the date of the save. | `SettlementSaveAction.java:38` | Inferred |
 | SETTLE-R31 | Save has no policy fallback: it dereferences the claim and the policy directly, so a missing claim or policy fails the request with a `NullPointerException` rather than the 10000 default used by calculate. | `SettlementSaveAction.java:25-26,33`; contrast `SettlementCalculateAction.java:25-31` | Inferred |
-| SETTLE-R32 | The detail screen shows the most recently inserted settlement for the claim, ordered by descending `settlement_id`. | `SettlementDetailAction.java:18`; `SettlementDAO.java:100-115` | Inferred |
+| SETTLE-R32 | The detail screen shows the settlement with the highest `settlement_id` for the claim; no timestamp is stored, so insertion order is only implied by the `max + 1` allocation in SETTLE-R27. | `SettlementDetailAction.java:18`; `SettlementDAO.java:100-115` | Inferred |
 | SETTLE-R33 | `SettlementService` is not used by any of the three actions; its own conventions (`settlementId = claimId + 10000`, `calculatedBy = "supervisor"`, `calculatedDate = "2019-03-01"`) therefore describe no live behaviour. | `SettlementService.java:19-31`; `SettlementCalculateAction.java:35-39`; `SettlementSaveAction.java:30-39` | Inferred |
 
 ## 7. Presentation
