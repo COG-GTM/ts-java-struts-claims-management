@@ -1,6 +1,5 @@
 package com.northstar.settlement.domain;
 
-import java.math.BigDecimal;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,19 +12,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class SettlementCalculator {
 
-    public SettlementResult calculate(BigDecimal coveredAmount,
-            BigDecimal deductible, BigDecimal depreciation,
-            BigDecimal policyLimit) {
-        double gross = coveredAmount.doubleValue() - depreciation.doubleValue();
-        double afterDeductible = gross - deductible.doubleValue();
+    public SettlementResult calculate(double coveredAmount, double deductible,
+            double depreciation, double policyLimit) {
+        double gross = coveredAmount - depreciation;
+        double afterDeductible = gross - deductible;
         if (afterDeductible < 0) {
             afterDeductible = 0;
         }
-        double limit = policyLimit.doubleValue();
-        boolean capped = afterDeductible > limit;
-        double amount = capped ? limit : afterDeductible;
+        boolean capped = afterDeductible > policyLimit;
+        double amount = capped ? policyLimit : afterDeductible;
         double rounded = Math.round(amount * 100.0) / 100.0;
         return new SettlementResult(coveredAmount, deductible, depreciation,
-                capped, BigDecimal.valueOf(rounded));
+                capped, rounded);
     }
 }

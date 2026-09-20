@@ -1,6 +1,5 @@
 package com.northstar.settlement.domain;
 
-import java.math.BigDecimal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.northstar.settlement.persistence.ClaimRepository;
@@ -13,9 +12,9 @@ import com.northstar.settlement.persistence.SettlementRow;
 public class SettlementService {
 
     static final int DEFAULT_CLAIM_ID = 119;
-    static final String DEFAULT_COVERED = "5000";
-    static final String DEFAULT_DEPRECIATION = "0";
-    static final BigDecimal FALLBACK_LIMIT = new BigDecimal("10000");
+    static final double DEFAULT_COVERED = 5000;
+    static final double DEFAULT_DEPRECIATION = 0;
+    static final double FALLBACK_LIMIT = 10000;
     static final String SAVE_DATE = "2019-04-01";
 
     private final SettlementCalculator calculator;
@@ -39,7 +38,7 @@ public class SettlementService {
     public SettlementResult calculate(String claimId, String coveredAmount,
             String deductible, String depreciation) {
         int id = LegacyCoercions.integer(claimId, DEFAULT_CLAIM_ID);
-        BigDecimal limit = claims.findPolicyId(id)
+        double limit = claims.findPolicyId(id)
                 .flatMap(policies::findLimit)
                 .orElse(FALLBACK_LIMIT);
         return compute(coveredAmount, deductible, depreciation, limit);
@@ -55,16 +54,14 @@ public class SettlementService {
         int id = LegacyCoercions.integer(claimId, DEFAULT_CLAIM_ID);
         int policyId = claims.findPolicyId(id).orElseThrow(
                 () -> new ClaimNotFoundException(id));
-        BigDecimal limit = policies.findLimit(policyId).orElseThrow(
+        double limit = policies.findLimit(policyId).orElseThrow(
                 () -> new ClaimNotFoundException(id));
         SettlementResult result = compute(coveredAmount, deductible,
                 depreciation, limit);
-        SettlementRow row = new SettlementRow(settlements.nextId(), id,
-                result.coveredAmount(), result.deductibleApplied(),
-                result.depreciation(), result.cappedAtLimit(),
-                result.settlementAmount(), operator, SAVE_DATE);
-        settlements.insert(row);
-        return row;
+        return settlements.insertNext(id, result.coveredAmount(),
+                result.deductibleApplied(), result.depreciation(),
+                result.cappedAtLimit(), result.settlementAmount(), operator,
+                SAVE_DATE);
     }
 
     /** SETTLE-R13. */
@@ -74,12 +71,12 @@ public class SettlementService {
     }
 
     private SettlementResult compute(String coveredAmount, String deductible,
-            String depreciation, BigDecimal limit) {
-        BigDecimal covered = LegacyCoercions.decimal(coveredAmount,
+            String depreciation, double limit) {
+        double covered = LegacyCoercions.decimal(coveredAmount,
                 DEFAULT_COVERED);
-        BigDecimal depreciationValue = LegacyCoercions.decimal(depreciation,
+        double depreciationValue = LegacyCoercions.decimal(depreciation,
                 DEFAULT_DEPRECIATION);
-        BigDecimal deductibleValue;
+        double deductibleValue;
         try {
             deductibleValue = LegacyCoercions.deductible(deductible);
         } catch (NumberFormatException failure) {

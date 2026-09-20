@@ -49,4 +49,4 @@ jobs:
       - name: Regenerate traceability and check it is committed
         run: |
           make traceability > /dev/null
-          git diff --exit-code parity/report.md docs/TRACEABILITY.md
+          git diff --exit-code parity/report.md parity/report.json docs/TRACEABILITY.md

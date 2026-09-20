@@ -113,14 +113,34 @@ def changes_by_rule():
     return result
 
 
+TRACKED_PATHS = ["docs/specs", "docs/changes", "services", "src/test",
+                 "parity/routes.json"]
+
+
+def rule_pattern(rule):
+    """Exact match for the rule id: `SETTLE-R06` must not match `SETTLE-R06 v2`."""
+    if " " in rule:
+        return re.compile(re.escape(rule) + r"(?!\d)")
+    return re.compile(re.escape(rule) + r"(?![\d]| v\d)")
+
+
 def last_commit(rule):
     base = rule.split(" ")[0]
-    out = subprocess.run(
-        ["git", "log", "-1", "--format=%h %ad", "--date=short",
-         "-G", base + r"\b", "--", "docs/specs", "docs/changes", "services",
-         "src/test", "parity/routes.json"],
-        cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    return out or "none"
+    pattern = rule_pattern(rule)
+    commits = subprocess.run(
+        ["git", "log", "--format=%h %ad", "--date=short", "-G", base,
+         "--"] + TRACKED_PATHS,
+        cwd=ROOT, capture_output=True, text=True).stdout.splitlines()
+    for line in commits:
+        short = line.split(" ")[0]
+        diff = subprocess.run(
+            ["git", "show", "--format=", short, "--"] + TRACKED_PATHS,
+            cwd=ROOT, capture_output=True, text=True).stdout
+        changed = (l[1:] for l in diff.splitlines()
+                   if l[:1] in "+-" and not l.startswith(("+++", "---")))
+        if any(pattern.search(l) for l in changed):
+            return line
+    return "none"
 
 
 def main():

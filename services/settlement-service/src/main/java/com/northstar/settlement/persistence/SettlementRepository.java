@@ -1,6 +1,5 @@
 package com.northstar.settlement.persistence;
 
-import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,11 +12,11 @@ public class SettlementRepository {
 
     private static final RowMapper<SettlementRow> ROW = (rs, i) ->
             new SettlementRow(rs.getInt("settlement_id"), rs.getInt("claim_id"),
-                    BigDecimal.valueOf(rs.getDouble("covered_amount")),
-                    BigDecimal.valueOf(rs.getDouble("deductible_applied")),
-                    BigDecimal.valueOf(rs.getDouble("depreciation")),
+                    rs.getDouble("covered_amount"),
+                    rs.getDouble("deductible_applied"),
+                    rs.getDouble("depreciation"),
                     rs.getBoolean("capped_at_limit"),
-                    BigDecimal.valueOf(rs.getDouble("settlement_amount")),
+                    rs.getDouble("settlement_amount"),
                     rs.getString("calculated_by"),
                     rs.getDate("calculated_date").toString());
 
@@ -27,21 +26,32 @@ public class SettlementRepository {
         this.jdbc = jdbc;
     }
 
-    public int nextId() {
-        Integer max = jdbc.queryForObject(
-                "select max(settlement_id) from SETTLEMENT", Integer.class);
-        return max == null ? 1 : max + 1;
-    }
-
-    public void insert(SettlementRow row) {
-        jdbc.update("insert into SETTLEMENT (settlement_id,claim_id,"
-                + "covered_amount,deductible_applied,depreciation,"
-                + "capped_at_limit,settlement_amount,calculated_by,"
-                + "calculated_date) values (?,?,?,?,?,?,?,?,?)",
-                row.settlementId(), row.claimId(), row.coveredAmount(),
-                row.deductibleApplied(), row.depreciation(),
-                row.cappedAtLimit(), row.settlementAmount(),
-                row.calculatedBy(), Date.valueOf(row.calculatedDate()));
+    /**
+     * Allocates {@code max(settlement_id) + 1} and inserts under one lock, so
+     * two saves cannot draw the same identifier. The legacy schema has no
+     * sequence or identity column and this service is the only writer.
+     */
+    public SettlementRow insertNext(int claimId, double coveredAmount,
+            double deductibleApplied, double depreciation,
+            boolean cappedAtLimit, double settlementAmount,
+            String calculatedBy, String calculatedDate) {
+        synchronized (this) {
+            Integer max = jdbc.queryForObject(
+                    "select max(settlement_id) from SETTLEMENT", Integer.class);
+            SettlementRow row = new SettlementRow(max == null ? 1 : max + 1,
+                    claimId, coveredAmount, deductibleApplied, depreciation,
+                    cappedAtLimit, settlementAmount, calculatedBy,
+                    calculatedDate);
+            jdbc.update("insert into SETTLEMENT (settlement_id,claim_id,"
+                    + "covered_amount,deductible_applied,depreciation,"
+                    + "capped_at_limit,settlement_amount,calculated_by,"
+                    + "calculated_date) values (?,?,?,?,?,?,?,?,?)",
+                    row.settlementId(), row.claimId(), row.coveredAmount(),
+                    row.deductibleApplied(), row.depreciation(),
+                    row.cappedAtLimit(), row.settlementAmount(),
+                    row.calculatedBy(), Date.valueOf(row.calculatedDate()));
+            return row;
+        }
     }
 
     public Optional<SettlementRow> findLatest(int claimId) {

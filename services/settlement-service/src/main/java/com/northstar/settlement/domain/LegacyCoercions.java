@@ -1,10 +1,11 @@
 package com.northstar.settlement.domain;
 
-import java.math.BigDecimal;
-
 /**
  * Request parameter coercions copied from ClaimsActionSupport and
- * SettlementCalculateAction (SETTLE-R02, R03, R04, R06).
+ * SettlementCalculator (SETTLE-R02, R03, R04, R06). Numbers are parsed with
+ * {@link Double#parseDouble} so that every lexical form the Struts screens
+ * accept ({@code 1d}, {@code 0x1.0p0}, {@code Infinity}, {@code NaN}) is
+ * accepted here too, and nothing else is (QUIRK-08).
  */
 public final class LegacyCoercions {
 
@@ -21,11 +22,11 @@ public final class LegacyCoercions {
     }
 
     /** ClaimsActionSupport.decimal: anything unparsable becomes the fallback. */
-    public static BigDecimal decimal(String value, String fallback) {
+    public static double decimal(String value, double fallback) {
         try {
-            return new BigDecimal(value.trim());
+            return Double.parseDouble(value);
         } catch (RuntimeException failure) {
-            return new BigDecimal(fallback);
+            return fallback;
         }
     }
 
@@ -33,10 +34,10 @@ public final class LegacyCoercions {
      * SettlementCalculator: blank is zero, anything else must parse or the
      * request fails (SETTLE-R04, SETTLE-R06).
      */
-    public static BigDecimal deductible(String value) {
+    public static double deductible(String value) {
         if (value == null || value.trim().isEmpty()) {
-            return BigDecimal.ZERO;
+            return 0;
         }
-        return new BigDecimal(value.trim());
+        return Double.parseDouble(value);
     }
 }

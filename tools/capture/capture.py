@@ -53,7 +53,7 @@ SCENARIOS = [
      "/settlement/save.do",
      {"claimId": "119", "coveredAmount": "5000.00", "deductible": "500.00",
       "depreciation": "0.00"},
-     {"settlement.claim.119.amount": "/settlement/calculate.do?claimId=119"}),
+     {"settlement.claim.119.amount": "/settlement/detail.do?claimId=119"}),
     ("payment_issue", "settlement", "Issue a settlement payment", "POST",
      "/payment/issue.do",
      {"claimId": "119", "payeeName": "Reserved Claimant",
@@ -184,7 +184,7 @@ def probe(opener, key, path):
     if ".limit" in key:
         return values.get("policyLimit", "")
     if key.startswith("settlement.claim."):
-        return values.get("settlementAmount", "")
+        return values.get("detailAmount", "")
     return ""
 
 

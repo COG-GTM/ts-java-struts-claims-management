@@ -30,11 +30,11 @@ TRANSCRIPTS = os.path.join(ROOT, "transcripts")
 ROUTES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "routes.json")
 
 # The legacy capture probes database state through read screens. The only
-# probe family the settlement module uses recalculates from defaults for the
+# probe family the settlement module uses reads the latest saved row for the
 # claim (tools/capture/capture.py, SCENARIOS entry for settlement_save).
 PROBES = {
     "settlement.claim.": lambda key: (
-        "/settlement/calculate?claimId=" + key.split(".")[2], "settlementAmount"),
+        "/settlement/detail?claimId=" + key.split(".")[2], "detailAmount"),
 }
 
 

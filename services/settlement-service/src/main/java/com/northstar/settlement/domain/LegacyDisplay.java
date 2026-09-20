@@ -1,6 +1,5 @@
 package com.northstar.settlement.domain;
 
-import java.math.BigDecimal;
 import java.util.Locale;
 
 /**
@@ -15,7 +14,7 @@ public final class LegacyDisplay {
     private LegacyDisplay() {
     }
 
-    public static String money(BigDecimal value) {
-        return String.format(Locale.US, "%.2f", value.doubleValue());
+    public static String money(double value) {
+        return String.format(Locale.US, "%.2f", value);
     }
 }

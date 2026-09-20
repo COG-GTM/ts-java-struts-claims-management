@@ -1,6 +1,6 @@
 # SPEC-SETTLE-001: settlement calculation
 
-Version: 0.4
+Version: 0.5
 Status: draft, reviewed by the engineer, checked by parity replay, one
 approved change (CHG-001)
 Source of truth for behaviour: `transcripts/settlement_*.json`, captured with
@@ -29,8 +29,11 @@ A missing or non-numeric `claimId` is treated as `119`. Read:
 
 ### SETTLE-R03 Amount fallbacks
 A missing or non-numeric `coveredAmount` is treated as `5000`; a missing or
-non-numeric `depreciation` is treated as `0`. Read: `decimal(...)` calls in
-`SettlementCalculateAction`.
+non-numeric `depreciation` is treated as `0`. "Numeric" means whatever
+`Double.parseDouble` accepts: `1d`, `0x1p1`, `Infinity`, `NaN` and
+surrounding whitespace all parse, and there is no limit on input length.
+Read: `decimal(...)` calls in `SettlementCalculateAction`,
+`ClaimsActionSupport.decimal`. Quirk: QUIRK-08.
 
 ### SETTLE-R04 Blank deductible
 A blank or missing `deductible` is treated as `0.00` and shown as
@@ -118,3 +121,4 @@ highest `settlement_id` for that claim. Read: `SettlementDAO.findByClaim`
 | SETTLE-R09, R10 | 0.3 | parity run showed `1.00` vs `1.01`; rule now names the `double` arithmetic and the separate display rounding; decision: keep legacy behaviour |
 | SETTLE-R06, R12 | 0.3 | error screen carries no validation markers; save has no limit fallback |
 | SETTLE-R06 v2 | 0.4 | CHG-001: non-numeric deductible becomes a validation error in the service; v1 text kept for the legacy application |
+| SETTLE-R03 | 0.5 | pull request review: "numeric" defined as `Double.parseDouble` lexical forms, no length limit; service moved from `BigDecimal` to `double` parsing (QUIRK-08) |

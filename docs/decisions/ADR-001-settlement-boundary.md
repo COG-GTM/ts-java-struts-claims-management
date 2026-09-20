@@ -38,13 +38,19 @@ rewrite this baseline in place.
    session; the operator name is a configuration property defaulting to
    `supervisor`), the Struts message bundle (validation keys are returned as
    keys, not text), and the other modules (policy, intake, workbench, payment,
-   reporting).
+   reporting). Because there is no login, `/settlement/detail` and
+   `/settlement/save` answer any caller. The service is therefore not to be
+   exposed outside the parity harness until an authentication decision is
+   recorded (OQ-04); a gateway or a port of `AuthFilter` are the candidates.
 6. Parity is judged on status class, business fields, validation keys and
    database state, not on HTML. The harness is `parity/replay.py`; the
    fixtures are the existing `transcripts/settlement_*.json`.
 7. Legacy behaviour is preserved unless a change record
    (`docs/changes/CHG-nnn-*.md`) approves a difference. Preserved oddities go
    into `docs/KNOWN_LEGACY_QUIRKS.md`.
+8. Input handling stays as lax as the legacy screens: numbers are parsed with
+   `Double.parseDouble`, with no length or range limit (QUIRK-08). A limit
+   would be a behaviour change and needs its own change record.
 
 ## Consequences
 
