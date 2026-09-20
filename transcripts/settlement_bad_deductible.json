@@ -1,0 +1,22 @@
+{
+  "actor": "supervisor",
+  "description": "Settlement with a non-numeric deductible",
+  "expected": {
+    "business_fields": {},
+    "db_state": {},
+    "result": "forward:/WEB-INF/jsp/error.jsp",
+    "status": 200,
+    "validation_errors": []
+  },
+  "request": {
+    "form": {
+      "claimId": "119",
+      "coveredAmount": "5000.00",
+      "deductible": "abc",
+      "depreciation": "0.00"
+    },
+    "method": "POST",
+    "path": "/claims/settlement/calculate.do"
+  },
+  "scenario": "settlement_bad_deductible"
+}

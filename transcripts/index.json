@@ -105,6 +105,11 @@
     "scenario": "intake_missing_description"
   },
   {
+    "description": "Settlement with a non-numeric deductible",
+    "module": "settlement",
+    "scenario": "settlement_bad_deductible"
+  },
+  {
     "description": "FNOL validation for an incorrectly formatted date",
     "module": "intake",
     "scenario": "intake_bad_date"
