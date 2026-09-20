@@ -21,3 +21,32 @@ jobs:
         run: make capture
       - name: Verify transcript stability
         run: git diff --exit-code transcripts/
+
+  settlement-service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Service tests
+        run: make service-test SERVICE_JAVA_HOME="$JAVA_HOME"
+      - name: Start service
+        run: |
+          make service-run SERVICE_JAVA_HOME="$JAVA_HOME" > service.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf "http://localhost:8083/settlement/calculate?claimId=119" > /dev/null && break
+            sleep 2
+          done
+          curl -sf "http://localhost:8083/settlement/calculate?claimId=119"
+      - name: Replay legacy transcripts against the service
+        run: make parity
+      - name: Regenerate traceability and check it is committed
+        run: |
+          make traceability > /dev/null
+          git diff --exit-code parity/report.md docs/TRACEABILITY.md

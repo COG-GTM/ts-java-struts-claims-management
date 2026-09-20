@@ -51,3 +51,30 @@ warnings. Authentication uses plaintext-style adjuster credentials.
 
 This repository is the legacy source of truth. Modernization work belongs in
 a separate target repository and should not rewrite this baseline in place.
+
+## Settlement slice rehearsal (branch `rehearsal`)
+
+The `rehearsal` branch carries one modernised slice next to the untouched
+Struts baseline so that specification, tests, service and matrix version
+together (see `docs/decisions/ADR-001-settlement-boundary.md` for why this
+departs from the separate-repository advice above). Nothing under `src/main`
+changes; the additions are:
+
+| Path | Purpose |
+| --- | --- |
+| `docs/analysis/settlement-slice.md` | current-state analysis of the settlement screens |
+| `docs/specs/SPEC-SETTLE-001.md`, `docs/specs/OPEN-QUESTIONS.md` | versioned rules, one open SME question |
+| `docs/decisions/ADR-001-settlement-boundary.md` | Struts-to-Spring boundary decision |
+| `docs/changes/CHG-001-invalid-deductible.md` | the one approved behaviour change |
+| `docs/KNOWN_LEGACY_QUIRKS.md` | legacy behaviours kept on purpose |
+| `src/test/java/com/northstar/claims/SettlementCharacterizationTest.java` | legacy characterisation tests pinned to the transcripts |
+| `services/settlement-service/` | Spring Boot 3.5 / Java 21 settlement service |
+| `parity/replay.py`, `parity/routes.json` | replays `transcripts/` against the service |
+| `tools/traceability.py`, `docs/TRACEABILITY.md` | rule to spec version to commit to test to parity verdict |
+
+```
+make service-test          # service unit and controller tests (Java 21)
+make service-run           # service on http://localhost:8083
+make parity                # replay transcripts, writes parity/report.md
+make traceability          # regenerate docs/TRACEABILITY.md
+```
