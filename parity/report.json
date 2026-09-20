@@ -1,0 +1,163 @@
+{
+  "generated": "2026-09-20T09:34:29Z",
+  "module": "settlement",
+  "base_url": "http://localhost:8183",
+  "summary": "PARITY PASS: settlement: 6 PASS, 0 FAIL, 2 SKIP (route not extracted: payment_issue, payment_history); 14 SKIP (not yet extracted)",
+  "exit_code": 0,
+  "scenarios": [
+    {
+      "scenario": "login",
+      "module": "policy",
+      "result": "SKIP",
+      "detail": "not yet extracted (module policy)",
+      "rules": ""
+    },
+    {
+      "scenario": "policy_search",
+      "module": "policy",
+      "result": "SKIP",
+      "detail": "not yet extracted (module policy)",
+      "rules": ""
+    },
+    {
+      "scenario": "policy_view",
+      "module": "policy",
+      "result": "SKIP",
+      "detail": "not yet extracted (module policy)",
+      "rules": ""
+    },
+    {
+      "scenario": "fnol_submit",
+      "module": "intake",
+      "result": "SKIP",
+      "detail": "not yet extracted (module intake)",
+      "rules": ""
+    },
+    {
+      "scenario": "workbench_assign",
+      "module": "workbench",
+      "result": "SKIP",
+      "detail": "not yet extracted (module workbench)",
+      "rules": ""
+    },
+    {
+      "scenario": "workbench_status",
+      "module": "workbench",
+      "result": "SKIP",
+      "detail": "not yet extracted (module workbench)",
+      "rules": ""
+    },
+    {
+      "scenario": "workbench_reserve",
+      "module": "workbench",
+      "result": "SKIP",
+      "detail": "not yet extracted (module workbench)",
+      "rules": ""
+    },
+    {
+      "scenario": "settlement_calculate",
+      "module": "settlement",
+      "result": "PASS",
+      "detail": "status 200, forward:/WEB-INF/jsp/settlement/calculate.jsp, 5 fields, 0 probes",
+      "rules": "SETTLE-R01, SETTLE-R04, SETTLE-R07, SETTLE-R14, SETTLE-R22, SETTLE-R24, SETTLE-R34, SETTLE-R35, SETTLE-R37"
+    },
+    {
+      "scenario": "settlement_save",
+      "module": "settlement",
+      "result": "PASS",
+      "detail": "status 200, forward:/WEB-INF/jsp/settlement/save.jsp, 2 fields, 1 probes",
+      "rules": "SETTLE-R02, SETTLE-R04, SETTLE-R08, SETTLE-R20, SETTLE-R34, SETTLE-R37, SETTLE-R43"
+    },
+    {
+      "scenario": "payment_issue",
+      "module": "settlement",
+      "result": "SKIP",
+      "detail": "route not extracted: POST /claims/payment/issue.do",
+      "rules": ""
+    },
+    {
+      "scenario": "payment_history",
+      "module": "settlement",
+      "result": "SKIP",
+      "detail": "route not extracted: GET /claims/payment/history.do",
+      "rules": ""
+    },
+    {
+      "scenario": "report_open_by_adjuster",
+      "module": "reporting",
+      "result": "SKIP",
+      "detail": "not yet extracted (module reporting)",
+      "rules": ""
+    },
+    {
+      "scenario": "report_loss_ratio",
+      "module": "reporting",
+      "result": "SKIP",
+      "detail": "not yet extracted (module reporting)",
+      "rules": ""
+    },
+    {
+      "scenario": "report_aged_claims",
+      "module": "reporting",
+      "result": "SKIP",
+      "detail": "not yet extracted (module reporting)",
+      "rules": ""
+    },
+    {
+      "scenario": "settlement_blank_deductible",
+      "module": "settlement",
+      "result": "PASS",
+      "detail": "status 200, forward:/WEB-INF/jsp/settlement/calculate.jsp, 5 fields, 1 probes",
+      "rules": "SETTLE-R01, SETTLE-R04, SETTLE-R07, SETTLE-R16, SETTLE-R21, SETTLE-R26, SETTLE-R34, SETTLE-R35, SETTLE-R44"
+    },
+    {
+      "scenario": "intake_lenient_date",
+      "module": "intake",
+      "result": "SKIP",
+      "detail": "not yet extracted (module intake)",
+      "rules": ""
+    },
+    {
+      "scenario": "settlement_half_cent",
+      "module": "settlement",
+      "result": "PASS",
+      "detail": "status 200, forward:/WEB-INF/jsp/settlement/calculate.jsp, 5 fields, 0 probes",
+      "rules": "SETTLE-R01, SETTLE-R04, SETTLE-R07, SETTLE-R16, SETTLE-R26, SETTLE-R28, SETTLE-R29, SETTLE-R31, SETTLE-R34, SETTLE-R35"
+    },
+    {
+      "scenario": "settlement_policy_cap",
+      "module": "settlement",
+      "result": "PASS",
+      "detail": "status 200, forward:/WEB-INF/jsp/settlement/calculate.jsp, 5 fields, 0 probes",
+      "rules": "SETTLE-R01, SETTLE-R04, SETTLE-R07, SETTLE-R14, SETTLE-R22, SETTLE-R24, SETTLE-R34, SETTLE-R35"
+    },
+    {
+      "scenario": "settlement_deductible_floor",
+      "module": "settlement",
+      "result": "PASS",
+      "detail": "status 200, forward:/WEB-INF/jsp/settlement/calculate.jsp, 5 fields, 0 probes",
+      "rules": "SETTLE-R01, SETTLE-R04, SETTLE-R07, SETTLE-R22, SETTLE-R23, SETTLE-R26, SETTLE-R30, SETTLE-R33, SETTLE-R34, SETTLE-R35"
+    },
+    {
+      "scenario": "intake_missing_claimant",
+      "module": "intake",
+      "result": "SKIP",
+      "detail": "not yet extracted (module intake)",
+      "rules": ""
+    },
+    {
+      "scenario": "intake_missing_description",
+      "module": "intake",
+      "result": "SKIP",
+      "detail": "not yet extracted (module intake)",
+      "rules": ""
+    },
+    {
+      "scenario": "intake_bad_date",
+      "module": "intake",
+      "result": "SKIP",
+      "detail": "not yet extracted (module intake)",
+      "rules": ""
+    }
+  ]
+}

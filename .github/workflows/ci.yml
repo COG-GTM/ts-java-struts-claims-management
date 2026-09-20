@@ -64,7 +64,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: parity-report
-          path: parity/report.md
+          path: |
+            parity/report.md
+            parity/report.json
       - name: Stop stack
         if: always()
         run: make down NS=$NS PORT_OFFSET=$PORT_OFFSET

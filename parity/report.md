@@ -3,7 +3,7 @@
 Golden transcripts recorded from the running Struts monolith (`transcripts/`, unmodified) replayed against the extracted service.
 
 Command: `python3 parity/replay.py --base-url http://localhost:8183 --module settlement --report parity/report.md`  
-Generated: 2026-09-20 09:28:41 UTC  
+Generated: 2026-09-20 09:34:29 UTC  
 Exit code: 0
 
 ## Summary

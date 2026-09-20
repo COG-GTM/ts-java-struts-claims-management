@@ -18,6 +18,15 @@ lists them under ``unrouted`` in routes.yaml. An unrouted scenario that is not
 listed is a FAIL, so coverage cannot shrink silently. Transcripts are read only:
 this script never writes under transcripts/.
 
+``--report`` writes a Markdown report and, alongside it, a JSON report (same
+name, ``.json``) with one entry per scenario: scenario, module, result, detail
+and ``rules``, the SETTLE-R ids whose Evidence cell in the module's spec
+(``modules.<m>.spec`` in routes.yaml) cites that transcript. The ids are read
+from the spec's rule tables, not typed here, using the same citation forms as
+tools/traceability.py (backticked scenario names, "All N scenarios",
+"All N `calculate` scenarios"). ``rules`` is a comma-separated string so that
+tools/traceability.py, which scans string values, picks the ids up.
+
 Exit status is 0 when every replayed scenario passed (and, with --strict, when
 no routed-module scenario was skipped at all), 1 otherwise, 2 for usage errors.
 
@@ -81,6 +90,80 @@ def load_yaml(path):
 def load_json(path):
     with open(path, encoding="utf-8") as handle:
         return json.load(handle)
+
+
+RULE_ID_RE = re.compile(r"SETTLE-R(\d{2,})(?:[\s_-]?[vV](\d+)\b)?")
+ALL_SCENARIOS_RE = re.compile(r"\bAll\s+(\w+)\s+(?:`(\w+)`\s+)?scenarios\b", re.IGNORECASE)
+NUMBER_WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
+                "seven": 7, "eight": 8, "nine": 9, "ten": 10}
+
+
+def markdown_tables(text):
+    """Every pipe table in ``text`` as a list of rows (header first), cells stripped."""
+    tables, current = [], []
+    for line in text.splitlines():
+        if line.lstrip().startswith("|"):
+            if re.fullmatch(r"\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?", line.strip()):
+                continue
+            current.append([cell.strip() for cell in line.strip().strip("|").split("|")])
+        elif current:
+            tables.append(current)
+            current = []
+    if current:
+        tables.append(current)
+    return tables
+
+
+def spec_rules_by_scenario(spec_path, transcripts_dir):
+    """scenario -> [rule id] from the Evidence column of the spec's rule tables.
+
+    A rule cites a scenario by its backticked name, or by "All N scenarios" /
+    "All N `calculate` scenarios", which expand over the spec's transcript
+    inventory (section 2.1) exactly as tools/traceability.py expands them.
+    """
+    with open(spec_path, encoding="utf-8") as handle:
+        tables = markdown_tables(handle.read())
+    inventory = []
+    for table in tables:
+        if [cell.lower() for cell in table[0][:2]] != ["scenario", "file"]:
+            continue
+        for row in table[1:]:
+            name = row[0].strip("`")
+            if os.path.isfile(os.path.join(transcripts_dir, name + ".json")):
+                inventory.append(name)
+
+    def request_path(name):
+        try:
+            return load_json(os.path.join(transcripts_dir, name + ".json"))["request"]["path"]
+        except (OSError, KeyError, ValueError):
+            return ""
+
+    by_scenario = {}
+    for table in tables:
+        header = [cell.lower() for cell in table[0]]
+        if "id" not in header or "evidence" not in header:
+            continue
+        id_col, evidence_col = header.index("id"), header.index("evidence")
+        for row in table[1:]:
+            if len(row) <= max(id_col, evidence_col):
+                continue
+            match = RULE_ID_RE.fullmatch(row[id_col])
+            if not match:
+                continue
+            rule = "SETTLE-R%s" % match.group(1) + (" v" + match.group(2) if match.group(2) else "")
+            evidence = row[evidence_col]
+            cited = [name for name in re.findall(r"`([a-z0-9_]+)`", evidence) if name in inventory]
+            for count, qualifier in ALL_SCENARIOS_RE.findall(evidence):
+                number = NUMBER_WORDS.get(count.lower(), int(count) if count.isdigit() else None)
+                pool = [name for name in inventory
+                        if not qualifier or request_path(name).endswith("/%s.do" % qualifier)]
+                if number == len(pool):
+                    cited.extend(pool)
+            for name in cited:
+                rules = by_scenario.setdefault(name, [])
+                if rule not in rules:
+                    rules.append(rule)
+    return by_scenario
 
 
 def find_route(routes, method, path):
@@ -268,8 +351,16 @@ def main(argv):
     emit(header)
     emit("-" * len(header))
 
+    rules_by_scenario = {}
+    for name in replayed_modules:
+        spec = modules[name].get("spec")
+        if spec:
+            rules_by_scenario.update(
+                spec_rules_by_scenario(os.path.join(ROOT, spec), transcripts_dir))
+
     counts = {}
     unrouted = []
+    results = []
     for entry in index:
         scenario, module = entry["scenario"], entry["module"]
         module_cfg = modules.get(module) or {}
@@ -284,6 +375,9 @@ def main(argv):
                 unrouted.append(scenario)
         counts.setdefault(module, {PASS: 0, FAIL: 0, SKIP: 0})
         counts[module][verdict] += 1
+        results.append({"scenario": scenario, "module": module, "result": verdict,
+                        "detail": detail,
+                        "rules": ", ".join(rules_by_scenario.get(scenario, []))})
         emit("%-*s | %-10s | %-4s | %s" % (width, scenario, module, verdict, detail))
     emit()
 
@@ -303,7 +397,23 @@ def main(argv):
     if args.report:
         write_report(args.report, lines, summary, exit_code, args)
         print("report written to %s" % os.path.relpath(args.report, ROOT))
+        json_path = os.path.splitext(args.report)[0] + ".json"
+        write_json_report(json_path, results, summary, exit_code, args)
+        print("report written to %s" % os.path.relpath(json_path, ROOT))
     return exit_code
+
+
+def write_json_report(path, results, summary, exit_code, args):
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump({
+            "generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "module": args.module or "all extracted modules",
+            "base_url": args.base_url,
+            "summary": summary,
+            "exit_code": exit_code,
+            "scenarios": results,
+        }, handle, indent=2)
+        handle.write("\n")
 
 
 def write_report(path, lines, summary, exit_code, args):

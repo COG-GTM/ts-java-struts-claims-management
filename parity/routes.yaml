@@ -22,6 +22,9 @@ modules:
     status: extracted
     service: settlement-service
     default_base_url: http://localhost:8083
+    # Rule tables whose Evidence cells cite the transcripts; replay.py copies the
+    # cited SETTLE-R ids into parity/report.json for tools/traceability.py.
+    spec: docs/specs/SPEC-SETTLE-001.md
     # transcripts/index.json files payment_issue and payment_history under
     # module "settlement", but /claims/payment/*.do belongs to IssuePaymentAction,
     # PaymentHistoryAction and PaymentDAO, which are not part of the extracted
