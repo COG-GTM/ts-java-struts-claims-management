@@ -28,6 +28,8 @@ service and the transcripts with one parser. Failures answer HTTP 200 with the
   the calculate screen, the key `settlement.deductible.invalid` and no settlement. `save` keeps
   the current SETTLE-R18 error page, because OQ-15(a) leaves that route undecided. The
   redisplayed spans are empty, the conservative reading of OQ-15(c).
+- `detail` for a claim with no settlement reaches the error page, because `detail.jsp` line 24
+  reads `calculatedBy` off the missing bean (SETTLE-R46).
 - The operator is the fixed `supervisor` of the transcripts and the date the fixed
   `2019-04-01` of the legacy action (SETTLE-R20, SETTLE-R40, SETTLE-R41).
 

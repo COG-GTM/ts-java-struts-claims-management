@@ -7,8 +7,8 @@ import com.northstar.settlement.persistence.PolicyRepository;
 import com.northstar.settlement.persistence.SettlementRepository;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -52,7 +52,8 @@ public class SettlementController {
      * {@code /claims/settlement/calculate.do}: calculates and renders without persisting
      * (SETTLE-R01, SETTLE-R37).
      */
-    @PostMapping(path = {"/calculate.do", "/calculate"})
+    @RequestMapping(path = {"/calculate.do", "/calculate"},
+            method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<String> calculate(
             @RequestParam(name = "claimId", required = false) String claimIdParam,
             @RequestParam(name = "coveredAmount", required = false) String coveredParam,
@@ -119,7 +120,8 @@ public class SettlementController {
      * {@code /claims/settlement/save.do}: recalculates from the request and inserts the result
      * (SETTLE-R02, SETTLE-R38, SETTLE-R50).
      */
-    @PostMapping(path = {"/save.do", "/save"})
+    @RequestMapping(path = {"/save.do", "/save"},
+            method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<String> save(
             @RequestParam(name = "claimId", required = false) String claimIdParam,
             @RequestParam(name = "coveredAmount", required = false) String coveredParam,
@@ -161,7 +163,8 @@ public class SettlementController {
      * {@code /claims/settlement/detail.do}: read-only view of the latest settlement of a claim
      * (SETTLE-R03, SETTLE-R45).
      */
-    @PostMapping(path = {"/detail.do", "/detail"})
+    @RequestMapping(path = {"/detail.do", "/detail"},
+            method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<String> detail(
             @RequestParam(name = "claimId", required = false) String claimIdParam) {
 
@@ -169,8 +172,9 @@ public class SettlementController {
         Settlement settlement = settlements.findLatestByClaim(claimId);
         ScreenRenderer screen = new ScreenRenderer(DETAIL_VIEW);
         if (settlement == null) {
-            // SETTLE-R46: the detail screen renders empty values when no settlement exists.
-            return ResponseEntity.ok(screen.render());
+            // SETTLE-R46: detail.jsp line 24 reads calculatedBy off the missing bean, so the
+            // claim without a settlement reaches the generic error page, not an empty screen.
+            throw new MissingRecordException("claim " + claimId + " has no settlement");
         }
         String body = screen
                 .field("detailSettlementId", ScreenRenderer.integer(settlement.settlementId()))

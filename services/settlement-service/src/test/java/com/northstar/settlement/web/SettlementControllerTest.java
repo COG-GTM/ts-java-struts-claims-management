@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -208,13 +209,34 @@ class SettlementControllerTest {
                 .containsEntry("detailDate", "2019-04-01");
     }
 
-    /** SETTLE-R46: a claim without settlements renders the detail screen with empty values. */
+    /**
+     * SETTLE-R46: a claim without settlements reaches the generic error page, because
+     * {@code detail.jsp} line 24 reads {@code calculatedBy} off the missing bean.
+     */
     @Test
-    void settleR46DetailWithoutSettlementRendersEmptyScreen() throws Exception {
-        String body = body(mvc.perform(post("/claims/settlement/detail.do").param("claimId", "118")).andReturn());
+    void settleR46DetailWithoutSettlementForwardsToTheErrorPage() throws Exception {
+        String body = body(mvc.perform(post("/claims/settlement/detail.do").param("claimId", "118"))
+                .andExpect(status().isOk()).andReturn());
 
-        assertThat(view(body)).isEqualTo("/WEB-INF/jsp/settlement/detail.jsp");
+        assertThat(view(body)).isEqualTo("/WEB-INF/jsp/error.jsp");
         assertThat(fields(body)).isEmpty();
+    }
+
+    /**
+     * SETTLE-R01, SETTLE-R03: the legacy mappings accept GET as well as POST, so the extracted
+     * routes answer a GET with the same screen.
+     */
+    @Test
+    void settleR01GetIsAcceptedLikeTheLegacyMapping() throws Exception {
+        when(claims.findPolicyId(119)).thenReturn(9001);
+        when(policies.findPolicyLimit(9001)).thenReturn(1000.00);
+
+        String body = body(mvc.perform(get("/claims/settlement/calculate.do")
+                .param("claimId", "119").param("coveredAmount", "5000")
+                .param("deductible", "500").param("depreciation", "0")).andReturn());
+
+        assertThat(view(body)).isEqualTo("/WEB-INF/jsp/settlement/calculate.jsp");
+        assertThat(fields(body)).containsEntry("settlementAmount", "1000.00");
     }
 
     private static String body(MvcResult result) throws Exception {

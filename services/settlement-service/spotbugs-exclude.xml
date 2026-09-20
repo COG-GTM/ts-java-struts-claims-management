@@ -16,6 +16,16 @@
   </Match>
 
   <!--
+    The Struts mappings this service replaces accept GET as well as POST, and the service is
+    reached through the monolith front door that owns authentication and CSRF defence, so the
+    routes deliberately stay method-unrestricted (SETTLE-R01, SETTLE-R02, SETTLE-R03).
+  -->
+  <Match>
+    <Class name="com.northstar.settlement.web.SettlementController"/>
+    <Bug pattern="SPRING_CSRF_UNRESTRICTED_REQUEST_MAPPING"/>
+  </Match>
+
+  <!--
     ScreenRenderer builds the legacy field spans by concatenation, which findsecbugs reports as
     XML injection. Every name and value passes through ScreenRenderer.escape first, the same
     escaping the legacy FieldTag applies, and the markup shape is fixed by the parity contract.
