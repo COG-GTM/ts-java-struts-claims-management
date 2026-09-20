@@ -3,7 +3,7 @@
 | Field    | Value                                                                 |
 |----------|-----------------------------------------------------------------------|
 | ID       | SPEC-SETTLE-001                                                       |
-| Version  | 0.2                                                                   |
+| Version  | 0.3                                                                   |
 | Status   | Draft, derived from the transcripts, execution evidence and source files in section 2 only; each rule's status says which (see 2.3 and 2.4) |
 | Module   | Settlement (`/settlement/calculate`, `/settlement/save`, `/settlement/detail`) |
 | Baseline | `main` at commit `225c8d3`                                            |
@@ -25,6 +25,13 @@ Where the code implies a behaviour that no transcript or execution exercises,
 the rule is recorded but flagged as such. Where a behaviour looks accidental
 and cannot be adopted as a requirement without a decision from the business,
 the rule keeps its evidence status and the decision is recorded in section 5.
+
+The one exception is a **versioned rule**: when a business decision changes a
+rule, the current-state rule keeps its id and text, and the approved future
+state is added directly beneath it with the same id and a version suffix
+(`SETTLE-R18 v2`), a reference to the change record under `docs/changes/`,
+and status `Open` until the code and a transcript exist. The unversioned rule
+remains the description of what the module does today.
 
 Out of scope: payment issue and payment history (`/payment/*`), authentication
 (`AuthFilter`), the workbench and reporting screens, and the HSQLDB schema.
@@ -82,11 +89,12 @@ The status column uses exactly three markers.
 |------------|-----------------------------------------------------------------------------------------------------------|
 | `Observed` | The behaviour is exercised by at least one transcript in section 2.1 or by execution evidence (`E:`).     |
 | `Inferred` | The behaviour is read from code only; no transcript or execution exercises it.                            |
-| `Open`     | The behaviour has neither transcript, execution nor source evidence and only records that a business decision is pending. |
+| `Open`     | The behaviour has neither transcript, execution nor source evidence: it records a pending business decision, or an approved future-state behaviour (a versioned rule citing its `CHG-` record, section 1) that is not yet implemented. |
 
 Pending business decisions are not carried in the status column; they are
-recorded in section 5 and cross-referenced from the rule. At version 0.2 no
-rule carries `Open`.
+recorded in section 5 and cross-referenced from the rule. At version 0.3 the
+only rule carrying `Open` is SETTLE-R18 v2 (approved by CHG-001, not yet
+implemented).
 
 ## 3. Behavioural rules
 
@@ -103,7 +111,7 @@ rule carries `Open`.
 | SETTLE-R07 | The calculate screen renders the five business fields `coveredAmount`, `deductibleApplied`, `depreciation`, `cappedAtLimit` and `settlementAmount` as `<span id="f_NAME">` elements. | All five `calculate` scenarios (`business_fields`); `calculate.jsp` 20-28                         | Observed |
 | SETTLE-R08 | The save screen renders exactly two business fields, `settlementAmount` and `savedBy`, where `savedBy` is the session `user` attribute rather than a value read back from the saved row. | `settlement_save` (`business_fields`); `save.jsp` 19-22; `SSA` 41-42                              | Observed |
 | SETTLE-R09 | The "Settlement detail" link on the calculate screen is rendered from a `claimId` request attribute that `SettlementCalculateAction` never sets, so the link is emitted as `detail.do?claimId=`. | `calculate.jsp` 17; `SCA` 38-42 (sets only `settlement`, `policyLimit`, `screenName`)             | Inferred |
-| SETTLE-R10 | The "Save settlement" link on the calculate screen points at `save.do` with no parameters, so following it saves a settlement built entirely from the fallback values in SETTLE-R11, R12, R13 and R17 rather than the figures displayed (OQ-08). | `calculate.jsp` 30; `SSA` 24-33; `CAS` 31-45                                                      | Inferred |
+| SETTLE-R10 | The "Save settlement" link on the calculate screen points at `save.do` with no parameters, so following it saves a settlement built entirely from the fallback values in SETTLE-R11, R12, R13 and R16 rather than the figures displayed (OQ-08). | `calculate.jsp` 30; `SSA` 24-33; `CAS` 31-45                                                      | Inferred |
 
 ### 3.2 Input handling
 
@@ -117,6 +125,7 @@ rule carries `Open`.
 | SETTLE-R16 | A `deductible` parameter that is absent or an empty string is treated as a deductible of 0.00.                                                             | `settlement_blank_deductible`, `settlement_half_cent` (`deductibleApplied: 0.00`); `SCA` 34-38; `Calculator` 26-30 | Observed |
 | SETTLE-R17 | A `deductible` consisting only of whitespace passes the action's empty check but is trimmed by the calculator and also treated as 0.00.                     | `SCA` 36-37 (`length() == 0` only); `Calculator` 28                                              | Inferred |
 | SETTLE-R18 | A non-blank `deductible` that is not a number (for example `abc`) is parsed with `Double.parseDouble` and no fallback, and the resulting `NumberFormatException` is caught by the Struts global exception handler, so the request returns HTTP 200 with the forward `/WEB-INF/jsp/error.jsp` rather than an HTTP 500 or a redisplay of the calculate screen (OQ-04). | `E:` as `supervisor`, POST `/claims/settlement/calculate.do` `claimId=120&coveredAmount=1000&deductible=abc&depreciation=0` gives HTTP 200, forward `/WEB-INF/jsp/error.jsp`; `Calculator` 28-29; `struts-config` 59-60 (`global-exceptions` for `java.lang.Exception`); contrast with `CAS` 39-45 which is not used for the deductible | Observed |
+| SETTLE-R18 v2 | **Approved future state (CHG-001), not yet implemented.** A non-blank `deductible` that is not a valid number is rejected before any calculation: no settlement is computed, and `/settlement/calculate.do` redisplays the calculate screen (`/WEB-INF/jsp/settlement/calculate.jsp`) with HTTP 200 and the validation key `settlement.deductible.invalid`; an absent, empty or whitespace-only deductible is still 0.00 (R16, R17). | `docs/changes/CHG-001-invalid-deductible.md` (owner Ben Lau, 2026-09-20); no transcript and no source line yet; supersedes SETTLE-R18 once implemented | Open     |
 | SETTLE-R19 | No range or sign checks are applied to any settlement input; negative or very large amounts are calculated as submitted.                                    | `SCA` 23-38; `SSA` 24-33; `CAS` 328-330 (`financialAmount` exists but is not called)              | Inferred |
 | SETTLE-R20 | Operator identity for the settlement screens is the session attribute `user`, which the transcripts show as `supervisor`.                                  | `settlement_save` (`savedBy: supervisor`); `SSA` 36-37; `save.jsp` 21-22                          | Observed |
 
@@ -180,6 +189,7 @@ after section 3.2. The calculator then applies the following rules in order.
 | `settlement_policy_cap`         | 20000.00 / 100.00 / 0.00, claim 119                     | 1000.00    | covered 20000.00, deductible 100.00, depreciation 0.00, capped true, settlement 1000.00          | R14, R22, R24                                      |
 | `settlement_deductible_floor`   | 1000.00 / 2000.00 / 0.00, claim 120                     | (not capped)| covered 1000.00, deductible 2000.00, depreciation 0.00, capped false, settlement 0.00            | R23, R26, R30, R33                                 |
 | `E:` non-numeric deductible (not a transcript) | 1000 / `abc` / 0, claim 120                | n/a        | HTTP 200, forward `/WEB-INF/jsp/error.jsp`, no business fields                                   | R18                                                |
+| CHG-001 future state (no transcript yet)       | 1000 / `abc` / 0, claim 120                | n/a        | HTTP 200, forward `/WEB-INF/jsp/settlement/calculate.jsp`, `validation_errors: [settlement.deductible.invalid]`, no settlement computed | R18 v2                                             |
 
 The policy limit of 1000.00 for claim 119 is not stated in any transcript; it
 is inferred from the two capped scenarios, both of which settle at exactly
@@ -189,14 +199,15 @@ the transcripts beyond being at least 4500.00.
 ## 5. Open questions
 
 Each item needs a business decision before the corresponding rule, whatever
-its evidence status, can be adopted as a requirement.
+its evidence status, can be adopted as a requirement. Closed items keep their
+id and record the decision and the change record that made it.
 
 | ID     | Question                                                                                                                                                                                                                          | Related rules        |
 |--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|
 | OQ-01  | **Default claim 119.** `SettlementCalculateAction`, `SettlementSaveAction` and `SettlementDetailAction` all fall back to claim 119 when `claimId` is missing or not an integer (`SCA` 23, `SSA` 24, `SDA` 17). Should a missing claim be an error instead, and if a default is kept, is 119 the intended value or a leftover from testing? | R11, R10             |
 | OQ-02  | **Default covered amount 5000.** A missing or non-numeric `coveredAmount` silently becomes 5000 (`SCA` 32, `SSA` 27), which on `/settlement/save` writes a real settlement row. Should a missing covered amount be rejected, default to 0, or default to a claim-derived value (for example the reserve)? | R12, R10             |
 | OQ-03  | **Default policy limit 10000 when the policy is missing.** On calculate only, a claim that does not exist or has no policy is capped at 10000 (`SCA` 25-31); on save the same condition throws (`SSA` 26, 33). Which behaviour is intended, and should the two actions agree? | R49, R14, R15        |
-| OQ-04  | **Non-blank, non-numeric deductible.** `deductible` is the only input parsed without a fallback (`Calculator` 28-29); `abc` produces a `NumberFormatException` that the global exception handler turns into HTTP 200 with the generic `error.jsp` (R18). Should it instead be rejected with a field-level validation error on the calculate screen, treated as 0 like a blank, or parsed leniently like the other amounts? No transcript covers this case; the current behaviour is known from execution evidence only. | R18, R16, R17        |
+| OQ-04  | **Non-blank, non-numeric deductible. Closed by CHG-001 (Ben Lau, 2026-09-20).** `deductible` is the only input parsed without a fallback (`Calculator` 28-29); `abc` produces a `NumberFormatException` that the global exception handler turns into HTTP 200 with the generic `error.jsp` (R18, current state). Decision: it is rejected with the field-level validation key `settlement.deductible.invalid`, the calculate screen is redisplayed with HTTP 200, and no settlement is computed (R18 v2); a blank deductible stays 0.00 (R16, R17). The scope questions the decision leaves open are OQ-15. | R18, R18 v2, R16, R17 |
 | OQ-05  | **Money rounding method.** The settlement amount is rounded with `Math.round(amount * 100.0) / 100.0` in double arithmetic (`Calculator` 37), which turns 1.005 into 1.00, while the same screen displays the 1.005 input as 1.01 (`settlement_half_cent`). Is the required rule round-half-up on the decimal value, round-half-even, or the current binary behaviour, and should inputs be rounded on entry so display and calculation agree? | R28, R29, R31, R34   |
 | OQ-06  | **Cap at exactly the limit.** An amount after deductible exactly equal to the policy limit is reported as not capped (`Calculator` 35). Is `cappedAtLimit` meant to describe "reached the limit" or "exceeded the limit"?               | R24, R25             |
 | OQ-07  | **Zero or negative inputs.** No settlement input is checked for sign or magnitude (R19), so a negative covered amount, negative deductible or negative depreciation is calculated as submitted. Should `financialAmount` (`CAS` 328-330) or an equivalent be applied?                          | R19                  |
@@ -207,6 +218,7 @@ its evidence status, can be adopted as a requirement.
 | OQ-12  | **Meaning of the `settlement.claim.<id>.amount` probe.** `transcripts/README.md` resolves this probe through the "settlement calculation endpoint", not the detail screen, so `settlement_save`'s `db_state` demonstrates that calculate returns 1000.00 for claim 119 with default inputs rather than that a row was persisted. Should the probe be redirected to `/settlement/detail.do` before R43 is relied on as evidence of persistence? | R43, R11, R12, R14   |
 | OQ-13  | **Dead service path.** `SettlementService.calculateAndSave` is unused and disagrees with `SettlementSaveAction` on id allocation, operator and date (R47). Should it be removed or should the action delegate to it?                                                                          | R47                  |
 | OQ-14  | **Operator when no session user.** `calculated_by` becomes the literal string `"null"` if the session has no `user` (R48). Given the screens run behind authentication, is this reachable, and if so should it be rejected?                                                                  | R48, R40, R20        |
+| OQ-15  | **Scope of the CHG-001 deductible check.** CHG-001 decides `/settlement/calculate.do` only. (a) `/settlement/save.do` recomputes with the same calculator (R02, R50), so `deductible=abc` on save still reaches `error.jsp`; must save reject it too, and how, given it has no form screen to redisplay? (b) Is a whitespace-only deductible "blank" (0.00, R17) or "not a valid number" (R18 v2)? (c) On redisplay no `settlement` attribute exists, so what do the five `f_NAME` spans of R07 show: empty values or the submitted inputs? | R18 v2, R02, R50, R17, R07, R04 |
 
 ## 6. Change log
 
@@ -214,3 +226,4 @@ its evidence status, can be adopted as a requirement.
 |---------|------------|--------|----------------------------------------------------------------------------------------------------|
 | 0.1     | 2026-09-20 | Devin  | Initial draft derived from the six settlement transcripts and the settlement source files listed in section 2. 48 rules (SETTLE-R01 to SETTLE-R48), 14 open questions. No code or transcript changes. |
 | 0.2     | 2026-09-20 | Devin (reviewer: Ben Lau) | Reviewer corrections. R18 rewritten from execution evidence: non-numeric deductible returns HTTP 200 with forward `/WEB-INF/jsp/error.jsp` via the Struts global exception handler; new `E:` citation kind (2.3). Status column restricted to evidence only: R14, R29, R44 become `Observed` (transcript-evidenced), R10, R11, R12 become `Inferred` (source-only); pending decisions live solely in section 5 (OQ-01 to OQ-05, OQ-08). Source-only clauses split out of `Observed` rules into R49 (limit fallback, from R14), R50 (save recomputes, from R37) and R51 (save has no claim update, from R44); R40 becomes `Inferred` because the stored column is not probed. R45 no longer cites the dormant `SettlementService`. 51 rules (SETTLE-R01 to SETTLE-R51). |
+| 0.3     | 2026-09-20 | Devin (reviewer: Ben Lau; CHG-001 owner: Ben Lau) | Requirement change CHG-001 (`docs/changes/CHG-001-invalid-deductible.md`). SETTLE-R18 kept as the current-state rule; SETTLE-R18 v2 added beneath it as approved future state (`Open`): invalid non-blank deductible redisplays the calculate screen with `settlement.deductible.invalid`, HTTP 200, no settlement computed. Versioned-rule convention added to section 1 and the `Open` legend in 2.4. OQ-04 closed with that decision; OQ-15 opened for the scope questions it leaves (save route, whitespace boundary, screen content on redisplay). Section 4 gains the CHG-001 future-state row. Review fix: R10 now cites R16 (absent deductible) instead of R17 (whitespace). No `src/` or `transcripts/` change. |
