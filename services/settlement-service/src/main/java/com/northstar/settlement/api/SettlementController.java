@@ -25,7 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p>Parameters are bound as raw strings, optional, and never validated by the
  * framework (SETTLE-R04, SETTLE-R05, SETTLE-R19): the coercions live in
- * {@link SettlementRequest} and {@link LegacyCoercions}.
+ * {@link SettlementRequest} and {@link LegacyCoercions}. The one validation this
+ * module performs is the CHG-001 deductible check on calculate (SETTLE-R18 v2).
  */
 @RestController
 @RequestMapping("/api/settlement")
@@ -37,7 +38,15 @@ public class SettlementController {
         this.service = service;
     }
 
-    /** {@code POST /settlement/calculate.do} (SETTLE-R01). */
+    /**
+     * {@code POST /settlement/calculate.do} (SETTLE-R01).
+     *
+     * <p>SETTLE-R18 v2 (CHG-001, approved future state): a non-blank deductible that is
+     * not a valid number is rejected before any calculation and the calculate screen is
+     * redisplayed with {@code settlement.deductible.invalid}, HTTP 200, empty fields
+     * (OQ-15 c) and no result. Blank stays 0.00 (SETTLE-R16, SETTLE-R17). The save
+     * route is out of CHG-001's scope and keeps SETTLE-R18 (OQ-15 a).
+     */
     @PostMapping("/calculate")
     public ScreenResponse<CalculatedSettlement> calculate(
             @RequestParam(required = false) String claimId,
@@ -45,6 +54,9 @@ public class SettlementController {
             @RequestParam(required = false) String deductible,
             @RequestParam(required = false) String depreciation,
             @RequestParam(required = false) String policyLimit) {
+        if (LegacyCoercions.isInvalidDeductible(deductible)) {
+            return ScreenResponse.invalid(ScreenResponse.CALCULATE_JSP, ScreenResponse.DEDUCTIBLE_INVALID);
+        }
         CalculatedSettlement calculated = service.calculate(
                 new SettlementRequest(claimId, coveredAmount, deductible, depreciation, policyLimit));
         return ScreenResponse.of(ScreenResponse.CALCULATE_JSP, calculateFields(calculated.result()), calculated);

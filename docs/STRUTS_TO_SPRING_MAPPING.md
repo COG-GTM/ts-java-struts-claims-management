@@ -21,7 +21,8 @@ reproduced quirks are catalogued in `docs/KNOWN_LEGACY_QUIRKS.md`.
 | `dao.PolicyDAO.findById` | policy limit lookup (R14) | `persistence/PolicyRepository.findLimit` |
 | `dao.ClaimDAO.findById` (only `policy_id`, `status` are used) | claim lookup | `persistence/ClaimRepository.findById` |
 | `jsp/settlement/calculate.jsp`, `save.jsp`, `detail.jsp` + `tag.FieldTag` | rendering of `f_*` spans (R07, R08, R34, R35) | `api/ScreenResponse` + `domain/LegacyDisplay` |
-| `<global-exceptions>` -> `error.jsp` | error rendering with HTTP 200 (R15, R18) | `api/LegacyErrorHandler` |
+| `<global-exceptions>` -> `error.jsp` | error rendering with HTTP 200 (R15, R18 on save) | `api/LegacyErrorHandler` |
+| (none: `validate="false"`, R04) | CHG-001 deductible check on calculate (R18 v2): `settlement.deductible.invalid`, calculate screen redisplayed, no result | `domain/LegacyCoercions.isInvalidDeductible`, `api/SettlementController.calculate`, `api/ScreenResponse.invalid` |
 | HSQLDB `SETTLEMENT`, `CLAIM`, `POLICY` tables + `DatabaseBootstrap` seed | schema and fixture | Flyway `V1__settlement_schema.sql`, `V2__settlement_seed.sql` (PostgreSQL) |
 | session attribute `user` | operator identity (R20, R40, R48) | `settlement.operator` property (`SETTLEMENT_OPERATOR`, default `supervisor`) |
 
@@ -31,7 +32,8 @@ reproduced quirks are catalogued in `docs/KNOWN_LEGACY_QUIRKS.md`.
 
 * `SettlementCalculator.calculate(double, String, double, double)`: gross loss,
   deductible parsing and flooring, strict cap, single `Math.round` (R16-R18,
-  R21-R33). Ported verbatim into `domain/SettlementCalculator`.
+  R21-R33). Ported verbatim into `domain/SettlementCalculator`; on the calculate
+  route the R18 parse failure is pre-empted by the CHG-001 check (R18 v2).
 * `ClaimsActionSupport.integer` / `decimal` fallbacks and their constants
   119 / 5000 / 0 / 10000 (R11-R14). These *look* like plumbing but change the
   business outcome of a blank submission, so they are domain rules and live in
@@ -49,7 +51,8 @@ reproduced quirks are catalogued in `docs/KNOWN_LEGACY_QUIRKS.md`.
   compare, so the formatting rules (R34, R35) are kept in `LegacyDisplay`; the
   HTML around them is dropped.
 * The links on `calculate.jsp` (R09, R10): dropped, see KNOWN_LEGACY_QUIRKS.
-* `ActionMessages`: never populated (R04); `validationErrors` is always `[]`.
+* `ActionMessages`: never populated (R04); `validationErrors` is `[]` except for
+  the CHG-001 calculate check (R18 v2).
 
 **(c) Persistence, rewritten against `JdbcClient`**
 
@@ -98,11 +101,13 @@ posted to Struts; `parity/routes.yaml` forwards the recorded form unchanged.
   (`forward:<jsp>`; `error.jsp` maps to `error:errors.system`).
 * `fields` are the `<span id="f_NAME">` values, formatted by `LegacyDisplay`,
   compared key for key with `business_fields`.
-* `validationErrors` is compared with `validation_errors` (always `[]`, R04).
+* `validationErrors` is compared with `validation_errors` (`[]` in every recorded
+  transcript, R04; `["settlement.deductible.invalid"]` only for the CHG-001
+  calculate case, R18 v2, which no transcript records).
 * `data` is the typed payload for new consumers and is **not** part of parity.
 * Save: `fields = { settlementAmount, savedBy }` (R08); detail: the eight
   `detail*` spans of `detail.jsp`; error: HTTP 200 with
-  `legacyForward = /WEB-INF/jsp/error.jsp` (R15, R18).
+  `legacyForward = /WEB-INF/jsp/error.jsp` (R15, R18 on save).
 
 ## Database
 

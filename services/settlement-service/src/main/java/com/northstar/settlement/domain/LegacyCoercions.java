@@ -54,13 +54,31 @@ public final class LegacyCoercions {
     /**
      * Legacy-faithful deductible handling from {@code SettlementCalculateAction} lines 34-38:
      * a null or empty deductible becomes {@code "0"} (SETTLE-R16); anything else, including
-     * whitespace (SETTLE-R17) or garbage (SETTLE-R18), is passed through untouched for the
-     * calculator to parse.
+     * whitespace (SETTLE-R17) or garbage (SETTLE-R18, save route), is passed through
+     * untouched for the calculator to parse.
      */
     public static String deductible(String value) {
         if (value == null || value.length() == 0) {
             return "0";
         }
         return value;
+    }
+
+    /**
+     * SETTLE-R18 v2 (CHG-001): a non-blank deductible that {@code Double.parseDouble}
+     * rejects. Absent, empty and whitespace-only values are blank and stay 0.00
+     * (SETTLE-R16, SETTLE-R17), so they are never invalid; "valid number" is exactly
+     * what the calculator has always accepted.
+     */
+    public static boolean isInvalidDeductible(String value) {
+        if (value == null || value.trim().length() == 0) {
+            return false;
+        }
+        try {
+            Double.parseDouble(value);
+            return false;
+        } catch (NumberFormatException failure) {
+            return true;
+        }
     }
 }

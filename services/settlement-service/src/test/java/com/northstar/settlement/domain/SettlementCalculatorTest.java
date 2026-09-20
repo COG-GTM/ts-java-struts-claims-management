@@ -127,7 +127,8 @@ class SettlementCalculatorTest {
     }
 
     @Test
-    @DisplayName("SETTLE-R18: a non-numeric deductible has no fallback and throws NumberFormatException")
+    @DisplayName("SETTLE-R18 (save route; calculate rejects it first under SETTLE-R18 v2): the calculator has no"
+            + " fallback for a non-numeric deductible and throws NumberFormatException")
     void settleR18NonNumericDeductibleThrows() {
         assertThatThrownBy(() -> SettlementCalculator.calculate(1000, "abc", 0, 100000))
                 .isInstanceOf(NumberFormatException.class);

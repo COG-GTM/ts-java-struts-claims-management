@@ -16,14 +16,16 @@ public final class SettlementCalculator {
      *
      * @param coveredAmount resolved covered amount (SETTLE-R12)
      * @param deductible    raw deductible string; blank means 0 (SETTLE-R16, SETTLE-R17),
-     *                      non-numeric throws {@link NumberFormatException} (SETTLE-R18)
+     *                      non-numeric throws {@link NumberFormatException} (SETTLE-R18;
+     *                      only reachable from save since CHG-001, SETTLE-R18 v2)
      * @param depreciation  resolved depreciation (SETTLE-R13)
      * @param policyLimit   resolved policy limit (SETTLE-R14)
      */
     public static SettlementResult calculate(double coveredAmount, String deductible,
             double depreciation, double policyLimit) {
         // SETTLE-R16/R17: blank or whitespace-only deductible is 0; SETTLE-R18: anything
-        // else is parsed with no fallback and propagates NumberFormatException.
+        // else is parsed with no fallback and propagates NumberFormatException (the
+        // calculate route rejects it first, SETTLE-R18 v2).
         double deductibleValue = 0;
         if (deductible != null && deductible.trim().length() > 0) {
             deductibleValue = Double.parseDouble(deductible);

@@ -45,10 +45,25 @@ class LegacyCoercionsTest {
     }
 
     @Test
-    @DisplayName("SETTLE-R17 / SETTLE-R18: whitespace and garbage deductibles pass through untouched")
+    @DisplayName("SETTLE-R17 / SETTLE-R18 (save route): whitespace and garbage deductibles pass through untouched")
     void settleR17R18NonEmptyDeductiblePassesThrough() {
         assertThat(LegacyCoercions.deductible("  ")).isEqualTo("  ");
         assertThat(LegacyCoercions.deductible("abc")).isEqualTo("abc");
+    }
+
+    @Test
+    @DisplayName("SETTLE-R18 v2 (CHG-001): only a non-blank deductible that Double.parseDouble rejects is invalid;"
+            + " absent, empty and whitespace-only stay blank (SETTLE-R16, SETTLE-R17)")
+    void settleR18V2InvalidDeductibleIsNonBlankAndUnparseable() {
+        assertThat(LegacyCoercions.isInvalidDeductible(null)).isFalse();
+        assertThat(LegacyCoercions.isInvalidDeductible("")).isFalse();
+        assertThat(LegacyCoercions.isInvalidDeductible("   ")).isFalse();
+        assertThat(LegacyCoercions.isInvalidDeductible("500.00")).isFalse();
+        assertThat(LegacyCoercions.isInvalidDeductible("2000")).isFalse();
+        assertThat(LegacyCoercions.isInvalidDeductible("-1")).isFalse();
+        assertThat(LegacyCoercions.isInvalidDeductible("abc")).isTrue();
+        assertThat(LegacyCoercions.isInvalidDeductible("1,5")).isTrue();
+        assertThat(LegacyCoercions.isInvalidDeductible("$500")).isTrue();
     }
 
     @Test

@@ -2,6 +2,9 @@ package com.northstar.settlement.api;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -28,7 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Pins the inbound/outbound contract of the three mappings: SETTLE-R01, R02, R03,
- * R04, R07, R08, R18, R34, R35 and R44.
+ * R04, R07, R08, R18 (save), R18 v2 (calculate, CHG-001), R34, R35 and R44.
  */
 @WebMvcTest(SettlementController.class)
 class SettlementControllerTest {
@@ -104,15 +107,70 @@ class SettlementControllerTest {
     }
 
     @Test
-    @DisplayName("SETTLE-R18: legacy quirk - a non-numeric deductible returns HTTP 200 and the error.jsp forward")
-    void settleR18NonNumericDeductibleIsErrorScreenWith200() throws Exception {
-        when(service.calculate(any(SettlementRequest.class))).thenThrow(new NumberFormatException("abc"));
+    @DisplayName("SETTLE-R18 v2 (CHG-001): a non-blank, non-numeric deductible on calculate is rejected before"
+            + " any calculation - HTTP 200, calculate.jsp redisplayed, settlement.deductible.invalid, no fields,"
+            + " no result")
+    void settleR18V2InvalidDeductibleRedisplaysCalculateWithValidationError() throws Exception {
         mvc.perform(post("/api/settlement/calculate")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .param("claimId", "120").param("coveredAmount", "1000")
                         .param("deductible", "abc").param("depreciation", "0"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.legacyForward").value("/WEB-INF/jsp/settlement/calculate.jsp"))
+                .andExpect(jsonPath("$.validationErrors.length()").value(1))
+                .andExpect(jsonPath("$.validationErrors[0]").value("settlement.deductible.invalid"))
+                .andExpect(jsonPath("$.fields").isEmpty())
+                .andExpect(jsonPath("$.data").isEmpty());
+        verify(service, never()).calculate(any(SettlementRequest.class));
+    }
+
+    @Test
+    @DisplayName("SETTLE-R18 v2 (CHG-001): the GET form of calculate applies the same deductible check")
+    void settleR18V2InvalidDeductibleOnGetIsRejectedToo() throws Exception {
+        mvc.perform(get("/api/settlement/calculate").param("claimId", "120").param("deductible", "1,5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.legacyForward").value("/WEB-INF/jsp/settlement/calculate.jsp"))
+                .andExpect(jsonPath("$.validationErrors[0]").value("settlement.deductible.invalid"))
+                .andExpect(jsonPath("$.fields").isEmpty());
+        verify(service, never()).calculate(any(SettlementRequest.class));
+    }
+
+    @Test
+    @DisplayName("SETTLE-R16 / SETTLE-R17 with SETTLE-R18 v2: absent, empty and whitespace-only deductibles are blank,"
+            + " not invalid - calculate still runs and reports no validation error")
+    void settleR16R17BlankDeductibleIsNotRejectedByR18V2() throws Exception {
+        when(service.calculate(any(SettlementRequest.class)))
+                .thenReturn(new CalculatedSettlement(120, 100000.0,
+                        new SettlementResult(5000.0, 0.0, 500.0, false, 4500.0)));
+        for (String blank : new String[] {null, "", "   "}) {
+            var request = post("/api/settlement/calculate")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .param("claimId", "120").param("coveredAmount", "5000").param("depreciation", "500");
+            if (blank != null) {
+                request = request.param("deductible", blank);
+            }
+            mvc.perform(request)
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.legacyForward").value("/WEB-INF/jsp/settlement/calculate.jsp"))
+                    .andExpect(jsonPath("$.validationErrors").isEmpty())
+                    .andExpect(jsonPath("$.fields.deductibleApplied").value("0.00"))
+                    .andExpect(jsonPath("$.fields.settlementAmount").value("4500.00"));
+        }
+        verify(service).calculate(argThat(r -> "   ".equals(r.deductible())));
+    }
+
+    @Test
+    @DisplayName("SETTLE-R18 (save route, OQ-15 a - out of CHG-001 scope): legacy quirk - a non-numeric deductible"
+            + " on save still returns HTTP 200 and the error.jsp forward")
+    void settleR18SaveNonNumericDeductibleIsErrorScreenWith200() throws Exception {
+        when(service.save(any(SettlementRequest.class))).thenThrow(new NumberFormatException("abc"));
+        mvc.perform(post("/api/settlement/save")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("claimId", "120").param("coveredAmount", "1000")
+                        .param("deductible", "abc").param("depreciation", "0"))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.legacyForward").value("/WEB-INF/jsp/error.jsp"))
+                .andExpect(jsonPath("$.validationErrors").isEmpty())
                 .andExpect(jsonPath("$.fields").isEmpty())
                 .andExpect(jsonPath("$.data.errorKey").value("errors.system"));
     }

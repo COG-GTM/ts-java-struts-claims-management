@@ -11,18 +11,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 /**
  * Stand-in for the {@code <global-exceptions>} entry in {@code struts-config.xml}
  * that routed every {@code java.lang.Exception} to {@code /WEB-INF/jsp/error.jsp}
- * with HTTP 200 (SETTLE-R18, SETTLE-R15). Scoped to {@link SettlementController} so
+ * with HTTP 200 (SETTLE-R15; SETTLE-R18 on the save route, which CHG-001 leaves as
+ * current state, OQ-15 a). Scoped to {@link SettlementController} so
  * that, like the Struts mapping, it only covers the module's own actions and leaves
  * framework responses (404, 405) alone.
  *
  * <p>Legacy-faithful: the status is 200, not 4xx/5xx, because that is what the
- * running monolith returns for a non-numeric deductible. Listed in
- * docs/KNOWN_LEGACY_QUIRKS.md as a candidate for a separate business decision.
+ * running monolith returns for a failed action. Listed in docs/KNOWN_LEGACY_QUIRKS.md;
+ * the calculate route no longer reaches it for a bad deductible (SETTLE-R18 v2).
  */
 @RestControllerAdvice(assignableTypes = SettlementController.class)
 public class LegacyErrorHandler {
 
-    /** SETTLE-R18: non-numeric deductible has no fallback and reaches the global handler. */
+    /** SETTLE-R18 (save route): non-numeric deductible has no fallback and reaches the global handler. */
     @ExceptionHandler(NumberFormatException.class)
     public ResponseEntity<ScreenResponse<Map<String, String>>> numberFormat(NumberFormatException failure) {
         return errorScreen("errors.system", failure.getMessage());
