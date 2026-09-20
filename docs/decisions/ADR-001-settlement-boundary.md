@@ -327,10 +327,13 @@ its command exits 0 on this branch.
    `make capture` and the transcript diff; confirms the oracle is stable
    before anything moves).
 
-2. **Land the contract.** Merge SPEC-SETTLE-001 v0.2 and this ADR
-   (pull request #1). No `src/` or `transcripts/` change is part of this step.
+2. **Land the contract.** Merge SPEC-SETTLE-001 and this ADR (pull request
+   #1) with a merge commit, not a squash, so the commit hashes in
+   `docs/TRACEABILITY.md` stay reachable (see step 12). No `src/` or
+   `transcripts/` change is part of this step.
    Proof: `git diff --stat origin/main...HEAD -- src transcripts` prints
-   nothing, and `make test` still passes.
+   nothing, `make test` still passes, and after the merge
+   `python3 tools/traceability.py --check` exits 0 on `main`.
 
 3. **Scaffold the service.** Create `services/settlement-service` (Spring
    Boot, `server.port=8083`, context path `/claims`) with a `Makefile`
@@ -452,10 +455,16 @@ its command exits 0 on this branch.
     GitHub checks tab), and locally
     `make -C services/settlement-service build lint test` exits 0.
 
-12. **Merge.** Squash or merge the service branch into `main` once steps
-    1-11 are green.
+12. **Merge.** Merge the service branch into `main` with a merge commit
+    (not a squash) once steps 1-11 are green. The `commit` column of
+    `docs/TRACEABILITY.md` records the hashes of the commits reachable from
+    `HEAD` whose messages name a rule; a squash replaces them with one new
+    commit, so the committed matrix would no longer match its generator. The
+    same applies to pull request #1 (step 2). If a branch is squashed
+    anyway, the first commit on `main` afterwards regenerates the matrix.
     Proof: on `main`, `make test && make -C services/settlement-service test && make -C services/settlement-service replay`
-    exit 0, and `git log --oneline -1 origin/main` shows the merge commit.
+    exit 0, `git log --oneline -1 origin/main` shows the merge commit, and
+    `python3 tools/traceability.py --check` exits 0.
 
 After step 12 the settlement service is the system of record for settlement
 behaviour and SPEC-SETTLE-001 moves to its next version to start closing

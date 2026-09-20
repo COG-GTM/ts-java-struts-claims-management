@@ -25,7 +25,10 @@ Sources, per rule row:
   transcript is not misread as unevidenced.
 * decision record: docs/decisions/*.md files that mention the rule.
 * commit: commits on the current branch (git log HEAD, excluding merges) whose
-  message mentions the rule, including ranges such as R49-R51.
+  message mentions the rule, including ranges such as R49-R51. Hashes are
+  those reachable from HEAD, so a squash merge or a shallow clone changes
+  this column; merge with a merge commit, or regenerate after squashing, and
+  run --check from a full clone.
 * test: under services/*/src/test, when that directory exists, either a test
   method whose name contains the rule id (settleR18..., SETTLE_R18_...,
   settle_r18_v2_...) or any other mention of the full id (SETTLE-R18,
