@@ -99,17 +99,22 @@ to a hardcoded `new ActionForward("/WEB-INF/jsp/intake/new.jsp", false)` instead
 
 ## 2. JSPs
 
-`header.jsp`, `nav.jsp` and `footer.jsp` are static includes pulled into every full-page JSP; they
-carry the global links (`/logout.do`, `/policy/list.do`, `/workbench/list.do`,
-`/report/openByAdjuster.do`, `/policy/search.do`, `/intake/new.do`, `/payment/history.do`) and are
-the reason every screen depends on the workbench, policy, report and payment modules.
+`nav.jsp` and `footer.jsp` are static includes in every full-page JSP except `login.jsp` and
+`error.jsp`, which include no fragment at all. `header.jsp` is included by only 15 pages
+(`home.jsp`, `policy/coverageDetail|insuredParty|renewal`, `workbench/assignment|notes|
+reserveHistory|statusHistory`, `settlement/detail`, `payment/detail|remittance`,
+`report/adjusterWorkload|claimAgingDetail|premiumDetail|reconciliation`); the remaining pages
+inline an equivalent banner + navigation row of their own. Either way the same global links
+(`/logout.do`, `/policy/list.do`, `/workbench/list.do`, `/report/openByAdjuster.do`,
+`/policy/search.do`, `/intake/new.do`, `/payment/history.do`) appear on every authenticated screen,
+which is why each screen depends on the workbench, policy, report and payment modules.
 
 | JSP | Reached as forward from | Submits to (form) | Outbound links (excluding header/nav/footer) |
 |---|---|---|---|
 | `login.jsp` | `/login` (`login`), global `login` | `<html:form action="/login.do">` → `/login` | — |
 | `home.jsp` | `/home`, `/login` (`home`), global `home` | — | `policy/list.do`, `workbench/list.do`, `report/index.do` |
 | `error.jsp` | global exception / global `error` | — | `/login.do` |
-| `header.jsp`, `nav.jsp`, `footer.jsp` | include-only | — | global nav links (above) |
+| `header.jsp` (15 pages), `nav.jsp`, `footer.jsp` | include-only | — | global nav links (above) |
 | `intake/new.jsp` | `/intake/new`, `/intake/submit` (`input`), global `intakeInput` | `<form action="intake/submit.do" method="post">` → `/intake/submit` | — |
 | `intake/confirm.jsp` | `/intake/submit` (`confirm`), `/intake/confirm` | — | `../workbench/view.do?claimId=…` |
 | `policy/search.jsp` | `/policy/search` | `<html:form action="/policy/search.do">` → `/policy/search` | — |
@@ -248,8 +253,11 @@ the connection factory and ad-hoc SQL helpers), `header/nav/footer.jsp`, `Applic
   by exactly one statement outside the module (`ReportDAO.lossRatioByLine`), which is an aggregate
   that could be served by a read replica or a view rather than in-process code.
 - All four actions are plain read/insert over prepared statements, and the only shared-base SQL they
-  use is `nextId("PAYMENT")` in `PaymentIssueAction`, a max-id lookup on PAYMENT alone. That is
-  replaceable by an identity column, so extraction does not drag `ClaimsActionSupport` along.
+  use is `nextId("PAYMENT")` in `PaymentIssueAction`, a max-id lookup on PAYMENT alone, replaceable
+  by an identity column. The rest of their use of `ClaimsActionSupport` is non-SQL parameter
+  parsing — `integer(...)` in all four actions and `decimal(...)` in `PaymentIssueAction` — so the
+  base class still has to be dropped or re-provided, but as two small helpers, not as a second
+  connection factory or an ad-hoc SQL surface.
 - Its only inbound edge from outside the module is one link, `nav.jsp` → `payment/history.do`
   (`/payment/issue.do` is not linked from any JSP at all); the other payment links live inside
   `payment/history.jsp`. No action outside the module forwards into a payment forward name, so the
