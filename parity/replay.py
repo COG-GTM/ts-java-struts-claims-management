@@ -13,11 +13,13 @@ request to the mapped service endpoint. It then compares, per scenario:
 
 Modules not marked extracted are reported ``SKIP (not yet extracted)``; scenarios
 in an extracted module whose legacy path has no route are reported
-``SKIP (route not extracted)`` and never counted as PASS. Transcripts are read
-only: this script never writes under transcripts/.
+``SKIP (route not extracted)`` and never counted as PASS, but only if the module
+lists them under ``unrouted`` in routes.yaml. An unrouted scenario that is not
+listed is a FAIL, so coverage cannot shrink silently. Transcripts are read only:
+this script never writes under transcripts/.
 
 Exit status is 0 when every replayed scenario passed (and, with --strict, when
-no routed-module scenario was skipped), 1 otherwise, 2 for usage errors.
+no routed-module scenario was skipped at all), 1 otherwise, 2 for usage errors.
 
 Only non-standard dependency: PyYAML.
 """
@@ -148,7 +150,11 @@ def replay_scenario(http, base_url, config, module, transcript):
     expected = transcript["expected"]
     route = find_route(config.get("routes") or [], request["method"], request["path"])
     if route is None:
-        return SKIP, "route not extracted: %s %s" % (request["method"], request["path"])
+        detail = "route not extracted: %s %s" % (request["method"], request["path"])
+        allowed = (config.get("modules") or {}).get(module, {}).get("unrouted") or []
+        if transcript["scenario"] in allowed:
+            return SKIP, detail
+        return FAIL, detail + " (not listed under modules.%s.unrouted)" % module
 
     service = route["service"]
     url = base_url + service["path"]

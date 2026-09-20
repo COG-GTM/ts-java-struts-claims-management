@@ -27,6 +27,12 @@ modules:
     # PaymentHistoryAction and PaymentDAO, which are not part of the extracted
     # settlement seam (SPEC-SETTLE-001 scope). They have no route below and are
     # reported "SKIP (route not extracted)" rather than silently passed or failed.
+    # Only the scenarios listed here may be unrouted: any other scenario of an
+    # extracted module that has no route is a FAIL, so coverage cannot shrink
+    # silently when transcripts are added.
+    unrouted:
+      - payment_issue
+      - payment_history
 
 # The JSON screen envelope every service endpoint returns (ScreenResponse):
 #   legacyForward     the JSP the monolith forwarded to  -> transcript "result"
