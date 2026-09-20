@@ -60,3 +60,9 @@ rewrite this baseline in place.
   the quirks register once parity has run.
 * Characterisation tests against the legacy calculator land in their own pull
   request before the service, so a failing parity run points at the new code.
+* `settlement_id` is still `max(settlement_id) + 1` (legacy schema, no
+  sequence). The service serialises allocation and insert with a JVM lock,
+  which is correct for one instance on its in-memory database (point 4).
+  Pointing several instances at one shared database needs a database
+  sequence or row lock first; that belongs with the production datasource
+  decision, not this slice.
