@@ -53,8 +53,11 @@ Module wiring (`WEB-INF/web.xml`): `ActionServlet` is mapped to `*.do`; the defa
 
 All class names are under `com.northstar.claims.` (shown as `web.X`). Every path in the file has
 `validate="false"`, so the Validator plug-in and `validation.xml` (rules for `intakeForm`,
-`statusDyn`, `searchDyn`, `amountDyn`) never run; `IntakeSubmitAction` hand-rolls the same three
-checks in Java.
+`statusDyn`, `searchDyn`, `amountDyn`) never run; `IntakeSubmitAction` hand-rolls its own checks in
+Java, and they are not equivalent: it requires `claimantName` and `description` like the Validator
+does, but accepts an empty `lossDate` (only checking `\d{2}/\d{2}/\d{4}` when one is supplied),
+whereas `validation.xml` declares `lossDate` as `required`. Turning validation on would tighten
+intake behaviour, not preserve it.
 
 Global forwards: `login` → jsp/login.jsp, `home` → jsp/home.jsp, `intakeInput` → jsp/intake/new.jsp
 (unused by any action), `error` → jsp/error.jsp. Global exception: `java.lang.Exception` →
@@ -82,9 +85,10 @@ no `/admin/editAdjuster` mapping even though `adjusters.jsp` links to `editAdjus
 ## 2. JSPs and the actions they target
 
 "Rendered by" = mapping whose forward points at the page. "Posts/links to" lists only links written
-in that file; every page also inherits the nav bar (`/policy/list.do`, `/workbench/list.do`,
-`/report/openByAdjuster.do`, `/logout.do`, plus from `nav.jsp` `/intake/new.do`,
-`/payment/history.do`, `/policy/search.do`).
+in that file; pages that include `header.jsp`/`nav.jsp` also inherit the nav bar
+(`/policy/list.do`, `/workbench/list.do`, `/report/openByAdjuster.do`, `/logout.do`, plus from
+`nav.jsp` `/intake/new.do`, `/payment/history.do`, `/policy/search.do`). `login.jsp` and `error.jsp`
+include no fragments, so their only links are the ones listed in their own rows.
 
 | JSP | Rendered by | Posts / links to |
 |---|---|---|
@@ -229,8 +233,10 @@ only `util.DatabaseDump` names those tables.
 
 Coupling that crosses those lines:
 
-- Settlement → Payment: `PaymentIssueAction` calls `SettlementDAO.findByClaim` and stores
-  `settlement_id` on the payment row; payment cannot be split from settlement without an interface.
+- Payment → Settlement: `PaymentIssueAction` calls `SettlementDAO.findByClaim` and stores that
+  `settlement_id` on the payment row. The dependency runs one way — payment cannot be split from
+  settlement without an interface, but settlement has no compile-time or read dependency on payment
+  (they meet again only in `ReportDAO.lossRatioByLine`).
 - Settlement → Policy + Claim: the calculator needs `policy_limit` and the claim's `policy_id`.
 - Reporting → everything, but only through `select`s in `ReportDAO` (plus two actions that reuse
   `ClaimDAO`/`PolicyDAO` finders). No writes, no shared mutable state.
@@ -250,9 +256,12 @@ Coupling that crosses those lines:
    `/report/...`; no other module's action forwards to a report JSP and no action outside
    `web/*Report*`/`ReconciliationAction`/`PremiumDetailAction`/`AdjusterWorkloadDetailAction` calls
    `ReportDAO`. The seam is one link target, not a call graph.
-3. Its outbound coupling is SQL-only. Reporting touches CLAIM, POLICY and PAYMENT purely through
-   aggregate queries, so the extracted service can read a replica or a view; nothing in the
-   remaining monolith depends on reporting code.
+3. Its outbound coupling is read-only SQL, but not purely aggregate. `ReportDAO` is aggregate-only,
+   yet `ClaimAgingDetailAction` calls `ClaimDAO.findByStatus("OPEN")` and `PremiumDetailAction`
+   calls `PolicyDAO.findAll()`, so the extraction also needs row-level claim and policy contracts,
+   not just the four aggregate queries. All of it is still `select`-only against CLAIM, POLICY and
+   PAYMENT, so the extracted service can read a replica or a view; nothing in the remaining monolith
+   depends on reporting code.
 4. It owns no forms or validation. Every report mapping has no form bean and `validate="false"`, so
    there is no Struts form/Validator state to port — unlike Intake (`intakeForm` + hand-rolled
    validation) or Workbench (two `DynaValidatorForm`s).
