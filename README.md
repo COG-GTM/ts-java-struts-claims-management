@@ -49,5 +49,13 @@ connection pool is hand-rolled. JSPs use shared includes rather than a
 proper layout framework. The Maven Jetty run emits duplicate JSTL scanning
 warnings. Authentication uses plaintext-style adjuster credentials.
 
+Apache Struts 1.3.10 reached end of life in 2013 and receives no security
+fixes. Until the application is migrated to a maintained framework, request
+form population is hardened in two places: the build pins Commons BeanUtils
+to a patched release (CVE-2014-0114), and `FormPopulationFilter` strips
+`class`/`classLoader` parameter paths from every `*.do` request before the
+`ActionServlet` binds them to a form bean. Neither control replaces the
+migration.
+
 This repository is the legacy source of truth. Modernization work belongs in
 a separate target repository and should not rewrite this baseline in place.
