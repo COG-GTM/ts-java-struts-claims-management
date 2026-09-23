@@ -1,11 +1,12 @@
 -- Fixed NorthStar Claims seed data.
 -- Every row is explicit so a reset produces the same database contents.
-INSERT INTO ADJUSTER VALUES (1, 'adjuster1', 'legacy1', 'Alex Morgan', 'NORTH', TRUE);
-INSERT INTO ADJUSTER VALUES (2, 'adjuster2', 'legacy2', 'Bailey Reed', 'SOUTH', TRUE);
-INSERT INTO ADJUSTER VALUES (3, 'adjuster3', 'legacy3', 'Casey Diaz', 'EAST', TRUE);
-INSERT INTO ADJUSTER VALUES (4, 'adjuster4', 'legacy4', 'Drew Patel', 'WEST', TRUE);
-INSERT INTO ADJUSTER VALUES (5, 'adjuster5', 'legacy5', 'Evan Cole', 'CENTRAL', TRUE);
-INSERT INTO ADJUSTER VALUES (6, 'supervisor', 'supervisor', 'Sam Taylor', 'ALL', TRUE);
+-- Credential values are salted PBKDF2 hashes of the local demo passwords.
+INSERT INTO ADJUSTER VALUES (1, 'adjuster1', 'pbkdf2-sha1$120000$b5de0838d509a78069726716a27a99ff$e97ddd4750d1c58110e9d865a50b8f44f677c42e', 'Alex Morgan', 'NORTH', TRUE);
+INSERT INTO ADJUSTER VALUES (2, 'adjuster2', 'pbkdf2-sha1$120000$7a15a1eb534456b19e3bab9477827039$8dda28e27bc810222c33f90695493249ee552db2', 'Bailey Reed', 'SOUTH', TRUE);
+INSERT INTO ADJUSTER VALUES (3, 'adjuster3', 'pbkdf2-sha1$120000$5c45163ee341ffb64c5d52d98c9947b2$a5a1665754c062146931291da112dc1d1bde05bd', 'Casey Diaz', 'EAST', TRUE);
+INSERT INTO ADJUSTER VALUES (4, 'adjuster4', 'pbkdf2-sha1$120000$5aaf04cbf3c683cc26d92e09741b04cd$b34e3db56d9ad63e500c793e6a04b059d023ef79', 'Drew Patel', 'WEST', TRUE);
+INSERT INTO ADJUSTER VALUES (5, 'adjuster5', 'pbkdf2-sha1$120000$3e1ec19236303d926684c3c20a48a60a$8311468356308e9729147f8ac7ee06dbbfe7981d', 'Evan Cole', 'CENTRAL', TRUE);
+INSERT INTO ADJUSTER VALUES (6, 'supervisor', 'pbkdf2-sha1$120000$0fe82b7785bdebeab1d888f9a45b4d33$0aa40ea7ce6e664126e48fa3f883573835cd4fdf', 'Sam Taylor', 'ALL', TRUE);
 INSERT INTO POLICY VALUES (1, 'NS-00001', 'AUTO', 'Policyholder 1', '1 Main Street', '2018-01-01', '2019-12-31', 25000, 500, 1200, 'ACTIVE');
 INSERT INTO POLICY VALUES (2, 'NS-00002', 'HOMEOWNERS', 'Policyholder 2', '2 Main Street', '2018-02-01', '2019-12-31', 150000, 1000, 1300, 'ACTIVE');
 INSERT INTO POLICY VALUES (3, 'NS-00003', 'COMMERCIAL_PROPERTY', 'Policyholder 3', '3 Main Street', '2018-03-01', '2019-12-31', 500000, 2500, 1400, 'ACTIVE');

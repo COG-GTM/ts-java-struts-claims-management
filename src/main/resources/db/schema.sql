@@ -121,7 +121,7 @@ CREATE TABLE PAYMENT (
 CREATE TABLE ADJUSTER (
     adjuster_id INTEGER NOT NULL,
     username VARCHAR(40) NOT NULL,
-    password VARCHAR(40) NOT NULL,
+    password_hash VARCHAR(200) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
     region VARCHAR(40) NOT NULL,
     active BOOLEAN NOT NULL,
