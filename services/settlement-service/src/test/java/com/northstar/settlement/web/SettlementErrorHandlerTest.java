@@ -2,6 +2,7 @@ package com.northstar.settlement.web;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,7 +32,8 @@ class SettlementErrorHandlerTest {
     private SettlementRepository settlements;
 
     /**
-     * Rules: SETTLE-R26.
+     * Rules: none — this covers the global exception mapping itself, not a
+     * settlement rule.
      * Transcript: settlement_bad_deductible for the shape of the error screen
      * (no business fields, no validation errors). The monolith maps
      * java.lang.Exception globally
@@ -54,5 +56,16 @@ class SettlementErrorHandlerTest {
                 .andExpect(jsonPath("$.screen").value("error"))
                 .andExpect(jsonPath("$.fields").isEmpty())
                 .andExpect(jsonPath("$.errors").isEmpty());
+    }
+
+    /**
+     * Rules: none — the monolith has no equivalent of a method mismatch to
+     * reproduce, so the mapping leaves Spring's own 405 alone rather than
+     * reporting the error screen for it.
+     */
+    @Test
+    void anUnsupportedMethodKeepsItsOwnStatus() throws Exception {
+        mvc.perform(get("/settlement/save"))
+                .andExpect(status().isMethodNotAllowed());
     }
 }

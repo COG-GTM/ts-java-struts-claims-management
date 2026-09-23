@@ -2,6 +2,7 @@ package com.northstar.settlement.web;
 
 import java.util.List;
 import java.util.Map;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,16 +25,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * {@link NumberFormatException} mapping stays as the backstop for any other
  * unparseable value the legacy would have thrown on.
  *
- * <p>The monolith maps {@code java.lang.Exception} globally, so every failure
- * of a settlement request reaches the same screen: a data access failure of
- * the insert or of a lookup answers with the error screen here too, rather
- * than with the container's own body.
+ * <p>The monolith maps {@code java.lang.Exception} globally, so a data access
+ * failure of a lookup or of the insert reaches the same screen rather than the
+ * container's own body. Exceptions that Spring resolves to a status of their
+ * own, such as an unsupported method, are left to it: the monolith has no
+ * equivalent of them to reproduce.
  */
 @RestControllerAdvice
 public class SettlementErrorHandler {
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<SettlementResponse> error(Exception failure) {
+    @ExceptionHandler({NumberFormatException.class, MissingClaimException.class,
+            DataAccessException.class})
+    public ResponseEntity<SettlementResponse> error(RuntimeException failure) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new SettlementResponse("error", Map.of(), List.of()));
     }
