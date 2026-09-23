@@ -1,6 +1,6 @@
 # Parity report — settlement module vs settlement-service
 
-Result: PASS — 6 PASS, 1 CHANGED, 0 FAIL, 2 SKIP (http://localhost:8083, parity/replay.py at b2d70fb).
+Result: PASS — 6 PASS, 1 CHANGED, 0 FAIL, 2 SKIP (http://localhost:8083, parity/replay.py at f247a20).
 
 Compared per ADR-001: status class, business fields, validation keys and
 the `db_state` probes read back through the service. HTML is not compared.

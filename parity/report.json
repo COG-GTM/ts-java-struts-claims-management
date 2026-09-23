@@ -8,7 +8,7 @@
   },
   "module": "settlement",
   "result": "PASS",
-  "revision": "b2d70fb",
+  "revision": "f247a20",
   "scenarios": [
     {
       "change_ids": [],
