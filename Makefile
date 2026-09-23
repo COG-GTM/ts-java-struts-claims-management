@@ -28,9 +28,11 @@ service-test:
 service-run:
 	cd $(SERVICE_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B spring-boot:run
 
-# Replays the settlement transcripts against a running service (make service-run).
+# Replays the module's transcripts against a running service (make service-run).
+PARITY_MODULE = settlement
+
 parity:
-	python3 tools/parity/settlement_parity.py
+	python3 parity/replay.py --module $(PARITY_MODULE)
 
 # Regenerates docs/TRACEABILITY.md from the spec, the git history, the tests,
 # parity/routes.json and parity/report.json. Needs nothing running.

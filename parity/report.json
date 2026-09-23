@@ -1,60 +1,184 @@
 {
+  "base_url": "http://localhost:8083",
+  "counts": {
+    "CHANGED": 1,
+    "FAIL": 0,
+    "PASS": 6,
+    "SKIP": 2
+  },
+  "module": "settlement",
+  "result": "PASS",
+  "revision": "e6baaa0",
   "scenarios": [
     {
-      "change": "CHG-001",
-      "description": "Settlement with a non-numeric deductible",
-      "difference": "A non-blank, unparseable deductible is a validation error instead of the error screen",
-      "record": "docs/changes/CHG-001-invalid-deductible.md",
-      "scenario": "settlement_bad_deductible",
-      "verdict": "CHANGED (CHG-001)"
-    },
-    {
-      "change": null,
-      "description": "FNOL settlement with a blank deductible",
-      "difference": "-",
-      "record": null,
-      "scenario": "settlement_blank_deductible",
-      "verdict": "PASS"
-    },
-    {
-      "change": null,
+      "change_ids": [],
       "description": "Calculate a standard settlement",
-      "difference": "-",
-      "record": null,
+      "detail": "",
+      "differences": [],
+      "notes": [],
+      "reported": "PASS",
+      "rules": [
+        "SETTLE-R01",
+        "SETTLE-R02",
+        "SETTLE-R03",
+        "SETTLE-R04",
+        "SETTLE-R07",
+        "SETTLE-R09",
+        "SETTLE-R11",
+        "SETTLE-R13",
+        "SETTLE-R14",
+        "SETTLE-R17",
+        "SETTLE-R18",
+        "SETTLE-R20",
+        "SETTLE-R22",
+        "SETTLE-R24"
+      ],
       "scenario": "settlement_calculate",
       "verdict": "PASS"
     },
     {
-      "change": null,
-      "description": "Settlement floored when deductible exceeds the loss",
-      "difference": "-",
-      "record": null,
-      "scenario": "settlement_deductible_floor",
+      "change_ids": [],
+      "description": "Save the calculated settlement",
+      "detail": "",
+      "differences": [],
+      "notes": [],
+      "reported": "PASS",
+      "rules": [
+        "SETTLE-R02",
+        "SETTLE-R03",
+        "SETTLE-R04",
+        "SETTLE-R09",
+        "SETTLE-R13",
+        "SETTLE-R25",
+        "SETTLE-R27",
+        "SETTLE-R28",
+        "SETTLE-R29",
+        "SETTLE-R30"
+      ],
+      "scenario": "settlement_save",
       "verdict": "PASS"
     },
     {
-      "change": null,
+      "change_ids": [],
+      "description": "Issue a settlement payment",
+      "detail": "Payment issue stays in the monolith: ADR-001 extracts only /settlement/calculate, /settlement/save and /settlement/detail; /claims/payment/issue.do has no service route.",
+      "differences": [],
+      "notes": [],
+      "reported": "SKIP",
+      "rules": [],
+      "scenario": "payment_issue",
+      "verdict": "SKIP"
+    },
+    {
+      "change_ids": [],
+      "description": "Review payment history",
+      "detail": "Payment history stays in the monolith: /claims/payment/history.do has no service route (ADR-001 'Out of scope').",
+      "differences": [],
+      "notes": [],
+      "reported": "SKIP",
+      "rules": [],
+      "scenario": "payment_history",
+      "verdict": "SKIP"
+    },
+    {
+      "change_ids": [],
+      "description": "FNOL settlement with a blank deductible",
+      "detail": "",
+      "differences": [],
+      "notes": [
+        "db claim.120.status not probed: The CLAIM table is outside the service boundary (ADR-001 'Out of scope'); the service exposes no claim-status read, and SETTLE-R24 records that the settlement paths never write it."
+      ],
+      "reported": "PASS",
+      "rules": [
+        "SETTLE-R01",
+        "SETTLE-R05",
+        "SETTLE-R07",
+        "SETTLE-R10",
+        "SETTLE-R14",
+        "SETTLE-R20",
+        "SETTLE-R22",
+        "SETTLE-R24"
+      ],
+      "scenario": "settlement_blank_deductible",
+      "verdict": "PASS"
+    },
+    {
+      "change_ids": [],
       "description": "Settlement using double half-cent rounding",
-      "difference": "-",
-      "record": null,
+      "detail": "",
+      "differences": [],
+      "notes": [],
+      "reported": "PASS",
+      "rules": [
+        "SETTLE-R01",
+        "SETTLE-R05",
+        "SETTLE-R14",
+        "SETTLE-R15",
+        "SETTLE-R16",
+        "SETTLE-R17",
+        "SETTLE-R20",
+        "SETTLE-R21",
+        "SETTLE-R24"
+      ],
       "scenario": "settlement_half_cent",
       "verdict": "PASS"
     },
     {
-      "change": null,
+      "change_ids": [],
       "description": "Settlement capped by the policy limit",
-      "difference": "-",
-      "record": null,
+      "detail": "",
+      "differences": [],
+      "notes": [],
+      "reported": "PASS",
+      "rules": [
+        "SETTLE-R01",
+        "SETTLE-R07",
+        "SETTLE-R11",
+        "SETTLE-R13",
+        "SETTLE-R14",
+        "SETTLE-R20",
+        "SETTLE-R22",
+        "SETTLE-R24"
+      ],
       "scenario": "settlement_policy_cap",
       "verdict": "PASS"
     },
     {
-      "change": null,
-      "description": "Save the calculated settlement",
-      "difference": "-",
-      "record": null,
-      "scenario": "settlement_save",
+      "change_ids": [],
+      "description": "Settlement floored when deductible exceeds the loss",
+      "detail": "",
+      "differences": [],
+      "notes": [],
+      "reported": "PASS",
+      "rules": [
+        "SETTLE-R01",
+        "SETTLE-R07",
+        "SETTLE-R11",
+        "SETTLE-R12",
+        "SETTLE-R14",
+        "SETTLE-R20",
+        "SETTLE-R22",
+        "SETTLE-R24"
+      ],
+      "scenario": "settlement_deductible_floor",
       "verdict": "PASS"
+    },
+    {
+      "change_ids": [
+        "CHG-001"
+      ],
+      "description": "Settlement with a non-numeric deductible",
+      "detail": "CHG-001: A non-blank, unparseable deductible is a validation error instead of the error screen",
+      "differences": [],
+      "notes": [],
+      "reported": "CHANGED (CHG-001)",
+      "rules": [
+        "SETTLE-R06",
+        "SETTLE-R09"
+      ],
+      "scenario": "settlement_bad_deductible",
+      "verdict": "CHANGED (CHG-001)"
     }
-  ]
+  ],
+  "service": "settlement-service"
 }

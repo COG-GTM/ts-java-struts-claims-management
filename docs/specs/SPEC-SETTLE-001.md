@@ -1,6 +1,6 @@
 # SPEC-SETTLE-001 — Settlement calculation
 
-Version: 0.4
+Version: 0.5
 
 Scope: the settlement calculate, save, and detail request flows of the claims
 application. Every rule below is taken either from a recorded transcript
@@ -120,10 +120,23 @@ Read: src/main/java/com/northstar/claims/service/SettlementCalculator.java:35-36
 deductible, then the zero floor, then the cap, then rounding.
 Read: src/main/java/com/northstar/claims/service/SettlementCalculator.java:30-37
 
-**SETTLE-R15 (v1)** — Rounding is performed by exactly one statement,
-`double rounded = Math.round(amount * 100.0) / 100.0;`, applied to the capped
-amount only. It is binary double arithmetic, not decimal.
+**SETTLE-R15 (v1, superseded by v2)** — Rounding is performed by exactly one
+statement, `double rounded = Math.round(amount * 100.0) / 100.0;`, applied to
+the capped amount only. It is binary double arithmetic, not decimal.
 Read: src/main/java/com/northstar/claims/service/SettlementCalculator.java:37
+
+**SETTLE-R15 (v2)** — Rounding is performed by exactly one statement,
+`double rounded = Math.round(amount * 100.0) / 100.0;`, applied to the capped
+amount only. The arithmetic is IEEE-754 binary `double` throughout: the amount
+reaches this statement as a `double`, is multiplied by `100.0` as a `double`,
+and `Math.round` takes the floor of that product plus 0.5. This is part of the
+specified behaviour, not an implementation detail — decimal arithmetic
+(`BigDecimal.setScale(2, HALF_UP)`) gives a different answer wherever the
+unrounded amount is not exactly representable in binary, as SETTLE-R16 shows.
+A reimplementation must keep the double arithmetic.
+Observed: settlement_half_cent;
+Read: src/main/java/com/northstar/claims/service/SettlementCalculator.java:37;
+services/settlement-service/src/main/java/com/northstar/settlement/domain/SettlementCalculator.java
 
 **SETTLE-R16 (v1)** — Under SETTLE-R15 a covered amount of 1.005 (no deductible,
 no depreciation, under the limit) produces a settlement amount of 1.00, i.e. the
@@ -149,16 +162,42 @@ src/main/java/com/northstar/claims/web/SettlementCalculateAction.java:38-42
 escaped and a null value rendered as the empty string.
 Read: src/main/java/com/northstar/claims/web/tag/FieldTag.java:34-46,79-85
 
-**SETTLE-R20 (v1)** — `type="money"` formats the value with `String.format("%.2f",
-...)`, so amounts appear with exactly two decimals (for example settlement
-1000.00, deductible 500.00).
+**SETTLE-R20 (v1, superseded by v2)** — `type="money"` formats the value with
+`String.format("%.2f", ...)`, so amounts appear with exactly two decimals (for
+example settlement 1000.00, deductible 500.00).
 Observed: settlement_calculate;
 Read: src/main/java/com/northstar/claims/web/tag/FieldTag.java:52-59
 
-**SETTLE-R21 (v1)** — The display rounding of SETTLE-R20 is not the same as the
-calculation rounding of SETTLE-R15: the covered amount 1.005 is displayed as
-1.01 while the settlement amount computed from it is 1.00.
+**SETTLE-R20 (v2)** — `type="money"` parses the value with
+`Double.parseDouble` and formats it with `String.format("%.2f", ...)`, so
+amounts appear with exactly two decimals (for example settlement 1000.00,
+deductible 500.00). This formatting is a second, separate rounding: it happens
+at display time, on every money field including the ones SETTLE-R17 leaves
+unrounded, and `String.format` rounds the decimal expansion of the double
+HALF_UP rather than reusing the `Math.round` of SETTLE-R15. The two roundings
+are therefore not interchangeable and neither may be dropped in favour of the
+other.
+Observed: settlement_calculate, settlement_half_cent;
+Read: src/main/java/com/northstar/claims/web/tag/FieldTag.java:52-59;
+services/settlement-service/src/main/java/com/northstar/settlement/web/FieldFormatter.java
+
+**SETTLE-R21 (v1, superseded by v2)** — The display rounding of SETTLE-R20 is
+not the same as the calculation rounding of SETTLE-R15: the covered amount
+1.005 is displayed as 1.01 while the settlement amount computed from it is
+1.00.
 Observed: settlement_half_cent
+
+**SETTLE-R21 (v2)** — The display rounding of SETTLE-R20 and the calculation
+rounding of SETTLE-R15 disagree, and one screen shows both answers at once: for
+covered amount 1.005 with no deductible and no depreciation, `coveredAmount`
+is displayed as 1.01 (`String.format("%.2f", 1.005)`, whose nearest double is
+1.00500000000000000444…) while `settlementAmount` is 1.00
+(`Math.round(1.005 * 100.0) / 100.0`, where the product is 100.49999999999999).
+The pair 1.01 / 1.00 is the observable rule; a single decimal rounding of the
+input would show 1.01 for both.
+Observed: settlement_half_cent;
+Read: src/main/java/com/northstar/claims/service/SettlementCalculator.java:37;
+src/main/java/com/northstar/claims/web/tag/FieldTag.java:52-59
 
 **SETTLE-R22 (v1)** — A value that cannot be parsed as a number is printed
 unchanged by `type="money"`. `cappedAtLimit` is declared as money on
@@ -255,12 +294,15 @@ src/main/java/com/northstar/claims/web/tag/FieldTag.java:60-75
 | SETTLE-R13 | v1 | Initial rule, version 0.1 |
 | SETTLE-R14 | v1 | Initial rule, version 0.1 |
 | SETTLE-R15 | v1 | Initial rule, version 0.1 |
+| SETTLE-R15 | v2 | Version 0.5: names the binary `double` arithmetic as specified behaviour and records that decimal arithmetic would change the result; v1 text retained above |
 | SETTLE-R16 | v1 | Initial rule, version 0.1 |
 | SETTLE-R17 | v1 | Initial rule, version 0.1 |
 | SETTLE-R18 | v1 | Initial rule, version 0.1 |
 | SETTLE-R19 | v1 | Initial rule, version 0.1 |
 | SETTLE-R20 | v1 | Initial rule, version 0.1 |
+| SETTLE-R20 | v2 | Version 0.5: names `%.2f` display formatting as a second rounding, separate from the SETTLE-R15 calculation rounding and applied to fields SETTLE-R17 leaves unrounded; v1 text retained above |
 | SETTLE-R21 | v1 | Initial rule, version 0.1 |
+| SETTLE-R21 | v2 | Version 0.5: states the two roundings explicitly with the double values behind 1.01 / 1.00; v1 text retained above |
 | SETTLE-R22 | v1 | Initial rule, version 0.1 |
 | SETTLE-R23 | v1 | Initial rule, version 0.1 |
 | SETTLE-R24 | v1 | Initial rule, version 0.1 |
