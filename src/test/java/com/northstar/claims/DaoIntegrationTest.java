@@ -6,6 +6,7 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import com.northstar.claims.dao.ClaimDAO;
+import com.northstar.claims.dao.ConnectionPool;
 import com.northstar.claims.dao.PaymentDAO;
 import com.northstar.claims.dao.PolicyDAO;
 import com.northstar.claims.model.Policy;
@@ -18,6 +19,7 @@ public class DaoIntegrationTest {
     public static void seed() throws Exception {
         System.setProperty("claims.db.path", "target/db/test-northstar");
         DatabaseBootstrap.bootstrap(true);
+        ConnectionPool.getInstance().closeAll();
     }
 
     @Test

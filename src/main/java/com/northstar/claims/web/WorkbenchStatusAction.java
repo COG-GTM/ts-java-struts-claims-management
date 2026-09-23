@@ -21,8 +21,8 @@ public class WorkbenchStatusAction extends ClaimsActionSupport {
         if (status == null || status.length() == 0) {
             status = "INVESTIGATING";
         }
-        update("update CLAIM set status = '" + status
-                + "' where claim_id = " + claimId);
+        update("update CLAIM set status = ? where claim_id = ?",
+                new Object[] { status, new Integer(claimId) });
         request.setAttribute("claim", findClaim(claimId));
         request.setAttribute("claimStatus", status);
         request.setAttribute("claimId", new Integer(claimId));

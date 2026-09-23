@@ -18,8 +18,8 @@ public class WorkbenchReserveAction extends ClaimsActionSupport {
             throws Exception {
         int claimId = integer(request.getParameter("claimId"), 119);
         double reserve = decimal(request.getParameter("reserveAmount"), 4500);
-        update("update CLAIM set reserve_amount = " + reserve
-                + " where claim_id = " + claimId);
+        update("update CLAIM set reserve_amount = ? where claim_id = ?",
+                new Object[] { new Double(reserve), new Integer(claimId) });
         request.setAttribute("claim", findClaim(claimId));
         request.setAttribute("reserveAmount", new Double(reserve));
         request.setAttribute("claimId", new Integer(claimId));
