@@ -13,9 +13,10 @@ public class Adjuster {
 
     private int adjusterId;
     private String username;
-    private String password;
+    private String passwordHash;
     private String fullName;
     private String region;
+    private String role;
     private boolean active;
 
     /** Returns the adjusterId value. */
@@ -38,14 +39,14 @@ public class Adjuster {
         this.username = username;
     }
 
-    /** Returns the password value. */
-    public String getPassword() {
-        return password;
+    /** Returns the stored salted password hash. */
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    /** Stores the password value supplied by the caller. */
-    public void setPassword(String password) {
-        this.password = password;
+    /** Stores the salted password hash supplied by the caller. */
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     /** Returns the fullName value. */
@@ -68,6 +69,16 @@ public class Adjuster {
         this.region = region;
     }
 
+    /** Returns the authorization role value. */
+    public String getRole() {
+        return role;
+    }
+
+    /** Stores the authorization role value supplied by the caller. */
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     /** Returns the active value. */
     public boolean isActive() {
         return active;
@@ -84,9 +95,9 @@ public class Adjuster {
         text.append("Adjuster[");
         text.append("adjusterId=").append(adjusterId);        text.append(", ");
         text.append("username=").append(username);        text.append(", ");
-        text.append("password=").append(password);        text.append(", ");
         text.append("fullName=").append(fullName);        text.append(", ");
         text.append("region=").append(region);        text.append(", ");
+        text.append("role=").append(role);        text.append(", ");
         text.append("active=").append(active);
         text.append("]");
         return text.toString();

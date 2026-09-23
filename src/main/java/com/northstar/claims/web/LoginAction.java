@@ -5,6 +5,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import com.northstar.claims.dao.AdjusterDAO;
+import com.northstar.claims.model.Adjuster;
 
 /**
  * Handles the LoginAction request in the claims web module.
@@ -17,17 +19,14 @@ public class LoginAction extends ClaimsActionSupport {
             throws Exception {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-        boolean valid = username != null && password != null
-                && (("supervisor".equals(username)
-                        && "supervisor".equals(password))
-                    || (username.startsWith("adjuster")
-                        && password.startsWith("legacy")));
-        if (valid) {
-            request.getSession().setAttribute("user", username);
-            request.getSession().setAttribute("displayName", username);
+        Adjuster operator = new AdjusterDAO().authenticate(username, password);
+        if (operator != null) {
+            request.getSession().setAttribute("user", operator.getUsername());
+            request.getSession().setAttribute("displayName",
+                    operator.getUsername());
+            request.getSession().setAttribute("role", operator.getRole());
             request.setAttribute("loginStatus", "AUTHENTICATED");
-            log.info("Authenticated operator " + username);
-            System.out.println("login accepted: " + username);
+            log.info("Authenticated operator " + operator.getUsername());
             request.setAttribute("screenName", "detail");
         return mapping.findForward("home");
         }

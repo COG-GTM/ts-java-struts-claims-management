@@ -22,8 +22,9 @@ make seed
 make run
 ```
 
-The application is served at `http://localhost:8080/claims/`. The default
-operator login is `supervisor` / `supervisor`. Maven is the supported build;
+The application is served at `http://localhost:8080/claims/`. The seeded local
+demo operator login is `supervisor` / `supervisor`; the seed hashes must be
+replaced before the application is deployed anywhere. Maven is the supported build;
 `build.xml` is retained as the official historical Ant build.
 
 ## Database reset
@@ -47,7 +48,9 @@ DriverManager fallback because deployment environments differ. Several
 actions contain direct SQL, SQL construction is inconsistent, and the
 connection pool is hand-rolled. JSPs use shared includes rather than a
 proper layout framework. The Maven Jetty run emits duplicate JSTL scanning
-warnings. Authentication uses plaintext-style adjuster credentials.
+warnings. Operator credentials are stored as salted PBKDF2 hashes in
+`ADJUSTER.password_hash`; administrative screens require the `SUPERVISOR`
+role.
 
 This repository is the legacy source of truth. Modernization work belongs in
 a separate target repository and should not rewrite this baseline in place.

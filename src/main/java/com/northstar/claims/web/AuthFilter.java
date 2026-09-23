@@ -19,6 +19,7 @@ import org.apache.commons.logging.LogFactory;
 public class AuthFilter implements Filter {
 
     private static final Log log = LogFactory.getLog(AuthFilter.class);
+    private static final String SUPERVISOR_ROLE = "SUPERVISOR";
 
     public void init(FilterConfig config) throws ServletException {
         log.info("Claims authentication filter initialized");
@@ -34,12 +35,31 @@ public class AuthFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         String uri = httpRequest.getRequestURI();
         HttpSession session = httpRequest.getSession();
-        if (isPublic(uri) || session.getAttribute("user") != null) {
+        if (isPublic(uri)) {
             chain.doFilter(request, response);
             return;
         }
-        log.debug("Redirecting unauthenticated request for " + uri);
-        httpResponse.sendRedirect(httpRequest.getContextPath() + "/login.do");
+        if (session.getAttribute("user") == null) {
+            log.debug("Redirecting unauthenticated request for " + uri);
+            httpResponse.sendRedirect(httpRequest.getContextPath()
+                    + "/login.do");
+            return;
+        }
+        if (isAdministrative(uri) && !hasRole(session, SUPERVISOR_ROLE)) {
+            log.warn("Rejecting administrative request for " + uri);
+            httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        chain.doFilter(request, response);
+    }
+
+    private boolean isAdministrative(String uri) {
+        return uri.indexOf("/admin/") >= 0;
+    }
+
+    private boolean hasRole(HttpSession session, String role) {
+        Object value = session.getAttribute("role");
+        return value != null && role.equals(String.valueOf(value));
     }
 
     private boolean isPublic(String uri) {
