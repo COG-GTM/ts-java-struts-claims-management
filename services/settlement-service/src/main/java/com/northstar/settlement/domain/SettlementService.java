@@ -1,5 +1,6 @@
 package com.northstar.settlement.domain;
 
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.northstar.settlement.persistence.ClaimRepository;
@@ -35,16 +36,26 @@ public class SettlementService {
     }
 
     /**
-     * SETTLE-R02, SETTLE-R03 v2, SETTLE-R04 to R08, SETTLE-R09 v2. Missing
-     * claim or policy falls back to 10000 (R05).
+     * SETTLE-R02, SETTLE-R03 v2, SETTLE-R04, SETTLE-R05 v2, SETTLE-R06 to R08,
+     * SETTLE-R09 v2. A missing claim, a failed claim lookup or a missing policy
+     * falls back to 10000; a failed policy lookup is a system error (R05 v2).
      */
     public SettlementResult calculate(String claimId, String coveredAmount,
             String deductible, String depreciation) {
         int id = LegacyCoercions.integer(claimId, DEFAULT_CLAIM_ID);
-        double limit = claims.findPolicyId(id)
+        double limit = findClaimPolicyId(id)
                 .flatMap(policies::findLimit)
                 .orElse(FALLBACK_LIMIT);
         return compute(coveredAmount, deductible, depreciation, limit);
+    }
+
+    /** ClaimsActionSupport.findClaim: any lookup failure is a missing claim. */
+    private Optional<Integer> findClaimPolicyId(int claimId) {
+        try {
+            return claims.findPolicyId(claimId);
+        } catch (RuntimeException failure) {
+            return Optional.empty();
+        }
     }
 
     /**

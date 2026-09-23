@@ -1,6 +1,6 @@
 # SPEC-SETTLE-001: settlement calculation
 
-Version: 0.3
+Version: 0.4
 Status: draft, reviewed by the engineer
 Source of truth for behaviour: `transcripts/settlement_*.json`, captured with
 `make capture` against the Struts application at commit `225c8d3`.
@@ -48,6 +48,7 @@ A blank or missing `deductible` is treated as `0.00` and shown as
 `settlement_half_cent`.
 
 ### SETTLE-R05 Policy limit
+Superseded by SETTLE-R05 v2 (version 0.4); text kept for the history.
 The policy limit is the `policy_limit` of the policy attached to the claim.
 If the claim does not exist, or its policy does not exist, the limit is
 `10000` and the calculation still runs. Observed: `settlement_calculate`
@@ -55,6 +56,20 @@ If the claim does not exist, or its policy does not exist, the limit is
 `double limit = 10000;` before the lookups; confirmed by a manual request with
 `claimId=9999`, which returned `settlementAmount 90.00` for covered 100 and
 deductible 10. Open question: OQ-01.
+
+### SETTLE-R05 v2 Policy limit
+As SETTLE-R05, and the claim lookup itself may fail: `ClaimsActionSupport.findClaim`
+catches every exception from `ClaimDAO.findById`, logs a warning and returns
+`null`, so a failed claim lookup behaves like a missing claim and calculate
+still answers with the `10000` limit. The policy lookup
+(`new PolicyDAO().findById(claim.getPolicyId())`) is outside that catch, so a
+failed policy lookup is a system error (SETTLE-R06 screen). Save uses the same
+`findClaim` but dereferences the result without a null check (SETTLE-R12), so
+there a failed lookup is a system error. Observed: `settlement_calculate`
+(claim 119, policy 9001, limit 1000). Read: `ClaimsActionSupport.findClaim`,
+`SettlementCalculateAction` lines 24 to 29; the lookup-failure path has no
+transcript because the capture harness cannot make the `CLAIM` query fail.
+Open question: OQ-01.
 
 ### SETTLE-R06 Non-numeric deductible
 A `deductible` that is not a number ends in the system error screen
@@ -123,4 +138,6 @@ highest `settlement_id` for that claim. Read: `SettlementDAO.findByClaim`
 | SETTLE-R03 | 0.3 | superseded by SETTLE-R03 v2 |
 | SETTLE-R03 v2 | 0.3 | pull request review: "numeric" means accepted by `Double.parseDouble` (`1d`, `0x1.0p0`, `Infinity`, `NaN`, surrounding whitespace, no length limit); recorded as QUIRK-08, raised OQ-05 |
 | SETTLE-R09 | 0.3 | superseded by SETTLE-R09 v2 |
+| SETTLE-R05 | 0.4 | superseded by SETTLE-R05 v2 |
+| SETTLE-R05 v2 | 0.4 | pull request review: a failed claim lookup falls back to `10000` like a missing claim (`findClaim` swallows the exception); a failed policy lookup does not |
 | SETTLE-R09 v2 | 0.3 | pull request review: the arithmetic is `double` end to end and rounding is `Math.round(amount * 100.0) / 100.0`, not `BigDecimal` `HALF_UP`; QUIRK-01, QUIRK-08 |

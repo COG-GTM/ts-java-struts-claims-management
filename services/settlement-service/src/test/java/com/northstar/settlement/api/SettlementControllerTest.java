@@ -32,7 +32,7 @@ class SettlementControllerTest {
                 .andExpect(jsonPath("$.errors").isEmpty());
     }
 
-    /** SETTLE-R05: no such claim, limit falls back to 10000. */
+    /** SETTLE-R05 v2: no such claim, limit falls back to 10000. */
     @Test
     void unknownClaimUsesFallbackLimit() throws Exception {
         mvc.perform(post("/settlement/calculate")
