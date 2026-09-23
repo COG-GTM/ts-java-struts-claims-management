@@ -47,34 +47,54 @@ def status_class(status):
 
 
 def request_json(url, data=None, method="GET"):
+    """Send a request and read its JSON body.
+
+    Returns ``(status, body)``, where body is None when the answer is not JSON
+    at all. That is a difference between the service and its recording, not a
+    harness error, so it is reported rather than raised.
+    """
     request = urllib.request.Request(url, data=data, method=method)
     if data is not None:
         request.add_header("Content-Type", "application/x-www-form-urlencoded")
     try:
         with urllib.request.urlopen(request) as response:
-            return response.status, json.loads(response.read().decode())
+            status, text = response.status, response.read().decode()
     except urllib.error.HTTPError as failure:
-        body = failure.read().decode()
-        try:
-            return failure.code, json.loads(body)
-        except ValueError:
-            return failure.code, {}
+        status, text = failure.code, failure.read().decode()
+    try:
+        return status, json.loads(text)
+    except ValueError:
+        return status, None
+
+
+def recorded_request(routes, transcript):
+    """The service path, method and parameters that replay a recorded request.
+
+    A captured GET keeps its query in ``request.path`` (`policy_search` records
+    `/claims/policy/search.do?lineOfBusiness=AUTO` with an empty form), so the
+    query is split off, the route looked up on the bare legacy path, and the
+    recorded query and form sent together.
+    """
+    recorded = transcript["request"]
+    legacy, _, query = recorded["path"].partition("?")
+    path = routes["routes"][legacy]
+    parameters = urllib.parse.parse_qsl(query, keep_blank_values=True)
+    parameters += list(recorded.get("form", {}).items())
+    rewrite = routes.get("request_rewrites", {}).get(path)
+    if rewrite and "actor_parameter" in rewrite:
+        parameters.append((rewrite["actor_parameter"], transcript.get("actor", "")))
+    return path, recorded["method"], parameters
 
 
 def replay(base_url, routes, transcript):
     """Send the recorded request to the service path that answers for it."""
-    recorded = transcript["request"]
-    path = routes["routes"][recorded["path"]]
-    form = dict(recorded.get("form", {}))
-    rewrite = routes.get("request_rewrites", {}).get(path)
-    if rewrite and "actor_parameter" in rewrite:
-        form[rewrite["actor_parameter"]] = transcript.get("actor", "")
+    path, method, parameters = recorded_request(routes, transcript)
     url = base_url + path
-    if recorded["method"] == "GET":
-        if form:
-            url += "?" + urllib.parse.urlencode(form)
+    if method == "GET":
+        if parameters:
+            url += "?" + urllib.parse.urlencode(parameters)
         return request_json(url)
-    return request_json(url, urllib.parse.urlencode(form).encode(), recorded["method"])
+    return request_json(url, urllib.parse.urlencode(parameters).encode(), method)
 
 
 def pattern_matches(pattern, parts):
@@ -99,10 +119,13 @@ def probe(base_url, routes, key):
 
     Returns ``(outcome, value, identity)``, where outcome is ``"read"``, or the
     routes.json ``unprobeable`` reason for a key naming state outside this
-    service's boundary, or ``"unconfigured"`` for a key with no probe at all —
-    which is a parity failure, not a note. ``identity`` is the identity of the
-    row the probe read, which tells a row this request wrote from an identical
-    row an earlier run left behind.
+    service's boundary, or ``"unconfigured"`` for a key with no probe at all, or
+    ``("error", why)`` when the probe endpoint itself did not answer with JSON
+    and a 2xx. Only an ``unprobeable`` reason is a note; the other two are parity
+    failures, and an endpoint that failed is reported as that rather than as a
+    wrong stored value. ``identity`` is the identity of the row the probe read,
+    which tells a row this request wrote from an identical row an earlier run
+    left behind.
     """
     parts = key.split(".")
     for pattern, spec in routes.get("probes", {}).items():
@@ -110,7 +133,12 @@ def probe(base_url, routes, key):
         if bindings is None:
             continue
         query = {name: bindings.get(value, value) for name, value in spec["query"].items()}
-        _, body = request_json(base_url + spec["path"] + "?" + urllib.parse.urlencode(query))
+        status, body = request_json(
+            base_url + spec["path"] + "?" + urllib.parse.urlencode(query))
+        if status_class(status) != "2xx" or body is None:
+            why = "%s answered %d%s" % (spec["path"], status,
+                                        "" if body is not None else " with a body that is not JSON")
+            return ("error", why), None, None
         fields = body.get("fields", {})
         return "read", fields.get(spec["field"]), fields.get(spec.get("identity_field"))
     for pattern, reason in routes.get("unprobeable", {}).items():
@@ -143,9 +171,16 @@ def differences(base_url, routes, expected, status, body, before, writes):
     ``expected`` is the transcript's recorded answer, or the answer a CHG
     record approves in its place. ``before`` holds the row identity each probe
     read before the request, and ``writes`` says whether the replayed path is a
-    write, in which case the probed row has to be a new one.
+    write, in which case the probed row has to be a new one. A ``body`` of None
+    means the service did not answer JSON at all, which is itself a difference.
     """
     found = []
+
+    if body is None:
+        found.append(difference("response_format", "a JSON screen", "a body that is not JSON",
+                                "response body: JSON -> not JSON, so nothing else "
+                                "could be compared"))
+        body = {}
 
     legacy_class = status_class(expected["status"])
     service_class = status_class(status)
@@ -179,6 +214,10 @@ def differences(base_url, routes, expected, status, body, before, writes):
             found.append(difference("db:%s" % key, value, "no probe configured",
                                     "db %s: %r -> no probe is configured for this key"
                                     % (key, value)))
+        elif isinstance(outcome, tuple):
+            found.append(difference("db:%s" % key, value, "the probe failed",
+                                    "db %s: %r could not be read because %s"
+                                    % (key, value, outcome[1])))
         elif outcome != "read":
             notes.append("db %s not probed: %s" % (key, outcome))
         elif actual != value:
@@ -292,10 +331,11 @@ def main():
         approved = approval(routes, scenario)
         expected = approved["expected"] if approved else transcript["expected"]
         before = probe_identities(base_url, routes, expected["db_state"])
-        writes = routes["routes"][transcript["request"]["path"]] in routes.get("writes", [])
+        path, _, _ = recorded_request(routes, transcript)
+        writes = path in routes.get("writes", [])
         status, body = replay(base_url, routes, transcript)
         found, notes = differences(base_url, routes, expected, status, body, before, writes)
-        failures = [entry["text"] for entry in found]
+        failures = [found_difference["text"] for found_difference in found]
         if failures:
             verdict, detail = "FAIL", "; ".join(failures)
         elif approved:
@@ -305,7 +345,7 @@ def main():
         reported = ("%s (%s)" % (verdict, approved["change"])) if approved else verdict
         results.append({"scenario": scenario, "description": entry["description"],
                         "verdict": verdict, "reported": reported, "rules": rules,
-                        "detail": detail, "differences": failures,
+                        "detail": detail, "differences": found,
                         "change_ids": [approved["change"]] if approved else [],
                         "notes": notes})
         print("%-30s %-7s %s" % (scenario, reported, detail))
