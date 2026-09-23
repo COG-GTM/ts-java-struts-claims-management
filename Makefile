@@ -28,9 +28,11 @@ service-test:
 service-run:
 	cd $(SERVICE_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B spring-boot:run
 
-# Replays the settlement transcripts against a running service (make service-run).
+# Replays the module's transcripts against a running service (make service-run).
+PARITY_MODULE = settlement
+
 parity:
-	python3 tools/parity/settlement_parity.py
+	python3 parity/replay.py --module $(PARITY_MODULE)
 
 clean:
 	mvn -q clean

@@ -1,0 +1,61 @@
+{
+  "service": "settlement-service",
+  "base_url": "http://localhost:8083",
+  "module": "settlement",
+  "routes": {
+    "/claims/settlement/calculate.do": "/settlement/calculate",
+    "/claims/settlement/save.do": "/settlement/save",
+    "/claims/settlement/detail.do": "/settlement/detail"
+  },
+  "request_rewrites": {
+    "/settlement/save": {
+      "actor_parameter": "user",
+      "why": "ADR-001 'Out of scope': the service is unauthenticated, so the session operator that SettlementSaveAction reads becomes an explicit request parameter. The transcript actor is sent as that parameter; the observable savedBy value is unchanged."
+    }
+  },
+  "handles": [
+    "settlement_calculate",
+    "settlement_save",
+    "settlement_policy_cap",
+    "settlement_blank_deductible",
+    "settlement_deductible_floor",
+    "settlement_half_cent",
+    "settlement_bad_deductible"
+  ],
+  "skips": {
+    "payment_issue": "Payment issue stays in the monolith: ADR-001 extracts only /settlement/calculate, /settlement/save and /settlement/detail; /claims/payment/issue.do has no service route.",
+    "payment_history": "Payment history stays in the monolith: /claims/payment/history.do has no service route (ADR-001 'Out of scope')."
+  },
+  "probes": {
+    "settlement.claim.<id>.amount": {
+      "request": "GET /settlement/detail?claimId=<id>",
+      "field": "detailAmount",
+      "why": "SETTLE-R30: detail returns the highest settlement_id for the claim, which is the row the save path just wrote."
+    }
+  },
+  "unprobeable": {
+    "claim.<id>.status": "The CLAIM table is outside the service boundary (ADR-001 'Out of scope'); the service exposes no claim-status read, and SETTLE-R24 records that the settlement paths never write it.",
+    "payment.<id>.<field>": "The PAYMENT table is outside the service boundary.",
+    "payment.count.claim.<id>": "The PAYMENT table is outside the service boundary."
+  },
+  "approved_differences": [
+    {
+      "id": "CHG-001",
+      "record": "docs/changes/CHG-001-error-status-class.md",
+      "scenarios": ["settlement_bad_deductible"],
+      "kind": "status_class",
+      "legacy": "2xx",
+      "service": "5xx",
+      "why": "ADR-001 'How parity is judged' replaces the Struts forward to error.jsp (status 200) with the equivalent error status class; the screen, the empty business fields and the empty validation keys are unchanged."
+    }
+  ],
+  "rules": {
+    "settlement_calculate": ["SETTLE-R01", "SETTLE-R02", "SETTLE-R03", "SETTLE-R04", "SETTLE-R07", "SETTLE-R09", "SETTLE-R11", "SETTLE-R13", "SETTLE-R14", "SETTLE-R17", "SETTLE-R18", "SETTLE-R20", "SETTLE-R22", "SETTLE-R24"],
+    "settlement_policy_cap": ["SETTLE-R01", "SETTLE-R07", "SETTLE-R11", "SETTLE-R13", "SETTLE-R14", "SETTLE-R20", "SETTLE-R22", "SETTLE-R24"],
+    "settlement_blank_deductible": ["SETTLE-R01", "SETTLE-R05", "SETTLE-R07", "SETTLE-R10", "SETTLE-R14", "SETTLE-R20", "SETTLE-R22", "SETTLE-R24"],
+    "settlement_deductible_floor": ["SETTLE-R01", "SETTLE-R07", "SETTLE-R11", "SETTLE-R12", "SETTLE-R14", "SETTLE-R20", "SETTLE-R22", "SETTLE-R24"],
+    "settlement_half_cent": ["SETTLE-R01", "SETTLE-R05", "SETTLE-R14", "SETTLE-R15", "SETTLE-R16", "SETTLE-R17", "SETTLE-R20", "SETTLE-R21", "SETTLE-R24"],
+    "settlement_bad_deductible": ["SETTLE-R06", "SETTLE-R09"],
+    "settlement_save": ["SETTLE-R02", "SETTLE-R03", "SETTLE-R04", "SETTLE-R09", "SETTLE-R13", "SETTLE-R25", "SETTLE-R27", "SETTLE-R28", "SETTLE-R29", "SETTLE-R30"]
+  }
+}
