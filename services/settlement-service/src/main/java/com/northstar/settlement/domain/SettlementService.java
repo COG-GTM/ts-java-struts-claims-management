@@ -36,9 +36,10 @@ public class SettlementService {
     }
 
     /**
-     * SETTLE-R02, SETTLE-R03 v2, SETTLE-R04, SETTLE-R05 v2, SETTLE-R06 to R08,
-     * SETTLE-R09 v2. A missing claim, a failed claim lookup or a missing policy
-     * falls back to 10000; a failed policy lookup is a system error (R05 v2).
+     * SETTLE-R02, SETTLE-R03 v2, SETTLE-R04, SETTLE-R05 v2, SETTLE-R06 v2,
+     * SETTLE-R07, SETTLE-R08, SETTLE-R09 v2. A missing claim, a failed claim
+     * lookup or a missing policy falls back to 10000; a failed policy lookup
+     * is a system error (R05 v2).
      */
     public SettlementResult calculate(String claimId, String coveredAmount,
             String deductible, String depreciation) {

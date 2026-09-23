@@ -47,12 +47,12 @@ class SettlementCalculatorTest {
     }
 
     /**
-     * SETTLE-R09 v2, SETTLE-R10, QUIRK-08: transcripts/settlement_half_cent.json.
+     * SETTLE-R09 v2, SETTLE-R10 v2, QUIRK-08: transcripts/settlement_half_cent.json.
      * Math.round(1.005 * 100.0) is 100, so the amount is 1.00; the covered
      * amount is displayed by String.format("%.2f") and shows 1.01.
      */
     @Test
-    void halfCentRoundsDownButDisplaysCoveredUp() {
+    void halfCentUsesLegacyDoubleMath() {
         SettlementResult result = calculator.calculate(1.005, 0, 0.00, 100000);
         assertThat(result.settlementAmount()).isEqualTo(1.00);
         assertThat(LegacyDisplay.money(result.settlementAmount()))

@@ -44,7 +44,7 @@ class SettlementControllerTest {
                 .andExpect(jsonPath("$.fields.cappedAtLimit").value("false"));
     }
 
-    /** SETTLE-R06: transcripts/settlement_bad_deductible.json. */
+    /** SETTLE-R06 v2: transcripts/settlement_bad_deductible.json. */
     @Test
     void nonNumericDeductibleIsSystemError() throws Exception {
         mvc.perform(post("/settlement/calculate")

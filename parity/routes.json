@@ -26,7 +26,7 @@
           "SETTLE-R05 v2",
           "SETTLE-R07",
           "SETTLE-R08",
-          "SETTLE-R10",
+          "SETTLE-R10 v2",
           "SETTLE-R11"
         ],
         "settlement_save": [
@@ -45,10 +45,10 @@
         ],
         "settlement_half_cent": [
           "SETTLE-R09 v2",
-          "SETTLE-R10"
+          "SETTLE-R10 v2"
         ],
         "settlement_bad_deductible": [
-          "SETTLE-R06"
+          "SETTLE-R06 v2"
         ]
       },
       "approved_differences": {}

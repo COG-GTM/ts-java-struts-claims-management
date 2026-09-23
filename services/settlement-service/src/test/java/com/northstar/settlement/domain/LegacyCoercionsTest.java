@@ -56,7 +56,7 @@ class LegacyCoercionsTest {
         assertThat(LegacyCoercions.deductible(null)).isEqualTo(0);
     }
 
-    /** SETTLE-R06. */
+    /** SETTLE-R06 v2. */
     @Test
     void nonNumericDeductibleFails() {
         assertThatThrownBy(() -> LegacyCoercions.deductible("abc"))

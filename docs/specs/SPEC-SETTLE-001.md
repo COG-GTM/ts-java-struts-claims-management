@@ -1,6 +1,6 @@
 # SPEC-SETTLE-001: settlement calculation
 
-Version: 0.4
+Version: 0.5
 Status: draft, reviewed by the engineer
 Source of truth for behaviour: `transcripts/settlement_*.json`, captured with
 `make capture` against the Struts application at commit `225c8d3`.
@@ -72,9 +72,21 @@ transcript because the capture harness cannot make the `CLAIM` query fail.
 Open question: OQ-01.
 
 ### SETTLE-R06 Non-numeric deductible
+Superseded by SETTLE-R06 v2 (version 0.5); text kept for the history.
 A `deductible` that is not a number ends in the system error screen
 (`errors.system`, HTTP 200, no business fields). Observed:
 `settlement_bad_deductible`.
+
+### SETTLE-R06 v2 Non-numeric deductible and the error screen
+A `deductible` that is not a number throws `NumberFormatException` inside
+`SettlementCalculator.calculate` (`Double.parseDouble(deductible)`), and any
+unhandled exception answers the same way: screen `error`, HTTP 200, no
+business fields and an empty validation error list. `errors.system` is static
+text on `error.jsp`, not an `ns:error` marker, so it is not a validation
+error key. Kept as legacy behaviour (QUIRK-05). Observed:
+`settlement_bad_deductible` (`result forward:/WEB-INF/jsp/error.jsp`,
+`status 200`, `validation_errors []`). Read: `struts-config.xml`
+`<global-exceptions>` (`java.lang.Exception` to `error.jsp`), `error.jsp`.
 
 ## Calculation
 
@@ -104,10 +116,22 @@ observed `1.00` already contradicted for a decimal reading. Observed:
 `double rounded = Math.round(amount * 100.0) / 100.0;` statement.
 
 ### SETTLE-R10 Display format
+Superseded by SETTLE-R10 v2 (version 0.5); text kept for the history.
 Money fields (`coveredAmount`, `deductibleApplied`, `depreciation`,
 `settlementAmount`) are shown with exactly two decimals. `cappedAtLimit` is
 shown as `true` or `false`. Observed: every settlement transcript with a
 result screen.
+
+### SETTLE-R10 v2 Display format
+Money fields (`coveredAmount`, `deductibleApplied`, `depreciation`,
+`settlementAmount`) are shown as `String.format("%.2f", double)`, which is
+a second, separate rounding of the decimal representation, half up: for input
+`1.005` the screen shows `coveredAmount 1.01` next to `settlementAmount 1.00`
+(SETTLE-R09 v2). Both values are kept as legacy behaviour (QUIRK-01,
+QUIRK-02). `cappedAtLimit` is shown as `true` or `false`. Observed: every
+settlement transcript with a result screen; `settlement_half_cent` for the
+`1.01` / `1.00` pair. Read: `FieldTag.formatValue`, the
+`String.format("%.2f", ...)` branch for `type="money"`.
 
 ## Persistence
 
@@ -140,4 +164,8 @@ highest `settlement_id` for that claim. Read: `SettlementDAO.findByClaim`
 | SETTLE-R09 | 0.3 | superseded by SETTLE-R09 v2 |
 | SETTLE-R05 | 0.4 | superseded by SETTLE-R05 v2 |
 | SETTLE-R05 v2 | 0.4 | pull request review: a failed claim lookup falls back to `10000` like a missing claim (`findClaim` swallows the exception); a failed policy lookup does not |
-| SETTLE-R09 v2 | 0.3 | pull request review: the arithmetic is `double` end to end and rounding is `Math.round(amount * 100.0) / 100.0`, not `BigDecimal` `HALF_UP`; QUIRK-01, QUIRK-08 |
+| SETTLE-R09 v2 | 0.3 | pull request review: the arithmetic is `double` end to end and rounding is `Math.round(amount * 100.0) / 100.0`, not `BigDecimal` `HALF_UP`; decision: keep the legacy behaviour (`1.005` settles at `1.00`), not fix it; QUIRK-01, QUIRK-08 |
+| SETTLE-R06 | 0.5 | superseded by SETTLE-R06 v2 |
+| SETTLE-R06 v2 | 0.5 | parity review: any unhandled exception is screen `error`, HTTP 200, empty fields, empty errors (`errors.system` is page text, not an error key); decision: keep the legacy behaviour; QUIRK-05 |
+| SETTLE-R10 | 0.5 | superseded by SETTLE-R10 v2 |
+| SETTLE-R10 v2 | 0.5 | parity review: display is `String.format("%.2f", double)` like `FieldTag`, a separate half-up rounding of the decimal representation (`coveredAmount 1.01` beside `settlementAmount 1.00`); decision: keep the legacy behaviour; QUIRK-02 |
