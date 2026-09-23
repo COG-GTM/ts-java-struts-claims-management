@@ -1,0 +1,106 @@
+{
+  "base_url": "http://localhost:8083",
+  "module": "settlement",
+  "scenarios": [
+    {
+      "differences": [],
+      "note": "",
+      "rules": [
+        "SETTLE-R01",
+        "SETTLE-R05",
+        "SETTLE-R07",
+        "SETTLE-R08",
+        "SETTLE-R10",
+        "SETTLE-R11"
+      ],
+      "scenario": "settlement_calculate",
+      "unprobed": [],
+      "verdict": "PASS"
+    },
+    {
+      "differences": [],
+      "note": "",
+      "rules": [
+        "SETTLE-R12",
+        "SETTLE-R13"
+      ],
+      "scenario": "settlement_save",
+      "unprobed": [],
+      "verdict": "PASS"
+    },
+    {
+      "differences": [],
+      "note": "screen not served by this service",
+      "rules": [],
+      "scenario": "payment_issue",
+      "unprobed": [],
+      "verdict": "SKIP"
+    },
+    {
+      "differences": [],
+      "note": "screen not served by this service",
+      "rules": [],
+      "scenario": "payment_history",
+      "unprobed": [],
+      "verdict": "SKIP"
+    },
+    {
+      "differences": [],
+      "note": "db_state not probed: claim.120.status (read through /workbench/view, not served)",
+      "rules": [
+        "SETTLE-R04",
+        "SETTLE-R07"
+      ],
+      "scenario": "settlement_blank_deductible",
+      "unprobed": [
+        "claim.120.status (read through /workbench/view, not served)"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "differences": [],
+      "note": "",
+      "rules": [
+        "SETTLE-R09 v2",
+        "SETTLE-R10"
+      ],
+      "scenario": "settlement_half_cent",
+      "unprobed": [],
+      "verdict": "PASS"
+    },
+    {
+      "differences": [],
+      "note": "",
+      "rules": [
+        "SETTLE-R08"
+      ],
+      "scenario": "settlement_policy_cap",
+      "unprobed": [],
+      "verdict": "PASS"
+    },
+    {
+      "differences": [],
+      "note": "",
+      "rules": [
+        "SETTLE-R07"
+      ],
+      "scenario": "settlement_deductible_floor",
+      "unprobed": [],
+      "verdict": "PASS"
+    },
+    {
+      "differences": [],
+      "note": "",
+      "rules": [
+        "SETTLE-R06"
+      ],
+      "scenario": "settlement_bad_deductible",
+      "unprobed": [],
+      "verdict": "PASS"
+    }
+  ],
+  "summary": {
+    "PASS": 7,
+    "SKIP": 2
+  }
+}

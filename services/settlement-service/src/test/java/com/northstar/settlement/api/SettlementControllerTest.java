@@ -53,7 +53,8 @@ class SettlementControllerTest {
                 .param("deductible", "abc").param("depreciation", "0.00"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.screen").value("error"))
-                .andExpect(jsonPath("$.errors[0]").value("errors.system"));
+                .andExpect(jsonPath("$.fields").isEmpty())
+                .andExpect(jsonPath("$.errors").isEmpty());
     }
 
     /** SETTLE-R12, SETTLE-R13: transcripts/settlement_save.json then detail. */

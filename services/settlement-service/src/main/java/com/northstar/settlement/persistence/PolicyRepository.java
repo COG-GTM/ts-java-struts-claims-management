@@ -1,6 +1,5 @@
 package com.northstar.settlement.persistence;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -15,9 +14,9 @@ public class PolicyRepository {
         this.jdbc = jdbc;
     }
 
-    public Optional<BigDecimal> findLimit(int policyId) {
+    public Optional<Double> findLimit(int policyId) {
         return jdbc.query("select policy_limit from POLICY where policy_id = ?",
-                (rs, i) -> BigDecimal.valueOf(rs.getDouble("policy_limit")),
+                (rs, i) -> rs.getDouble("policy_limit"),
                 policyId).stream().findFirst();
     }
 }

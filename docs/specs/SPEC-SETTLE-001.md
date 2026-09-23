@@ -1,6 +1,6 @@
 # SPEC-SETTLE-001: settlement calculation
 
-Version: 0.2
+Version: 0.3
 Status: draft, reviewed by the engineer
 Source of truth for behaviour: `transcripts/settlement_*.json`, captured with
 `make capture` against the Struts application at commit `225c8d3`.
@@ -27,9 +27,20 @@ A missing or non-numeric `claimId` is treated as `119`. Read:
 `SettlementCalculateAction`, `integer(request.getParameter("claimId"), 119)`.
 
 ### SETTLE-R03 Amount fallbacks
+Superseded by SETTLE-R03 v2 (version 0.3); text kept for the history.
 A missing or non-numeric `coveredAmount` is treated as `5000`; a missing or
 non-numeric `depreciation` is treated as `0`. Read: `decimal(...)` calls in
 `SettlementCalculateAction`.
+
+### SETTLE-R03 v2 Amount fallbacks
+A missing or non-numeric `coveredAmount` is treated as `5000`; a missing or
+non-numeric `depreciation` is treated as `0`. "Numeric" means accepted by
+`Double.parseDouble`: `1d`, `0x1.0p0`, `Infinity`, `NaN` and values with
+surrounding whitespace are numeric, `1,000` is not, and there is no length
+limit (QUIRK-08, OQ-05). Not a behaviour change: v1 left "numeric"
+undefined and the service had read it as `BigDecimal`. Read:
+`ClaimsActionSupport.decimal` (`Double.parseDouble(value)` with the fallback
+on any exception), `decimal(...)` calls in `SettlementCalculateAction`.
 
 ### SETTLE-R04 Blank deductible
 A blank or missing `deductible` is treated as `0.00` and shown as
@@ -64,8 +75,18 @@ If `net` exceeds the policy limit, the settlement amount is the limit and
 (19900 capped to `1000.00`), `settlement_half_cent` (`false`).
 
 ### SETTLE-R09 Rounding
+Superseded by SETTLE-R09 v2 (version 0.3); text kept for the history.
 The settlement amount is rounded to the nearest cent. Observed:
 `settlement_half_cent` (input `1.005` gives `1.00`).
+
+### SETTLE-R09 v2 Rounding
+The arithmetic of SETTLE-R07 and SETTLE-R08 runs on `double` and the
+settlement amount is `Math.round(amount * 100.0) / 100.0`, which is not
+half-up rounding of the decimal value: `1.005` gives `1.00` (QUIRK-01,
+QUIRK-08). Not a behaviour change: v1 said "nearest cent", which the
+observed `1.00` already contradicted for a decimal reading. Observed:
+`settlement_half_cent`. Read: `SettlementCalculator.calculate`, the
+`double rounded = Math.round(amount * 100.0) / 100.0;` statement.
 
 ### SETTLE-R10 Display format
 Money fields (`coveredAmount`, `deductibleApplied`, `depreciation`,
@@ -99,3 +120,7 @@ highest `settlement_id` for that claim. Read: `SettlementDAO.findByClaim`
 | --- | --- | --- |
 | all | 0.1 | first draft from transcripts and code |
 | SETTLE-R05 | 0.2 | engineer added the `10000` fallback the draft missed; raised OQ-01 |
+| SETTLE-R03 | 0.3 | superseded by SETTLE-R03 v2 |
+| SETTLE-R03 v2 | 0.3 | pull request review: "numeric" means accepted by `Double.parseDouble` (`1d`, `0x1.0p0`, `Infinity`, `NaN`, surrounding whitespace, no length limit); recorded as QUIRK-08, raised OQ-05 |
+| SETTLE-R09 | 0.3 | superseded by SETTLE-R09 v2 |
+| SETTLE-R09 v2 | 0.3 | pull request review: the arithmetic is `double` end to end and rounding is `Math.round(amount * 100.0) / 100.0`, not `BigDecimal` `HALF_UP`; QUIRK-01, QUIRK-08 |

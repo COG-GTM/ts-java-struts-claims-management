@@ -1,10 +1,12 @@
 package com.northstar.settlement.domain;
 
-import java.math.BigDecimal;
-
 /**
  * Request parameter coercions copied from ClaimsActionSupport and
- * SettlementCalculateAction (SETTLE-R02, R03, R04, R06).
+ * SettlementCalculator (SETTLE-R02, SETTLE-R03 v2, SETTLE-R04, SETTLE-R06).
+ * Numbers are parsed with {@link Double#parseDouble}, exactly as the legacy
+ * code does, so every spelling that method accepts ({@code 1d},
+ * {@code 0x1.0p0}, {@code Infinity}, {@code NaN}, surrounding whitespace) is
+ * accepted here too. QUIRK-08.
  */
 public final class LegacyCoercions {
 
@@ -21,22 +23,24 @@ public final class LegacyCoercions {
     }
 
     /** ClaimsActionSupport.decimal: anything unparsable becomes the fallback. */
-    public static BigDecimal decimal(String value, String fallback) {
+    public static double decimal(String value, double fallback) {
         try {
-            return new BigDecimal(value.trim());
+            return Double.parseDouble(value);
         } catch (RuntimeException failure) {
-            return new BigDecimal(fallback);
+            return fallback;
         }
     }
 
     /**
-     * SettlementCalculator: blank is zero, anything else must parse or the
-     * request fails (SETTLE-R04, SETTLE-R06).
+     * SettlementCalculateAction passes {@code "0"} for a null or empty
+     * deductible; SettlementCalculator then treats a blank string as zero and
+     * parses anything else, so a non-numeric value throws
+     * {@link NumberFormatException} (SETTLE-R04, SETTLE-R06).
      */
-    public static BigDecimal deductible(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return BigDecimal.ZERO;
+    public static double deductible(String value) {
+        if (value == null || value.trim().length() == 0) {
+            return 0;
         }
-        return new BigDecimal(value.trim());
+        return Double.parseDouble(value);
     }
 }

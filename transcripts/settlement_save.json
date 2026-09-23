@@ -7,7 +7,7 @@
       "settlementAmount": "1000.00"
     },
     "db_state": {
-      "settlement.claim.119.amount": "1000.00"
+      "settlement.claim.119.detail_amount": "1000.00"
     },
     "result": "forward:/WEB-INF/jsp/settlement/save.jsp",
     "status": 200,

@@ -1,8 +1,6 @@
 package com.northstar.settlement.domain;
 
-import java.math.BigDecimal;
-
-public record SettlementResult(BigDecimal coveredAmount,
-        BigDecimal deductibleApplied, BigDecimal depreciation,
-        boolean cappedAtLimit, BigDecimal settlementAmount) {
+/** The legacy Settlement value object minus its identity columns, on double. */
+public record SettlementResult(double coveredAmount, double deductibleApplied,
+        double depreciation, boolean cappedAtLimit, double settlementAmount) {
 }
