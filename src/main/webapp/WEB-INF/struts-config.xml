@@ -370,6 +370,7 @@
     path="/WEB-INF/jsp/report/index.jsp"
 /></action>
 </action-mappings>
+<controller processorClass="com.northstar.claims.web.AllowlistRequestProcessor"/>
 <message-resources parameter="ApplicationResources"/>
 <plug-in className="org.apache.struts.validator.ValidatorPlugIn"><set-property property="pathnames"
 value="/WEB-INF/validator-rules.xml,/WEB-INF/validation.xml"/></plug-in>

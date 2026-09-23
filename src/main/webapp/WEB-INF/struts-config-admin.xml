@@ -26,6 +26,8 @@
                 path="/WEB-INF/jsp/admin/reference.jsp" />
         </action>
     </action-mappings>
+    <controller
+        processorClass="com.northstar.claims.web.AllowlistRequestProcessor" />
     <message-resources
         parameter="ApplicationResources" />
 </struts-config>

@@ -1,0 +1,56 @@
+NorthStar Claims Management - Struts 1 migration plan
+=====================================================
+
+Status
+------
+The application runs on Apache Struts 1.3.10. The Struts 1 line reached
+end of life in 2013 and receives no security patches, so no dependency
+upgrade can remove the framework risk on its own.
+
+Interim hardening already applied
+---------------------------------
+1. Commons BeanUtils is pinned to 1.9.4 and Commons Validator to 1.7 in
+   pom.xml, overriding the 1.8.0 / 1.3.1 versions Struts 1.3.10 pins
+   transitively. BeanUtils 1.9.4 suppresses the "class" property during
+   population (CVE-2014-0114, CVE-2019-10086). build.xml bundles the same
+   patched jars in the historical Ant WAR.
+2. com.northstar.claims.web.AllowlistRequestProcessor is registered as the
+   Struts controller for both modules. It wraps the request during
+   processPopulate so only the writable properties a form bean declares are
+   visible to Commons BeanUtils. Nested, indexed and mapped expressions, the
+   "class"/"classLoader" names and the Struts-internal "servlet" and
+   "multipartRequestHandler" setters are dropped before population runs.
+
+These two controls break the request-to-ClassLoader path independently: the
+allowlist removes the parameters, and the patched BeanUtils refuses the
+"class" property even if a future code path bypasses the processor.
+
+Migration target
+----------------
+Move the web tier to Spring Boot with Spring MVC on a supported Servlet
+container. The DAO, model and service packages are framework independent
+and move unchanged.
+
+Sequence
+--------
+Step 1 - Freeze the Struts surface. No new *.do actions or form beans; new
+         screens are added on the target stack only.
+Step 2 - Stand up a Spring Boot application that shares the existing
+         com.northstar.claims.dao/model/service packages and serves the
+         same HSQLDB schema.
+Step 3 - Port screens module by module, starting with the public
+         /login.do surface, then intake, workbench, settlement, payment,
+         reporting and finally the /admin module. Each action becomes a
+         @Controller method with an explicit @ModelAttribute command object
+         (population is already restricted to declared properties there).
+Step 4 - Route ported paths to the new application at the reverse proxy and
+         keep the transcript harness (tools/capture) green as the parity
+         gate for every ported screen.
+Step 5 - Remove the ActionServlet mapping, the struts-config descriptors and
+         the Struts dependencies from pom.xml and build.xml once no screen
+         resolves to *.do.
+
+Exit criteria
+-------------
+No org.apache.struts artifact on the runtime classpath, no *.do mapping in
+web.xml, and the captured transcripts match the pre-migration fixtures.
