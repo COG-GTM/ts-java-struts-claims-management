@@ -12,8 +12,10 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import com.northstar.claims.dao.ConnectionPool;
 import com.northstar.claims.dao.PolicyDAO;
 import com.northstar.claims.model.Policy;
 import com.northstar.claims.util.DatabaseBootstrap;
@@ -30,6 +32,12 @@ public class PolicySearchInjectionTest {
     public static void seed() throws Exception {
         System.setProperty("claims.db.path", "target/db/test-northstar");
         DatabaseBootstrap.bootstrap(true);
+        ConnectionPool.getInstance().closeAll();
+    }
+
+    @AfterClass
+    public static void drainPool() throws Exception {
+        ConnectionPool.getInstance().closeAll();
     }
 
     @Test
