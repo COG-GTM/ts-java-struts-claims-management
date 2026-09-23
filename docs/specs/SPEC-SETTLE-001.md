@@ -1,6 +1,6 @@
 # SPEC-SETTLE-001 — Settlement calculation
 
-Version: 0.1
+Version: 0.2
 
 Scope: the settlement calculate, save, and detail request flows of the claims
 application. Every rule below is taken either from a recorded transcript
@@ -55,8 +55,21 @@ src/main/java/com/northstar/claims/dao/PolicyDAO.java:173;
 src/main/resources/db/schema.sql:21;
 src/main/resources/db/seed.sql:49-50,253-254
 
-**SETTLE-R08 (v1)** — On the calculate path, if the claim is not found, or the
-claim's policy is not found, the policy limit falls back to 10000.
+**SETTLE-R08 (v1, superseded by v2)** — On the calculate path, if the claim is
+not found, or the claim's policy is not found, the policy limit falls back to
+10000.
+Read: src/main/java/com/northstar/claims/web/SettlementCalculateAction.java:25-31
+
+**SETTLE-R08 (v2)** — On the calculate path, if the claim is not found, or the
+claim's policy is not found, the policy limit falls back to 10000. The request
+still succeeds. Confirmed against the running application with the seeded
+database: POST `/claims/settlement/calculate.do` with `claimId=9999`
+(no such claim), `coveredAmount=100`, `deductible=10` returns 200 with
+`settlementAmount` 90.00 and `cappedAtLimit` false; the same request with
+`coveredAmount=20000` returns `settlementAmount` 10000.00 with `cappedAtLimit`
+true, which exercises the 10000 value itself.
+Observed: manual run against localhost Jetty (not a recorded transcript),
+2026-09-23, seeded database;
 Read: src/main/java/com/northstar/claims/web/SettlementCalculateAction.java:25-31
 
 **SETTLE-R09 (v1)** — No Struts validation runs on the settlement actions
@@ -219,6 +232,7 @@ src/main/java/com/northstar/claims/web/tag/FieldTag.java:60-75
 | SETTLE-R06 | v1 | Initial rule, version 0.1 |
 | SETTLE-R07 | v1 | Initial rule, version 0.1 |
 | SETTLE-R08 | v1 | Initial rule, version 0.1 |
+| SETTLE-R08 | v2 | Version 0.2: added live-run evidence for the 10000 fallback (claimId 9999 returns 90.00 uncapped, and 10000.00 capped at covered 20000); v1 text retained above |
 | SETTLE-R09 | v1 | Initial rule, version 0.1 |
 | SETTLE-R10 | v1 | Initial rule, version 0.1 |
 | SETTLE-R11 | v1 | Initial rule, version 0.1 |
