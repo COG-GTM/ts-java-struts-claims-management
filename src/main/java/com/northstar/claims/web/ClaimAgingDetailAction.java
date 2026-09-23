@@ -1,7 +1,6 @@
 package com.northstar.claims.web;
 
 import com.northstar.claims.dao.ClaimDAO;
-import com.northstar.claims.model.Claim;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
@@ -14,7 +13,8 @@ public class ClaimAgingDetailAction extends ClaimsActionSupport {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        java.util.List rows = new ClaimDAO().findByStatus("OPEN");
+        java.util.List rows = scopedClaims(request,
+                new ClaimDAO().findByStatus("OPEN"));
         request.setAttribute("claims", rows);
         request.setAttribute("claimCount", new Integer(rows.size()));
         request.setAttribute("reportAsOf", reportDate());

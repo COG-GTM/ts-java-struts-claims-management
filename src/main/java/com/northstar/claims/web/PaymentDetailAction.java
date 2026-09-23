@@ -16,8 +16,12 @@ public class PaymentDetailAction extends ClaimsActionSupport {
             throws Exception {
         int id = integer(request.getParameter("paymentId"), 61);
         Payment payment = new PaymentDAO().findById(id);
+        int claimId = payment == null ? 0 : payment.getClaimId();
+        if (authorizedClaim(request, claimId) == null) {
+            return denyClaimAccess(mapping, request, response, claimId);
+        }
         request.setAttribute("payment", payment);
-        request.setAttribute("claimId", new Integer(payment == null ? 119 : payment.getClaimId()));
+        request.setAttribute("claimId", new Integer(claimId));
         request.setAttribute("screenName", "detail");
         request.setAttribute("screenMode", "read");
         request.setAttribute("operatorScope", "claims");

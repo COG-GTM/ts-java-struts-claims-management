@@ -115,6 +115,24 @@ public class AdjusterDAO {
         }
     }
 
+    /** Loads one row by its login name. */
+    public Adjuster findByUsername(String username) throws SQLException {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = ConnectionPool.getInstance().getConnection();
+            ps = conn.prepareStatement("select * from ADJUSTER where username = ?");
+            ps.setString(1, username);
+            rs = ps.executeQuery();
+            return rs.next() ? read(rs) : null;
+        } finally {
+            try { rs.close(); } catch (Exception e) {}
+            try { ps.close(); } catch (Exception e) {}
+            try { ConnectionPool.getInstance().release(conn); } catch (Exception e) {}
+        }
+    }
+
     /** Returns all active adjusters for assignment lists. */
     public List findActive() throws SQLException {
         Connection conn = null;

@@ -17,17 +17,18 @@ public class WorkbenchViewAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int claimId = integer(request.getParameter("claimId"), 119);
-        Claim claim = findClaim(claimId);
-        request.setAttribute("claim", claim);
-        if (claim != null) {
-            request.setAttribute("claimId", new Integer(claim.getClaimId()));
-            request.setAttribute("claimStatus", claim.getStatus());
-            request.setAttribute("reserveAmount",
-                    new Double(claim.getReserveAmount()));
-            request.setAttribute("assignedAdjuster",
-                    claim.getAssignedAdjuster());
-            request.setAttribute("lossDate", claim.getLossDate());
+        Claim claim = authorizedClaim(request, claimId);
+        if (claim == null) {
+            return denyClaimAccess(mapping, request, response, claimId);
         }
+        request.setAttribute("claim", claim);
+        request.setAttribute("claimId", new Integer(claim.getClaimId()));
+        request.setAttribute("claimStatus", claim.getStatus());
+        request.setAttribute("reserveAmount",
+                new Double(claim.getReserveAmount()));
+        request.setAttribute("assignedAdjuster",
+                claim.getAssignedAdjuster());
+        request.setAttribute("lossDate", claim.getLossDate());
         request.setAttribute("screenName", "detail");
         return mapping.findForward("workbenchView");
     }

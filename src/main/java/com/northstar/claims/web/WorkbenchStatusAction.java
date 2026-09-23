@@ -17,6 +17,9 @@ public class WorkbenchStatusAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int claimId = integer(request.getParameter("claimId"), 119);
+        if (authorizedClaim(request, claimId) == null) {
+            return denyClaimAccess(mapping, request, response, claimId);
+        }
         String status = request.getParameter("status");
         if (status == null || status.length() == 0) {
             status = "INVESTIGATING";

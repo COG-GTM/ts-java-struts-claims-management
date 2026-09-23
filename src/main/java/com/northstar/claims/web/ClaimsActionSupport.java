@@ -203,6 +203,84 @@ public abstract class ClaimsActionSupport extends Action {
         return value == null ? "unknown" : String.valueOf(value);
     }
 
+    /**
+     * Returns the region of the signed-in operator, caching it on the
+     * session. An unknown operator has no region and therefore no scope.
+     */
+    protected String operatorRegion(
+            javax.servlet.http.HttpServletRequest request) {
+        javax.servlet.http.HttpSession session = request.getSession();
+        Object cached = session.getAttribute("operatorRegion");
+        if (cached != null) {
+            return String.valueOf(cached);
+        }
+        String region = "";
+        try {
+            com.northstar.claims.model.Adjuster operator =
+                    new com.northstar.claims.dao.AdjusterDAO()
+                            .findByUsername(currentOperator(request));
+            if (operator != null && operator.isActive()) {
+                region = defaultText(operator.getRegion(), "");
+            }
+        } catch (Exception failure) {
+            log.warn("Operator scope lookup failed for "
+                    + currentOperator(request), failure);
+        }
+        session.setAttribute("operatorRegion", region);
+        return region;
+    }
+
+    /**
+     * Loads a claim only when the signed-in operator owns it or supervises
+     * every queue, and returns null when access must be refused.
+     */
+    protected Claim authorizedClaim(
+            javax.servlet.http.HttpServletRequest request, int claimId) {
+        Claim claim = findClaim(claimId);
+        String operator = currentOperator(request);
+        if (com.northstar.claims.service.ClaimAccessPolicy.permits(operator,
+                operatorRegion(request), claim)) {
+            return claim;
+        }
+        log.warn("Operator " + operator + " refused access to claim "
+                + claimId);
+        return null;
+    }
+
+    /** Keeps only the claims the signed-in operator is allowed to see. */
+    protected java.util.List scopedClaims(
+            javax.servlet.http.HttpServletRequest request,
+            java.util.List claims) {
+        java.util.List visible = new java.util.ArrayList();
+        if (claims == null) {
+            return visible;
+        }
+        String operator = currentOperator(request);
+        String region = operatorRegion(request);
+        for (java.util.Iterator it = claims.iterator(); it.hasNext();) {
+            Object row = it.next();
+            if (row instanceof Claim
+                    && com.northstar.claims.service.ClaimAccessPolicy.permits(
+                            operator, region, (Claim) row)) {
+                visible.add(row);
+            }
+        }
+        return visible;
+    }
+
+    /** Renders the refusal screen used when a claim is out of scope. */
+    protected org.apache.struts.action.ActionForward denyClaimAccess(
+            org.apache.struts.action.ActionMapping mapping,
+            javax.servlet.http.HttpServletRequest request,
+            javax.servlet.http.HttpServletResponse response, int claimId) {
+        response.setStatus(
+                javax.servlet.http.HttpServletResponse.SC_FORBIDDEN);
+        request.setAttribute("message", "errors.claimAccess.denied");
+        request.setAttribute("accessStatus", "DENIED");
+        request.setAttribute("screenName", "detail");
+        return mapping.findForward("accessDenied");
+    }
+
     protected boolean hasText(String value) {
         return value != null && value.trim().length() > 0;
     }

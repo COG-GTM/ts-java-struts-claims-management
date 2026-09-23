@@ -22,7 +22,10 @@ public class SettlementSaveAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int claimId = integer(request.getParameter("claimId"), 119);
-        Claim claim = findClaim(claimId);
+        Claim claim = authorizedClaim(request, claimId);
+        if (claim == null) {
+            return denyClaimAccess(mapping, request, response, claimId);
+        }
         Policy policy = new PolicyDAO().findById(claim.getPolicyId());
         double covered = decimal(request.getParameter("coveredAmount"), 5000);
         double depreciation = decimal(request.getParameter("depreciation"), 0);

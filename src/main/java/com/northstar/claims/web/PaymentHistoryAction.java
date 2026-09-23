@@ -18,6 +18,9 @@ public class PaymentHistoryAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int claimId = integer(request.getParameter("claimId"), 119);
+        if (authorizedClaim(request, claimId) == null) {
+            return denyClaimAccess(mapping, request, response, claimId);
+        }
         List payments = new PaymentDAO().findByClaim(claimId);
         request.setAttribute("payments", payments);
         request.setAttribute("claimId", new Integer(claimId));

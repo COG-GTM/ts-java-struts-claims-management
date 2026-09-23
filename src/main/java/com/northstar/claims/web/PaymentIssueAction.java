@@ -20,6 +20,9 @@ public class PaymentIssueAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int claimId = integer(request.getParameter("claimId"), 119);
+        if (authorizedClaim(request, claimId) == null) {
+            return denyClaimAccess(mapping, request, response, claimId);
+        }
         Settlement settlement = new SettlementDAO().findByClaim(claimId);
         Payment payment = new Payment();
         int paymentId = nextId("PAYMENT");
