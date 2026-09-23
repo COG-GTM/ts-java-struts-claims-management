@@ -96,27 +96,24 @@ public class PolicyDAO {
         }
     }
 
-    /** Searches policies using the historical concatenated filter style. */
+    /** Searches policies filtered by line of business. */
     public List findByLine(String lineOfBusiness) throws SQLException {
         Connection conn = null;
-        Statement st = null;
+        PreparedStatement ps = null;
         ResultSet rs = null;
         List rows = new ArrayList();
         try {
             conn = ConnectionPool.getInstance().getConnection();
-            st = conn.createStatement();
-            StringBuffer sql = new StringBuffer();
-            sql.append("select * from POLICY where line_of_business = '");
-            sql.append(lineOfBusiness);
-            sql.append("' order by policy_number");
-            rs = st.executeQuery(sql.toString());
+            ps = conn.prepareStatement("select * from POLICY where line_of_business = ? order by policy_number");
+            ps.setString(1, lineOfBusiness);
+            rs = ps.executeQuery();
             while (rs.next()) {
                 rows.add(read(rs));
             }
             return rows;
         } finally {
             try { rs.close(); } catch (Exception e) {}
-            try { st.close(); } catch (Exception e) {}
+            try { ps.close(); } catch (Exception e) {}
             try { ConnectionPool.getInstance().release(conn); } catch (Exception e) {}
         }
     }

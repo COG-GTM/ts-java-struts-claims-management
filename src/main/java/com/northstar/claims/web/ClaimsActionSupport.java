@@ -74,12 +74,15 @@ public abstract class ClaimsActionSupport extends Action {
         }
     }
 
-    protected int update(String sql) throws Exception {
+    protected int update(String sql, Object[] parameters) throws Exception {
         Connection connection = openConnection();
-        Statement statement = null;
+        PreparedStatement statement = null;
         try {
-            statement = connection.createStatement();
-            return statement.executeUpdate(sql);
+            statement = connection.prepareStatement(sql);
+            for (int i = 0; parameters != null && i < parameters.length; i++) {
+                statement.setObject(i + 1, parameters[i]);
+            }
+            return statement.executeUpdate();
         } finally {
             try { statement.close(); } catch (Exception ignored) {}
             try { connection.close(); } catch (Exception ignored) {}

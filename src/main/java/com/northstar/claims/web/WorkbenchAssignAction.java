@@ -21,8 +21,8 @@ public class WorkbenchAssignAction extends ClaimsActionSupport {
         if (adjuster == null || adjuster.length() == 0) {
             adjuster = "adjuster2";
         }
-        update("update CLAIM set assigned_adjuster = '" + adjuster
-                + "' where claim_id = " + claimId);
+        update("update CLAIM set assigned_adjuster = ? where claim_id = ?",
+                new Object[] { adjuster, new Integer(claimId) });
         Claim claim = findClaim(claimId);
         request.setAttribute("claim", claim);
         request.setAttribute("assignedAdjuster", adjuster);
