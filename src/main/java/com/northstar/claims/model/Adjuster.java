@@ -13,7 +13,7 @@ public class Adjuster {
 
     private int adjusterId;
     private String username;
-    private String password;
+    private String passwordHash;
     private String fullName;
     private String region;
     private boolean active;
@@ -38,14 +38,14 @@ public class Adjuster {
         this.username = username;
     }
 
-    /** Returns the password value. */
-    public String getPassword() {
-        return password;
+    /** Returns the stored PBKDF2 credential value. */
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    /** Stores the password value supplied by the caller. */
-    public void setPassword(String password) {
-        this.password = password;
+    /** Stores the PBKDF2 credential value supplied by the caller. */
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     /** Returns the fullName value. */
@@ -84,7 +84,6 @@ public class Adjuster {
         text.append("Adjuster[");
         text.append("adjusterId=").append(adjusterId);        text.append(", ");
         text.append("username=").append(username);        text.append(", ");
-        text.append("password=").append(password);        text.append(", ");
         text.append("fullName=").append(fullName);        text.append(", ");
         text.append("region=").append(region);        text.append(", ");
         text.append("active=").append(active);
