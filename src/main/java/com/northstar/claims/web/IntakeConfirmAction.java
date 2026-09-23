@@ -18,9 +18,20 @@ public class IntakeConfirmAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         request.setAttribute("confirmationMode", "READ_ONLY");
-        request.setAttribute("claimId", request.getParameter("claimId"));
+        Integer claimId = claimIdentifier(request.getParameter("claimId"));
+        if (claimId != null) {
+            request.setAttribute("claimId", claimId);
+        }
         request.setAttribute("screenName", "detail");
         return mapping.findForward("confirm");
+    }
+
+    /** Accepts only a plain claim identifier; anything else is discarded. */
+    Integer claimIdentifier(String requested) {
+        if (requested == null || !requested.matches("\\d{1,9}")) {
+            return null;
+        }
+        return new Integer(requested);
     }
 
 }
