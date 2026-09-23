@@ -163,6 +163,44 @@ public class PaymentDAO {
         }
     }
 
+    /**
+     * Inserts a payment only while the settlement still covers everything
+     * issued on the claim. The balance test and the insert are a single
+     * statement, so concurrent requests cannot both spend the same unpaid
+     * balance. Returns false when the amount no longer fits.
+     */
+    public boolean insertWithinSettlement(Payment value) throws SQLException {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = ConnectionPool.getInstance().getConnection();
+            ps = conn.prepareStatement(
+                    "insert into PAYMENT "
+                    + "(payment_id,claim_id,settlement_id,payee_name,amount,"
+                    + "payment_method,check_number,issued_date,status) "
+                    + "select ?,?,?,?,?,?,?,?,? from (values(0)) "
+                    + "where ? <= (select s.settlement_amount "
+                    + "- coalesce((select sum(p.amount) from PAYMENT p "
+                    + "where p.claim_id = s.claim_id),0) from SETTLEMENT s "
+                    + "where s.settlement_id = ?)");
+            ps.setInt(1, value.getPaymentId());
+            ps.setInt(2, value.getClaimId());
+            ps.setInt(3, value.getSettlementId());
+            ps.setString(4, value.getPayeeName());
+            ps.setDouble(5, value.getAmount());
+            ps.setString(6, value.getPaymentMethod());
+            ps.setString(7, value.getCheckNumber());
+            ps.setString(8, value.getIssuedDate());
+            ps.setString(9, value.getStatus());
+            ps.setDouble(10, value.getAmount());
+            ps.setInt(11, value.getSettlementId());
+            return ps.executeUpdate() == 1;
+        } finally {
+            try { ps.close(); } catch (Exception e) {}
+            try { ConnectionPool.getInstance().release(conn); } catch (Exception e) {}
+        }
+    }
+
     /** Converts a result set row into the corresponding mutable bean. */
     private Payment read(ResultSet rs) throws SQLException {
         Payment value = new Payment();

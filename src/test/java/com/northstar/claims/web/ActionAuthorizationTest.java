@@ -199,6 +199,26 @@ public class ActionAuthorizationTest {
         assertEquals(after, paymentCount(CAPPED_CLAIM));
     }
 
+    /** The balance guard also holds when two requests race past the check. */
+    @Test
+    public void paymentInsertRefusesToOverspendSettlement() throws Exception {
+        com.northstar.claims.model.Payment payment =
+                new com.northstar.claims.model.Payment();
+        payment.setPaymentId(99991);
+        payment.setClaimId(CAPPED_CLAIM);
+        payment.setSettlementId(9991);
+        payment.setPayeeName("Racing Claimant");
+        payment.setAmount(CAPPED_SETTLEMENT + 1);
+        payment.setPaymentMethod("CHECK");
+        payment.setCheckNumber("CHK-99991");
+        payment.setIssuedDate("2019-04-03");
+        payment.setStatus("ISSUED");
+        int before = paymentCount(CAPPED_CLAIM);
+        assertFalse(new com.northstar.claims.dao.PaymentDAO()
+                .insertWithinSettlement(payment));
+        assertEquals(before, paymentCount(CAPPED_CLAIM));
+    }
+
     @Test
     public void forgedSupervisorRoleIsIgnored() throws Exception {
         FakeRequest request = FakeRequest.create("adjuster2")

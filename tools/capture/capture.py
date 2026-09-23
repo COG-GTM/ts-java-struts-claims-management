@@ -21,7 +21,7 @@ CONTEXT_PATH = "/claims"
 FIELD_RE = re.compile(r'<span id="f_([^"]+)">(.*?)</span>', re.S)
 VIEW_RE = re.compile(r"<!--\s*ns:view\s+([^ ]+)\s*-->")
 ERROR_RE = re.compile(r"<!--\s*ns:error\s+([^ ]+)\s*-->")
-CSRF_RE = re.compile(r'id="csrfToken"[^>]*>([^<]*)</span>')
+CSRF_RE = re.compile(r'name="csrfToken"[^>]*value="([^"]*)"')
 
 
 SCENARIOS = [
@@ -224,9 +224,9 @@ def start_server():
 
 
 def csrf_token(opener):
-    """Reads the session anti-CSRF token rendered on every signed-in page."""
+    """Reads the session anti-CSRF token from a signed-in form page."""
     unused_code, unused_url, body = request(opener, "GET",
-                                            "/workbench/list.do")
+                                            "/intake/new.do")
     match = CSRF_RE.search(body)
     return match.group(1) if match else None
 

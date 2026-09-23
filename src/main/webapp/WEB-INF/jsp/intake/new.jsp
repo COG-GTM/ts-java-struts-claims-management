@@ -15,6 +15,7 @@
 <%@ include file="../nav.jsp" %>
 <h2><bean:message key="intake.heading"/></h2>
 <form action="intake/submit.do" method="post">
+<jsp:include page="/WEB-INF/jsp/csrfField.jsp"/>
 <%
 java.util.List nsValidationErrors =
         (java.util.List) request.getAttribute("nsValidationErrors");

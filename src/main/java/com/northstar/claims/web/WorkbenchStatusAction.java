@@ -20,7 +20,8 @@ public class WorkbenchStatusAction extends ClaimsActionSupport {
         if (authorizedClaim(request, claimId) == null) {
             return denied(mapping, request);
         }
-        String status = normalizeStatus(request.getParameter("status"));
+        String status = normalizeStatus(defaultText(
+                request.getParameter("status"), "INVESTIGATING"));
         updateClaim(request, claimId, "update CLAIM set status = "
                 + quote(status) + " where claim_id = " + claimId);
         request.setAttribute("claim", authorizedClaim(request, claimId));

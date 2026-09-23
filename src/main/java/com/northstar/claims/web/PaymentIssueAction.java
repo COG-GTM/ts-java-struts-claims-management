@@ -56,7 +56,10 @@ public class PaymentIssueAction extends ClaimsActionSupport {
         payment.setCheckNumber("CHK-" + paymentId);
         payment.setIssuedDate("2019-04-03");
         payment.setStatus("ISSUED");
-        new PaymentDAO().insert(payment);
+        if (!new PaymentDAO().insertWithinSettlement(payment)) {
+            request.setAttribute("message", "payment.request.invalid");
+            return mapping.findForward("error");
+        }
         log.info("Payment " + paymentId + " issued on claim " + claimId
                 + " by " + currentOperator(request));
         request.setAttribute("paymentId", new Integer(paymentId));
