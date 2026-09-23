@@ -1,0 +1,29 @@
+{
+  "comment": "Approved differences between the legacy transcripts and the settlement service. A scenario listed here is judged against its 'expected' block instead of the transcript and is reported as CHANGED (<change>) by make parity; anything else is still a FAIL. Each entry must name a docs/changes/CHG-nnn record (ADR-001, 'Behaviour freeze').",
+  "transcript_rules_comment": "Which SPEC-SETTLE-001 rules each settlement transcript is evidence for, taken from the 'Observed:' lines of the spec. tools/traceability.py reads this to put transcripts and their parity verdicts next to each rule. An entry without a version (SETTLE-R05) applies to every version of that rule; a version-qualified entry (SETTLE-R06 (v2)) applies to that version only.",
+  "transcript_rules": {
+    "settlement_bad_deductible": ["SETTLE-R06 (v1)", "SETTLE-R06 (v2)"],
+    "settlement_blank_deductible": ["SETTLE-R05", "SETTLE-R10", "SETTLE-R24"],
+    "settlement_calculate": ["SETTLE-R01", "SETTLE-R11", "SETTLE-R13", "SETTLE-R20", "SETTLE-R22", "SETTLE-R24"],
+    "settlement_deductible_floor": ["SETTLE-R12", "SETTLE-R22"],
+    "settlement_half_cent": ["SETTLE-R16", "SETTLE-R21"],
+    "settlement_policy_cap": ["SETTLE-R13"],
+    "settlement_save": ["SETTLE-R25", "SETTLE-R27", "SETTLE-R28", "SETTLE-R29"]
+  },
+  "approved_differences": [
+    {
+      "scenario": "settlement_bad_deductible",
+      "change": "CHG-001",
+      "record": "docs/changes/CHG-001-invalid-deductible.md",
+      "summary": "A non-blank, unparseable deductible is a validation error instead of the error screen",
+      "rules": ["SETTLE-R06 (v2)"],
+      "expected": {
+        "status": 200,
+        "screen": "calculate",
+        "business_fields": {},
+        "validation_errors": ["settlement.deductible.invalid"],
+        "db_state": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "scenarios": [
+    {
+      "change": "CHG-001",
+      "description": "Settlement with a non-numeric deductible",
+      "difference": "A non-blank, unparseable deductible is a validation error instead of the error screen",
+      "record": "docs/changes/CHG-001-invalid-deductible.md",
+      "scenario": "settlement_bad_deductible",
+      "verdict": "CHANGED (CHG-001)"
+    },
+    {
+      "change": null,
+      "description": "FNOL settlement with a blank deductible",
+      "difference": "-",
+      "record": null,
+      "scenario": "settlement_blank_deductible",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Calculate a standard settlement",
+      "difference": "-",
+      "record": null,
+      "scenario": "settlement_calculate",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Settlement floored when deductible exceeds the loss",
+      "difference": "-",
+      "record": null,
+      "scenario": "settlement_deductible_floor",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Settlement using double half-cent rounding",
+      "difference": "-",
+      "record": null,
+      "scenario": "settlement_half_cent",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Settlement capped by the policy limit",
+      "difference": "-",
+      "record": null,
+      "scenario": "settlement_policy_cap",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Save the calculated settlement",
+      "difference": "-",
+      "record": null,
+      "scenario": "settlement_save",
+      "verdict": "PASS"
+    }
+  ]
+}

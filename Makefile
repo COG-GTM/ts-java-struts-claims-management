@@ -1,4 +1,8 @@
-.PHONY: build run seed test capture clean
+.PHONY: build run seed test capture clean service-build service-test service-run parity traceability
+
+# Settlement service (ADR-001): Spring Boot 3.5 on Java 21, port 8083.
+SERVICE_DIR = services/settlement-service
+SERVICE_JAVA_HOME = /usr/lib/jvm/java-21-openjdk-amd64
 
 build:
 	mvn -B clean package
@@ -14,6 +18,24 @@ test:
 
 capture:
 	python3 tools/capture/capture.py
+
+service-build:
+	cd $(SERVICE_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B clean package -DskipTests
+
+service-test:
+	cd $(SERVICE_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B clean verify
+
+service-run:
+	cd $(SERVICE_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B spring-boot:run
+
+# Replays the settlement transcripts against a running service (make service-run).
+parity:
+	python3 tools/parity/settlement_parity.py
+
+# Regenerates docs/TRACEABILITY.md from the spec, the git history, the tests,
+# parity/routes.json and parity/report.json. Needs nothing running.
+traceability:
+	python3 tools/traceability.py
 
 clean:
 	mvn -q clean
