@@ -1,6 +1,5 @@
 package com.northstar.claims.web;
 
-import com.northstar.claims.dao.ClaimDAO;
 import com.northstar.claims.model.Claim;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionForm;
@@ -15,7 +14,10 @@ public class WorkbenchStatusHistoryAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int id = integer(request.getParameter("claimId"), 119);
-        Claim claim = new ClaimDAO().findById(id);
+        Claim claim = authorizedClaim(request, id);
+        if (claim == null) {
+            return denyClaimAccess(mapping, request, response, id);
+        }
         putClaimSummary(request, claim);
         request.setAttribute("statusHistory", new java.util.ArrayList());
         request.setAttribute("screenName", "detail");

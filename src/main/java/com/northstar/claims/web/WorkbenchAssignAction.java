@@ -17,6 +17,9 @@ public class WorkbenchAssignAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int claimId = integer(request.getParameter("claimId"), 119);
+        if (authorizedClaim(request, claimId) == null) {
+            return denyClaimAccess(mapping, request, response, claimId);
+        }
         String adjuster = request.getParameter("adjuster");
         if (adjuster == null || adjuster.length() == 0) {
             adjuster = "adjuster2";
