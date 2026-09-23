@@ -1,6 +1,6 @@
 # SPEC-SETTLE-001 — Settlement calculation
 
-Version: 0.2
+Version: 0.4
 
 Scope: the settlement calculate, save, and detail request flows of the claims
 application. Every rule below is taken either from a recorded transcript
@@ -38,11 +38,25 @@ Observed: settlement_blank_deductible;
 Read: src/main/java/com/northstar/claims/web/SettlementCalculateAction.java:34-37;
 src/main/java/com/northstar/claims/service/SettlementCalculator.java:26-29
 
-**SETTLE-R06 (v1)** — A non-empty, non-numeric `deductible` is passed to
-`Double.parseDouble` unguarded; the resulting exception is handled by the global
-exception mapping and the request is forwarded to `/WEB-INF/jsp/error.jsp` with
-status 200 and no validation errors.
+**SETTLE-R06 (v1, superseded by v2)** — A non-empty, non-numeric `deductible`
+is passed to `Double.parseDouble` unguarded; the resulting exception is handled
+by the global exception mapping and the request is forwarded to
+`/WEB-INF/jsp/error.jsp` with status 200 and no validation errors.
 Observed: settlement_bad_deductible;
+Read: src/main/java/com/northstar/claims/service/SettlementCalculator.java:28;
+src/main/webapp/WEB-INF/struts-config.xml:59-60
+
+**SETTLE-R06 (v2)** — A `deductible` that is not blank and does not parse as a
+number is rejected before the calculation and before any write: the response is
+status 200 on the calculate screen, with no business fields and exactly one
+validation error, key `settlement.deductible.invalid`. The same check runs on
+the save path ahead of the insert, so no SETTLEMENT row is written. A blank
+(null, empty or whitespace-only) `deductible` still counts as 0 per SETTLE-R05.
+This is a deliberate difference from the legacy behaviour of v1, which the
+monolith keeps; it applies to `services/settlement-service` only.
+Approved: docs/changes/CHG-001-invalid-deductible.md;
+Observed: settlement_bad_deductible (the legacy behaviour the change departs
+from; recorded as CHANGED (CHG-001) in parity/routes.json);
 Read: src/main/java/com/northstar/claims/service/SettlementCalculator.java:28;
 src/main/webapp/WEB-INF/struts-config.xml:59-60
 
@@ -230,6 +244,7 @@ src/main/java/com/northstar/claims/web/tag/FieldTag.java:60-75
 | SETTLE-R04 | v1 | Initial rule, version 0.1 |
 | SETTLE-R05 | v1 | Initial rule, version 0.1 |
 | SETTLE-R06 | v1 | Initial rule, version 0.1 |
+| SETTLE-R06 | v2 | Version 0.4: an unparseable non-blank deductible becomes a validation error (status 200, calculate screen, no business fields, key `settlement.deductible.invalid`) on calculate and on save, with no row written, per docs/changes/CHG-001-invalid-deductible.md; v1 text retained above as the legacy behaviour |
 | SETTLE-R07 | v1 | Initial rule, version 0.1 |
 | SETTLE-R08 | v1 | Initial rule, version 0.1 |
 | SETTLE-R08 | v2 | Version 0.2: added live-run evidence for the 10000 fallback (claimId 9999 returns 90.00 uncapped, and 10000.00 capped at covered 20000); v1 text retained above |

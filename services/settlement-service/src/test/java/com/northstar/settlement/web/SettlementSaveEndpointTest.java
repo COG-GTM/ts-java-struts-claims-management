@@ -113,13 +113,15 @@ class SettlementSaveEndpointTest {
     }
 
     /**
-     * Rules: SETTLE-R06, SETTLE-R24.
-     * Transcript: settlement_bad_deductible for the error screen; the absence
-     * of a write follows from the calculator throwing before
-     * SettlementSaveAction.java:34-39 reaches the insert.
+     * Rules: SETTLE-R06 (v2), SETTLE-R24.
+     * Change: docs/changes/CHG-001-invalid-deductible.md — the check runs
+     * before the claim lookup and before the insert, so the response is 200 on
+     * the calculate screen with the single key settlement.deductible.invalid
+     * and no SETTLEMENT row is written. The legacy reached error.jsp instead
+     * (transcript settlement_bad_deductible), and wrote nothing either.
      */
     @Test
-    void nonNumericDeductibleWritesNothing() throws Exception {
+    void nonNumericDeductibleIsAValidationErrorAndWritesNothing() throws Exception {
         int before = jdbc.queryForObject("select count(*) from SETTLEMENT", Integer.class);
 
         mvc.perform(post("/settlement/save")
@@ -128,10 +130,62 @@ class SettlementSaveEndpointTest {
                         .param("deductible", "abc")
                         .param("depreciation", "0.00")
                         .param("user", "supervisor"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.screen").value("error"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.screen").value("calculate"))
+                .andExpect(jsonPath("$.fields").isEmpty())
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0]").value("settlement.deductible.invalid"));
 
         assertThat(jdbc.queryForObject("select count(*) from SETTLEMENT", Integer.class))
                 .isEqualTo(before);
+    }
+
+    /**
+     * Rules: SETTLE-R06 (v2), SETTLE-R26.
+     * Change: docs/changes/CHG-001-invalid-deductible.md — the deductible
+     * check precedes the claim lookup, so an invalid deductible against a
+     * claim that does not exist is still the validation response, not the
+     * error screen of SETTLE-R26, and nothing is written.
+     */
+    @Test
+    void invalidDeductibleIsCheckedBeforeTheClaimLookup() throws Exception {
+        int before = jdbc.queryForObject("select count(*) from SETTLEMENT", Integer.class);
+
+        mvc.perform(post("/settlement/save")
+                        .param("claimId", "9999")
+                        .param("coveredAmount", "5000.00")
+                        .param("deductible", "abc")
+                        .param("depreciation", "0.00")
+                        .param("user", "supervisor"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.screen").value("calculate"))
+                .andExpect(jsonPath("$.errors[0]").value("settlement.deductible.invalid"));
+
+        assertThat(jdbc.queryForObject("select count(*) from SETTLEMENT", Integer.class))
+                .isEqualTo(before);
+    }
+
+    /**
+     * Rules: SETTLE-R05, SETTLE-R06 (v2), SETTLE-R28.
+     * Change: docs/changes/CHG-001-invalid-deductible.md — blank still means
+     * zero on the save path, so the row is written with deductible 0.00.
+     */
+    @Test
+    void blankDeductibleStillSavesAZeroDeductible() throws Exception {
+        mvc.perform(post("/settlement/save")
+                        .param("claimId", "120")
+                        .param("coveredAmount", "5000.00")
+                        .param("deductible", "")
+                        .param("depreciation", "500.00")
+                        .param("user", "supervisor"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.screen").value("save"))
+                .andExpect(jsonPath("$.errors").isEmpty())
+                .andExpect(jsonPath("$.fields.settlementAmount").value("4500.00"));
+
+        Map<String, Object> row = jdbc.queryForMap(
+                "select * from SETTLEMENT where claim_id = 120 order by settlement_id desc limit 1");
+        assertThat(((Number) row.get("DEDUCTIBLE_APPLIED")).doubleValue()).isEqualTo(0.00);
+        assertThat(((Number) row.get("SETTLEMENT_AMOUNT")).doubleValue()).isEqualTo(4500.00);
     }
 }

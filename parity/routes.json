@@ -1,0 +1,18 @@
+{
+  "comment": "Approved differences between the legacy transcripts and the settlement service. A scenario listed here is judged against its 'expected' block instead of the transcript and is reported as CHANGED (<change>) by make parity; anything else is still a FAIL. Each entry must name a docs/changes/CHG-nnn record (ADR-001, 'Behaviour freeze').",
+  "approved_differences": [
+    {
+      "scenario": "settlement_bad_deductible",
+      "change": "CHG-001",
+      "record": "docs/changes/CHG-001-invalid-deductible.md",
+      "summary": "A non-blank, unparseable deductible is a validation error instead of the error screen",
+      "expected": {
+        "status": 200,
+        "screen": "calculate",
+        "business_fields": {},
+        "validation_errors": ["settlement.deductible.invalid"],
+        "db_state": {}
+      }
+    }
+  ]
+}

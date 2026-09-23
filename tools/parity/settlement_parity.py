@@ -7,6 +7,11 @@ port 8083 (``make service-run``) and compares the four things ADR-001 defines as
 parity (docs/decisions/ADR-001-settlement-boundary.md:82-90): status class, the
 business field values, the validation keys, and the database state.
 
+A scenario listed in ``parity/routes.json`` is an approved difference: it is
+compared against the response that its ``docs/changes/CHG-nnn`` record approves
+rather than against the transcript, and reported as ``CHANGED (CHG-nnn)``
+(ADR-001, "Behaviour freeze"). Any other difference is still a FAIL.
+
 Usage: python3 tools/parity/settlement_parity.py [--base http://localhost:8083]
 Writes parity/settlement-parity.md and exits non-zero on any FAIL.
 """
@@ -27,6 +32,16 @@ PATHS = {
     "/claims/settlement/save.do": "/settlement/save",
     "/claims/settlement/detail.do": "/settlement/detail",
 }
+
+
+def approved_differences():
+    """The approved differences of parity/routes.json, keyed by scenario."""
+    path = os.path.join(ROOT, "parity", "routes.json")
+    if not os.path.exists(path):
+        return {}
+    with open(path) as handle:
+        routes = json.load(handle)
+    return {entry["scenario"]: entry for entry in routes.get("approved_differences", [])}
 
 
 def status_class(status):
@@ -108,12 +123,33 @@ def compare(name, transcript, status, body):
     return diffs
 
 
+def compare_approved(approval, status, body):
+    """Compare against the response a CHG-nnn record approves, not the transcript."""
+    expected = approval["expected"]
+    diffs = []
+    if status != expected["status"]:
+        diffs.append("status %s != %s" % (status, expected["status"]))
+    if "screen" in expected and body.get("screen") != expected["screen"]:
+        diffs.append("screen %r != %r" % (body.get("screen"), expected["screen"]))
+    if body.get("fields", {}) != expected["business_fields"]:
+        diffs.append("fields %r != %r" % (body.get("fields"), expected["business_fields"]))
+    if body.get("errors", []) != expected["validation_errors"]:
+        diffs.append("validation %r != %r" % (body.get("errors"), expected["validation_errors"]))
+    actual_db = db_state(BASE, expected["db_state"])
+    for key, value in expected["db_state"].items():
+        if actual_db[key] != value:
+            diffs.append("db %s %r != %r" % (key, actual_db[key], value))
+    return diffs
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--base", default=os.environ.get("SERVICE_BASE", "http://localhost:8083"))
     args = parser.parse_args()
     global BASE
     BASE = args.base
+
+    approvals = approved_differences()
 
     rows = []
     failed = False
@@ -122,10 +158,17 @@ def main():
         with open(path) as handle:
             transcript = json.load(handle)
         status, body = call(args.base, transcript)
-        diffs = compare(name, transcript, status, body)
-        verdict = "PASS" if not diffs else "FAIL"
+        approval = approvals.get(name)
+        if approval:
+            diffs = compare_approved(approval, status, body)
+            verdict = "CHANGED (%s)" % approval["change"] if not diffs else "FAIL"
+            note = approval["summary"] if not diffs else "; ".join(diffs)
+        else:
+            diffs = compare(name, transcript, status, body)
+            verdict = "PASS" if not diffs else "FAIL"
+            note = "; ".join(diffs) or "-"
         failed = failed or bool(diffs)
-        rows.append((name, transcript["description"], verdict, "; ".join(diffs) or "-"))
+        rows.append((name, transcript["description"], verdict, note))
         print("%-32s %s %s" % (name, verdict, "; ".join(diffs)))
 
     revision = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT).decode().strip()
@@ -137,6 +180,9 @@ def main():
         handle.write("Each row replays a `transcripts/settlement_*.json` scenario against the\n")
         handle.write("settlement service on 8083 and compares the four things ADR-001:82-90\n")
         handle.write("calls parity: status class, business fields, validation keys, db state.\n\n")
+        handle.write("Scenarios listed in `parity/routes.json` are approved differences: they\n")
+        handle.write("are judged against their `docs/changes/CHG-nnn` record and reported as\n")
+        handle.write("CHANGED, and still fail on anything the record does not approve.\n\n")
         handle.write("| Scenario | Legacy behaviour | Verdict | Difference |\n")
         handle.write("| --- | --- | --- | --- |\n")
         for row in rows:
