@@ -15,9 +15,20 @@
         <Arg>
             <New class="org.hsqldb.jdbc.JDBCDataSource">
                 <Set name="Database">
-                    jdbc:hsqldb:file:${java.io.tmpdir}/northstar-claims-db
+                    <SystemProperty
+                        name="claims.db.url"
+                        default="jdbc:hsqldb:file:target/db/northstar" />
                 </Set>
-                <Set name="User">SA</Set>
+                <Set name="User">
+                    <SystemProperty
+                        name="claims.db.user"
+                        default="CLAIMS_APP" />
+                </Set>
+                <Set name="Password">
+                    <SystemProperty
+                        name="claims.db.password"
+                        default="" />
+                </Set>
             </New>
         </Arg>
     </New>

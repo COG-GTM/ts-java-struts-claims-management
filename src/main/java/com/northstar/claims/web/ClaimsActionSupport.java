@@ -1,7 +1,6 @@
 package com.northstar.claims.web;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -12,6 +11,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.struts.action.Action;
+import com.northstar.claims.dao.DatabaseCredentials;
 import com.northstar.claims.model.Claim;
 
 /**
@@ -22,10 +22,7 @@ public abstract class ClaimsActionSupport extends Action {
     protected final Log log = LogFactory.getLog(getClass());
 
     protected Connection openConnection() throws Exception {
-        String path = System.getProperty("claims.db.path",
-                "target/db/northstar");
-        return DriverManager.getConnection("jdbc:hsqldb:file:" + path,
-                "SA", "");
+        return DatabaseCredentials.openApplicationConnection();
     }
 
     protected int integer(String value, int fallback) {

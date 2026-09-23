@@ -1,7 +1,6 @@
 package com.northstar.claims.dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Vector;
 import javax.naming.InitialContext;
@@ -22,7 +21,7 @@ public class ConnectionPool {
     private final String url;
 
     private ConnectionPool() throws SQLException {
-        url = "jdbc:hsqldb:file:" + System.getProperty("claims.db.path", "target/db/northstar");
+        url = DatabaseCredentials.url();
     }
 
     public static synchronized ConnectionPool getInstance() throws SQLException {
@@ -43,8 +42,7 @@ public class ConnectionPool {
             return source.getConnection();
         } catch (Exception namingFailure) {
             log.warn("Container data source unavailable; using DriverManager", namingFailure);
-            System.out.println("DataSource lookup failed: " + namingFailure.getClass().getName());
-            return DriverManager.getConnection(url, "SA", "");
+            return DatabaseCredentials.openApplicationConnection();
         }
     }
 

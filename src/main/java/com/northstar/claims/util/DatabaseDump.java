@@ -3,12 +3,12 @@ package com.northstar.claims.util;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import com.northstar.claims.dao.DatabaseCredentials;
 
 /** Writes a stable text representation of every table for reset comparisons. */
 public class DatabaseDump {
@@ -24,9 +24,7 @@ public class DatabaseDump {
     }
 
     public static void dump(String output) throws Exception {
-        String path = System.getProperty("claims.db.path", "target/db/northstar");
-        Connection connection = DriverManager.getConnection(
-                "jdbc:hsqldb:file:" + path, "SA", "");
+        Connection connection = DatabaseCredentials.openOwnerConnection();
         PrintWriter writer = new PrintWriter(new FileWriter(output));
         try {
             for (int i = 0; i < TABLES.length; i++) {
