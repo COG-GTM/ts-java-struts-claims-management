@@ -1,6 +1,6 @@
 # Parity report — settlement module vs settlement-service
 
-Result: PASS — 6 PASS, 1 CHANGED, 0 FAIL, 2 SKIP (http://localhost:8083, parity/replay.py at 1acfcf4).
+Result: PASS — 6 PASS, 1 CHANGED, 0 FAIL, 2 SKIP (http://localhost:8083, parity/replay.py at 21dfea4).
 
 Compared per ADR-001: status class, business fields, validation keys and
 the `db_state` probes read back through the service. HTML is not compared.
@@ -15,10 +15,10 @@ the `db_state` probes read back through the service. HTML is not compared.
 | `settlement_half_cent` | PASS | SETTLE-R01, SETTLE-R05, SETTLE-R14, SETTLE-R15, SETTLE-R16, SETTLE-R17, SETTLE-R20, SETTLE-R21, SETTLE-R24 | - |
 | `settlement_policy_cap` | PASS | SETTLE-R01, SETTLE-R07, SETTLE-R11, SETTLE-R13, SETTLE-R14, SETTLE-R20, SETTLE-R22, SETTLE-R24 | - |
 | `settlement_deductible_floor` | PASS | SETTLE-R01, SETTLE-R07, SETTLE-R11, SETTLE-R12, SETTLE-R14, SETTLE-R20, SETTLE-R22, SETTLE-R24 | - |
-| `settlement_bad_deductible` | CHANGED | SETTLE-R06, SETTLE-R09 | CHG-001: status class: 2xx -> 5xx |
+| `settlement_bad_deductible` | CHANGED (CHG-001) | SETTLE-R06, SETTLE-R09 | CHG-001: A non-blank, unparseable deductible is a validation error instead of the error screen |
 
 ## Approved differences
-* **CHG-001** (docs/changes/CHG-001-error-status-class.md) — status_class: legacy 2xx -> service 5xx. ADR-001 'How parity is judged' replaces the Struts forward to error.jsp (status 200) with the equivalent error status class; the screen, the empty business fields and the empty validation keys are unchanged.
+* **CHG-001** (`docs/changes/CHG-001-invalid-deductible.md`) — `settlement_bad_deductible`: A non-blank, unparseable deductible is a validation error instead of the error screen. Judged against the answer that record approves, not the transcript.
 
 ## Probes not run
 * `settlement_blank_deductible` — db claim.120.status not probed: The CLAIM table is outside the service boundary (ADR-001 'Out of scope'); the service exposes no claim-status read, and SETTLE-R24 records that the settlement paths never write it.

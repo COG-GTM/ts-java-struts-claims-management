@@ -31,7 +31,12 @@ import org.springframework.web.bind.annotation.RestController;
  *   <li>SETTLE-R08 (v2) — on the calculate path a missing claim, or a missing
  *       policy, falls back to a limit of 10000 and the request still succeeds
  *       (SettlementCalculateAction.java:25-31).</li>
- *   <li>SETTLE-R09 — no validation runs, so {@code errors} is empty
+ *   <li>SETTLE-R06 (v2) — a non-blank deductible that does not parse answers
+ *       200 on the calculate screen with no business fields and the single
+ *       validation key {@code settlement.deductible.invalid}, on calculate and
+ *       on save, and save writes nothing
+ *       (docs/changes/CHG-001-invalid-deductible.md).</li>
+ *   <li>SETTLE-R09 — no validation runs otherwise, so {@code errors} is empty
  *       (src/main/webapp/WEB-INF/struts-config.xml:206-222).</li>
  *   <li>SETTLE-R18, R23 — the calculate screen carries coveredAmount,
  *       deductibleApplied, depreciation, cappedAtLimit and settlementAmount
@@ -67,6 +72,9 @@ public class SettlementController {
     /** SETTLE-R08 (v2): the calculate-path fallback limit. */
     static final double FALLBACK_POLICY_LIMIT = 10000;
 
+    /** SETTLE-R06 (v2): the one validation key the slice produces (CHG-001). */
+    static final String DEDUCTIBLE_INVALID = "settlement.deductible.invalid";
+
     private final SettlementCalculator calculator;
     private final ClaimPolicyRepository claims;
     private final SettlementRepository settlements;
@@ -93,6 +101,9 @@ public class SettlementController {
             @RequestParam(required = false) String coveredAmount,
             @RequestParam(required = false) String deductible,
             @RequestParam(required = false) String depreciation) {
+        if (LegacyParameters.isDeductibleInvalid(deductible)) {
+            return SettlementResponse.validationError("calculate", DEDUCTIBLE_INVALID);
+        }
         int claim = LegacyParameters.integer(claimId, LegacyParameters.DEFAULT_CLAIM_ID);
         double limit = policyLimit(claim).orElse(FALLBACK_POLICY_LIMIT);
         CalculatedSettlement settlement = calculator.calculate(
@@ -110,6 +121,9 @@ public class SettlementController {
             @RequestParam(required = false) String deductible,
             @RequestParam(required = false) String depreciation,
             @RequestParam(required = false) String user) {
+        if (LegacyParameters.isDeductibleInvalid(deductible)) {
+            return SettlementResponse.validationError("calculate", DEDUCTIBLE_INVALID);
+        }
         int claim = LegacyParameters.integer(claimId, LegacyParameters.DEFAULT_CLAIM_ID);
         double limit = policyLimit(claim).orElseThrow(() -> new MissingClaimException(claim));
         CalculatedSettlement settlement = calculator.calculate(

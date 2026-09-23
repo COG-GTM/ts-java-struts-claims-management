@@ -14,6 +14,10 @@ package com.northstar.settlement.web;
  *   <li>SETTLE-R05 — a null or empty deductible is replaced by the string "0"
  *       by the action before the calculator sees it
  *       (SettlementCalculateAction.java:34-37).</li>
+ *   <li>SETTLE-R06 (v2) — a non-blank deductible that does not parse is
+ *       rejected up front rather than reaching
+ *       {@link Double#parseDouble} inside the calculator
+ *       (docs/changes/CHG-001-invalid-deductible.md).</li>
  * </ul>
  */
 public final class LegacyParameters {
@@ -46,5 +50,22 @@ public final class LegacyParameters {
     /** SETTLE-R05: null or empty becomes "0"; anything else is passed through. */
     public static String deductibleOrZero(String value) {
         return value == null || value.length() == 0 ? "0" : value;
+    }
+
+    /**
+     * SETTLE-R06 (v2): true when the deductible is not blank and does not parse
+     * as a number. Blank — null, empty or whitespace only — is not invalid; it
+     * is the 0 of SETTLE-R05.
+     */
+    public static boolean isDeductibleInvalid(String value) {
+        if (value == null || value.trim().length() == 0) {
+            return false;
+        }
+        try {
+            Double.parseDouble(value);
+            return false;
+        } catch (NumberFormatException notANumber) {
+            return true;
+        }
     }
 }

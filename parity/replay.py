@@ -17,7 +17,9 @@ HTML is not compared: the legacy markup, span ids, forward paths and the
 message bundle are presentation (ADR-001).
 
 Verdicts: PASS, FAIL (with each legacy -> service difference), SKIP (a screen
-this service does not handle), CHANGED (an approved CHG-nnn difference).
+this service does not handle), CHANGED (CHG-nnn) for a scenario whose answer a
+CHG record approves: that scenario is judged against the record's ``expected``
+block instead of the transcript, and still FAILs on anything else.
 
 Usage: python3 parity/replay.py --module settlement [--base-url URL]
 Writes parity/report.md and parity/report.json; exits non-zero on any FAIL.
@@ -135,14 +137,14 @@ def difference(kind, legacy, service, text):
     return {"kind": kind, "legacy": legacy, "service": service, "text": text}
 
 
-def differences(base_url, routes, transcript, status, body, before, writes):
-    """Every legacy -> service difference, with both values kept apart.
+def differences(base_url, routes, expected, status, body, before, writes):
+    """Every expected -> service difference, with both values kept apart.
 
-    ``before`` holds the row identity each probe read before the request, and
-    ``writes`` says whether the replayed path is a write, in which case the
-    probed row has to be a new one.
+    ``expected`` is the transcript's recorded answer, or the answer a CHG
+    record approves in its place. ``before`` holds the row identity each probe
+    read before the request, and ``writes`` says whether the replayed path is a
+    write, in which case the probed row has to be a new one.
     """
-    expected = transcript["expected"]
     found = []
 
     legacy_class = status_class(expected["status"])
@@ -150,6 +152,10 @@ def differences(base_url, routes, transcript, status, body, before, writes):
     if legacy_class != service_class:
         found.append(difference("status_class", legacy_class, service_class,
                                 "status class: %s -> %s" % (legacy_class, service_class)))
+
+    if "screen" in expected and expected["screen"] != body.get("screen"):
+        found.append(difference("screen", expected["screen"], body.get("screen"),
+                                "screen: %r -> %r" % (expected["screen"], body.get("screen"))))
 
     fields = body.get("fields", {})
     for name, value in sorted(expected["business_fields"].items()):
@@ -189,30 +195,12 @@ def differences(base_url, routes, transcript, status, body, before, writes):
     return found, notes
 
 
-def approvals(routes, scenario, found):
-    """The CHG record approving exactly this difference, if there is one."""
+def approval(routes, scenario):
+    """The CHG record approving a different answer for this scenario, if any."""
     for approved in routes.get("approved_differences", []):
-        if (scenario in approved["scenarios"] and approved["kind"] == found["kind"]
-                and str(approved["legacy"]) == str(found["legacy"])
-                and str(approved["service"]) == str(found["service"])):
+        if approved["scenario"] == scenario:
             return approved
     return None
-
-
-def judge(routes, scenario, found):
-    """PASS, CHANGED or FAIL, with the failing and approved differences split."""
-    failures, changes = [], []
-    for entry in found:
-        approved = approvals(routes, scenario, entry)
-        if approved:
-            changes.append((approved["id"], entry["text"]))
-        else:
-            failures.append(entry["text"])
-    if failures:
-        return "FAIL", failures, changes
-    if changes:
-        return "CHANGED", failures, changes
-    return "PASS", failures, changes
 
 
 def write_report(results, module, base_url, routes, revision):
@@ -236,15 +224,17 @@ def write_report(results, module, base_url, routes, revision):
     for result in results:
         rules = ", ".join(result["rules"]) or "-"
         detail = result["detail"] or "-"
-        lines.append("| `%s` | %s | %s | %s |" % (result["scenario"], result["verdict"], rules, detail))
+        lines.append("| `%s` | %s | %s | %s |"
+                     % (result["scenario"], result["reported"], rules, detail))
     changed = [approved for approved in routes.get("approved_differences", [])
-               if any(approved["id"] in result["change_ids"] for result in results)]
+               if any(approved["change"] in result["change_ids"] for result in results)]
     if changed:
         lines += ["", "## Approved differences"]
         for approved in changed:
-            lines.append("* **%s** (%s) — %s: legacy %s -> service %s. %s"
-                         % (approved["id"], approved["record"], approved["kind"],
-                            approved["legacy"], approved["service"], approved["why"]))
+            lines.append("* **%s** (`%s`) — `%s`: %s. Judged against the answer that"
+                         " record approves, not the transcript."
+                         % (approved["change"], approved["record"],
+                            approved["scenario"], approved["summary"]))
     notes = [(r["scenario"], note) for r in results for note in r["notes"]]
     if notes:
         lines += ["", "## Probes not run"]
@@ -254,10 +244,11 @@ def write_report(results, module, base_url, routes, revision):
 
     with open(os.path.join(HERE, "report.md"), "w") as handle:
         handle.write("\n".join(lines))
+    scenarios = [dict(result, verdict=result["reported"]) for result in results]
     with open(os.path.join(HERE, "report.json"), "w") as handle:
         json.dump({"module": module, "service": routes["service"], "base_url": base_url,
                    "revision": revision, "result": overall, "counts": counts,
-                   "scenarios": results}, handle, indent=2, sort_keys=True)
+                   "scenarios": scenarios}, handle, indent=2, sort_keys=True)
         handle.write("\n")
     return overall
 
@@ -287,30 +278,37 @@ def main():
     results = []
     for entry in entries:
         scenario = entry["scenario"]
-        rules = routes.get("rules", {}).get(scenario, [])
+        rules = routes.get("rules_exercised", {}).get(scenario, [])
         if scenario not in routes["handles"]:
             reason = routes.get("skips", {}).get(scenario, "not handled by this service")
             results.append({"scenario": scenario, "description": entry["description"],
-                            "verdict": "SKIP", "rules": rules, "detail": reason,
-                            "differences": [], "approved": [], "change_ids": [],
+                            "verdict": "SKIP", "reported": "SKIP", "rules": rules,
+                            "detail": reason, "differences": [], "change_ids": [],
                             "notes": []})
             print("%-30s SKIP %s" % (scenario, reason))
             continue
 
         transcript = load_json(os.path.join(ROOT, "transcripts", scenario + ".json"))
-        before = probe_identities(base_url, routes, transcript["expected"]["db_state"])
+        approved = approval(routes, scenario)
+        expected = approved["expected"] if approved else transcript["expected"]
+        before = probe_identities(base_url, routes, expected["db_state"])
         writes = routes["routes"][transcript["request"]["path"]] in routes.get("writes", [])
         status, body = replay(base_url, routes, transcript)
-        found, notes = differences(base_url, routes, transcript, status, body, before, writes)
-        verdict, failures, changes = judge(routes, scenario, found)
-        approved = ["%s: %s" % (change_id, text) for change_id, text in changes]
-        detail = "; ".join(failures + approved)
+        found, notes = differences(base_url, routes, expected, status, body, before, writes)
+        failures = [entry["text"] for entry in found]
+        if failures:
+            verdict, detail = "FAIL", "; ".join(failures)
+        elif approved:
+            verdict, detail = "CHANGED", "%s: %s" % (approved["change"], approved["summary"])
+        else:
+            verdict, detail = "PASS", ""
+        reported = ("%s (%s)" % (verdict, approved["change"])) if approved else verdict
         results.append({"scenario": scenario, "description": entry["description"],
-                        "verdict": verdict, "rules": rules, "detail": detail,
-                        "differences": failures, "approved": approved,
-                        "change_ids": sorted({change_id for change_id, _ in changes}),
+                        "verdict": verdict, "reported": reported, "rules": rules,
+                        "detail": detail, "differences": failures,
+                        "change_ids": [approved["change"]] if approved else [],
                         "notes": notes})
-        print("%-30s %-7s %s" % (scenario, verdict, detail))
+        print("%-30s %-7s %s" % (scenario, reported, detail))
         for note in notes:
             print("%-30s note    %s" % ("", note))
 

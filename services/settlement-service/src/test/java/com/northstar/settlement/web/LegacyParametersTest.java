@@ -55,6 +55,24 @@ class LegacyParametersTest {
     }
 
     /**
+     * Rules: SETTLE-R05, SETTLE-R06 (v2).
+     * Change: docs/changes/CHG-001-invalid-deductible.md — only a non-blank
+     * value that Double.parseDouble rejects is invalid.
+     */
+    @Test
+    void onlyANonBlankUnparseableDeductibleIsInvalid() {
+        assertThat(LegacyParameters.isDeductibleInvalid(null)).isFalse();
+        assertThat(LegacyParameters.isDeductibleInvalid("")).isFalse();
+        assertThat(LegacyParameters.isDeductibleInvalid("   ")).isFalse();
+        assertThat(LegacyParameters.isDeductibleInvalid("500.00")).isFalse();
+        assertThat(LegacyParameters.isDeductibleInvalid(" 500.00 ")).isFalse();
+        assertThat(LegacyParameters.isDeductibleInvalid("-1")).isFalse();
+        assertThat(LegacyParameters.isDeductibleInvalid("abc")).isTrue();
+        assertThat(LegacyParameters.isDeductibleInvalid("1,000")).isTrue();
+        assertThat(LegacyParameters.isDeductibleInvalid("$50")).isTrue();
+    }
+
+    /**
      * Rules: SETTLE-R19, SETTLE-R20, SETTLE-R22, SETTLE-R31.
      * Transcript: settlement_calculate (money values carry two decimals,
      * cappedAtLimit renders as "true");

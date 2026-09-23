@@ -27,11 +27,15 @@
     "payment_issue": "Payment issue stays in the monolith: ADR-001 extracts only /settlement/calculate, /settlement/save and /settlement/detail; /claims/payment/issue.do has no service route.",
     "payment_history": "Payment history stays in the monolith: /claims/payment/history.do has no service route (ADR-001 'Out of scope')."
   },
-  "writes": ["/settlement/save"],
+  "writes": [
+    "/settlement/save"
+  ],
   "probes": {
     "settlement.claim.<id>.amount": {
       "path": "/settlement/detail",
-      "query": {"claimId": "<id>"},
+      "query": {
+        "claimId": "<id>"
+      },
       "field": "detailAmount",
       "identity_field": "detailSettlementId",
       "why": "SETTLE-R30: detail returns the highest settlement_id for the claim, which is the row the save path just wrote. The identity is compared with the reading taken before the replay, so a row an earlier run left behind cannot stand in for a save that did not happen."
@@ -42,24 +46,138 @@
     "payment.<id>.<field>": "The PAYMENT table is outside the service boundary.",
     "payment.count.claim.<id>": "The PAYMENT table is outside the service boundary."
   },
+  "approved_differences_comment": "An approved difference replaces the transcript's expectations for that scenario: replay.py judges the response against the 'expected' block below instead, reports the scenario as CHANGED (<change>), and still FAILs on anything the record does not approve. Each entry must name a docs/changes/CHG-nnn record (ADR-001, 'Behaviour freeze').",
   "approved_differences": [
     {
-      "id": "CHG-001",
-      "record": "docs/changes/CHG-001-error-status-class.md",
-      "scenarios": ["settlement_bad_deductible"],
-      "kind": "status_class",
-      "legacy": "2xx",
-      "service": "5xx",
-      "why": "ADR-001 'How parity is judged' replaces the Struts forward to error.jsp (status 200) with the equivalent error status class; the screen, the empty business fields and the empty validation keys are unchanged."
+      "scenario": "settlement_bad_deductible",
+      "change": "CHG-001",
+      "record": "docs/changes/CHG-001-invalid-deductible.md",
+      "summary": "A non-blank, unparseable deductible is a validation error instead of the error screen",
+      "rules": [
+        "SETTLE-R06 (v2)"
+      ],
+      "expected": {
+        "status": 200,
+        "screen": "calculate",
+        "business_fields": {},
+        "validation_errors": [
+          "settlement.deductible.invalid"
+        ],
+        "db_state": {}
+      }
     }
   ],
-  "rules": {
-    "settlement_calculate": ["SETTLE-R01", "SETTLE-R02", "SETTLE-R03", "SETTLE-R04", "SETTLE-R07", "SETTLE-R09", "SETTLE-R11", "SETTLE-R13", "SETTLE-R14", "SETTLE-R17", "SETTLE-R18", "SETTLE-R20", "SETTLE-R22", "SETTLE-R24"],
-    "settlement_policy_cap": ["SETTLE-R01", "SETTLE-R07", "SETTLE-R11", "SETTLE-R13", "SETTLE-R14", "SETTLE-R20", "SETTLE-R22", "SETTLE-R24"],
-    "settlement_blank_deductible": ["SETTLE-R01", "SETTLE-R05", "SETTLE-R07", "SETTLE-R10", "SETTLE-R14", "SETTLE-R20", "SETTLE-R22", "SETTLE-R24"],
-    "settlement_deductible_floor": ["SETTLE-R01", "SETTLE-R07", "SETTLE-R11", "SETTLE-R12", "SETTLE-R14", "SETTLE-R20", "SETTLE-R22", "SETTLE-R24"],
-    "settlement_half_cent": ["SETTLE-R01", "SETTLE-R05", "SETTLE-R14", "SETTLE-R15", "SETTLE-R16", "SETTLE-R17", "SETTLE-R20", "SETTLE-R21", "SETTLE-R24"],
-    "settlement_bad_deductible": ["SETTLE-R06", "SETTLE-R09"],
-    "settlement_save": ["SETTLE-R02", "SETTLE-R03", "SETTLE-R04", "SETTLE-R09", "SETTLE-R13", "SETTLE-R25", "SETTLE-R27", "SETTLE-R28", "SETTLE-R29", "SETTLE-R30"]
+  "transcript_rules_comment": "Which SPEC-SETTLE-001 rules each settlement transcript is evidence for, taken from the 'Observed:' lines of the spec. tools/traceability.py reads this to put transcripts and their parity verdicts next to each rule. An entry without a version (SETTLE-R05) applies to every version of that rule; a version-qualified entry (SETTLE-R06 (v2)) applies to that version only.",
+  "transcript_rules": {
+    "settlement_bad_deductible": [
+      "SETTLE-R06 (v1)",
+      "SETTLE-R06 (v2)"
+    ],
+    "settlement_blank_deductible": [
+      "SETTLE-R05",
+      "SETTLE-R10",
+      "SETTLE-R24"
+    ],
+    "settlement_calculate": [
+      "SETTLE-R01",
+      "SETTLE-R11",
+      "SETTLE-R13",
+      "SETTLE-R20",
+      "SETTLE-R22",
+      "SETTLE-R24"
+    ],
+    "settlement_deductible_floor": [
+      "SETTLE-R12",
+      "SETTLE-R22"
+    ],
+    "settlement_half_cent": [
+      "SETTLE-R16",
+      "SETTLE-R21"
+    ],
+    "settlement_policy_cap": [
+      "SETTLE-R13"
+    ],
+    "settlement_save": [
+      "SETTLE-R25",
+      "SETTLE-R27",
+      "SETTLE-R28",
+      "SETTLE-R29"
+    ]
+  },
+  "rules_exercised_comment": "Every rule each scenario exercises, for the rules column of parity/report.md. This is wider than transcript_rules, which lists only the rules the spec cites the transcript as evidence for and is the map tools/traceability.py reads.",
+  "rules_exercised": {
+    "settlement_calculate": [
+      "SETTLE-R01",
+      "SETTLE-R02",
+      "SETTLE-R03",
+      "SETTLE-R04",
+      "SETTLE-R07",
+      "SETTLE-R09",
+      "SETTLE-R11",
+      "SETTLE-R13",
+      "SETTLE-R14",
+      "SETTLE-R17",
+      "SETTLE-R18",
+      "SETTLE-R20",
+      "SETTLE-R22",
+      "SETTLE-R24"
+    ],
+    "settlement_policy_cap": [
+      "SETTLE-R01",
+      "SETTLE-R07",
+      "SETTLE-R11",
+      "SETTLE-R13",
+      "SETTLE-R14",
+      "SETTLE-R20",
+      "SETTLE-R22",
+      "SETTLE-R24"
+    ],
+    "settlement_blank_deductible": [
+      "SETTLE-R01",
+      "SETTLE-R05",
+      "SETTLE-R07",
+      "SETTLE-R10",
+      "SETTLE-R14",
+      "SETTLE-R20",
+      "SETTLE-R22",
+      "SETTLE-R24"
+    ],
+    "settlement_deductible_floor": [
+      "SETTLE-R01",
+      "SETTLE-R07",
+      "SETTLE-R11",
+      "SETTLE-R12",
+      "SETTLE-R14",
+      "SETTLE-R20",
+      "SETTLE-R22",
+      "SETTLE-R24"
+    ],
+    "settlement_half_cent": [
+      "SETTLE-R01",
+      "SETTLE-R05",
+      "SETTLE-R14",
+      "SETTLE-R15",
+      "SETTLE-R16",
+      "SETTLE-R17",
+      "SETTLE-R20",
+      "SETTLE-R21",
+      "SETTLE-R24"
+    ],
+    "settlement_bad_deductible": [
+      "SETTLE-R06",
+      "SETTLE-R09"
+    ],
+    "settlement_save": [
+      "SETTLE-R02",
+      "SETTLE-R03",
+      "SETTLE-R04",
+      "SETTLE-R09",
+      "SETTLE-R13",
+      "SETTLE-R25",
+      "SETTLE-R27",
+      "SETTLE-R28",
+      "SETTLE-R29",
+      "SETTLE-R30"
+    ]
   }
 }

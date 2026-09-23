@@ -121,22 +121,44 @@ class SettlementCalculateEndpointTest {
     }
 
     /**
-     * Rules: SETTLE-R06.
-     * Transcript: settlement_bad_deductible — the legacy forwards to error.jsp
-     * with no business fields; per ADR-001 parity is on the status class, so
-     * the service answers 500 with the same empty field set.
+     * Rules: SETTLE-R06 (v2).
+     * Change: docs/changes/CHG-001-invalid-deductible.md — the legacy forwards
+     * to error.jsp with no business fields and no validation errors
+     * (transcript settlement_bad_deductible); the service answers 200 on the
+     * calculate screen with no business fields and the single key
+     * settlement.deductible.invalid.
      */
     @Test
-    void nonNumericDeductibleReachesTheErrorScreen() throws Exception {
+    void nonNumericDeductibleIsAValidationError() throws Exception {
         mvc.perform(post("/settlement/calculate")
                         .param("claimId", "119")
                         .param("coveredAmount", "5000.00")
                         .param("deductible", "abc")
                         .param("depreciation", "0.00"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.screen").value("error"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.screen").value("calculate"))
                 .andExpect(jsonPath("$.fields").isEmpty())
-                .andExpect(jsonPath("$.errors").isEmpty());
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0]").value("settlement.deductible.invalid"));
+    }
+
+    /**
+     * Rules: SETTLE-R05, SETTLE-R06 (v2).
+     * Change: docs/changes/CHG-001-invalid-deductible.md — blank still means
+     * zero, so a whitespace-only deductible is not a validation error.
+     */
+    @Test
+    void whitespaceDeductibleStillMeansZero() throws Exception {
+        mvc.perform(post("/settlement/calculate")
+                        .param("claimId", "120")
+                        .param("coveredAmount", "5000.00")
+                        .param("deductible", "   ")
+                        .param("depreciation", "500.00"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.screen").value("calculate"))
+                .andExpect(jsonPath("$.errors").isEmpty())
+                .andExpect(jsonPath("$.fields.deductibleApplied").value("0.00"))
+                .andExpect(jsonPath("$.fields.settlementAmount").value("4500.00"));
     }
 
     /**

@@ -1,4 +1,4 @@
-.PHONY: build run seed test capture clean service-build service-test service-run parity
+.PHONY: build run seed test capture clean service-build service-test service-run parity traceability
 
 # Settlement service (ADR-001): Spring Boot 3.5 on Java 21, port 8083.
 SERVICE_DIR = services/settlement-service
@@ -33,6 +33,11 @@ PARITY_MODULE = settlement
 
 parity:
 	python3 parity/replay.py --module $(PARITY_MODULE)
+
+# Regenerates docs/TRACEABILITY.md from the spec, the git history, the tests,
+# parity/routes.json and parity/report.json. Needs nothing running.
+traceability:
+	python3 tools/traceability.py
 
 clean:
 	mvn -q clean
