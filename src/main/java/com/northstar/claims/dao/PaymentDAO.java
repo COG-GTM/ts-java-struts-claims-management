@@ -182,7 +182,7 @@ public class PaymentDAO {
                     + "where ? <= (select s.settlement_amount "
                     + "- coalesce((select sum(p.amount) from PAYMENT p "
                     + "where p.claim_id = s.claim_id),0) from SETTLEMENT s "
-                    + "where s.settlement_id = ?)");
+                    + "where s.settlement_id = ? and s.claim_id = ?)");
             ps.setInt(1, value.getPaymentId());
             ps.setInt(2, value.getClaimId());
             ps.setInt(3, value.getSettlementId());
@@ -194,6 +194,7 @@ public class PaymentDAO {
             ps.setString(9, value.getStatus());
             ps.setDouble(10, value.getAmount());
             ps.setInt(11, value.getSettlementId());
+            ps.setInt(12, value.getClaimId());
             return ps.executeUpdate() == 1;
         } finally {
             try { ps.close(); } catch (Exception e) {}

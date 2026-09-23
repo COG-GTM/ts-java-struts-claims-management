@@ -2,6 +2,7 @@ package com.northstar.claims.web;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -21,6 +22,7 @@ public class ActionAuthorizationTest {
     private static final int OWNED_CLAIM = 3;
     private static final int UNSETTLED_CLAIM = 9990;
     private static final int CAPPED_CLAIM = 9991;
+    private static final int DAO_CLAIM = 9992;
     private static final double CAPPED_SETTLEMENT = 100.0;
     private static final double SETTLEMENT_AMOUNT = 1003.0;
 
@@ -33,6 +35,7 @@ public class ActionAuthorizationTest {
         DatabaseBootstrap.bootstrap(true);
         insertUnsettledClaim();
         insertCappedClaim();
+        insertDaoClaim();
     }
 
     /**
@@ -76,6 +79,29 @@ public class ActionAuthorizationTest {
                     + " '2019-01-16')");
             connection.createStatement().executeUpdate("insert into"
                     + " SETTLEMENT values (9991, " + CAPPED_CLAIM + ", 100,"
+                    + " 0, 0, FALSE, " + CAPPED_SETTLEMENT
+                    + ", 'supervisor', '2019-03-01')");
+            connection.commit();
+        } finally {
+            connection.close();
+        }
+    }
+
+    /** Fixture used only by the DAO-level balance tests. */
+    private static void insertDaoClaim() throws Exception {
+        java.sql.Connection connection = java.sql.DriverManager.getConnection(
+                "jdbc:hsqldb:file:"
+                        + System.getProperty("claims.db.path"), "SA", "");
+        try {
+            int policyId = new ClaimDAO().findById(OWNED_CLAIM).getPolicyId();
+            connection.createStatement().executeUpdate("insert into CLAIM"
+                    + " values (" + DAO_CLAIM + ", 'CLM-09992', "
+                    + policyId + ", 'Ledger Claimant', '2019-01-15',"
+                    + " '2019-01-16', 'FIRE', 'Claim used by the DAO tests',"
+                    + " 'OPEN', 1000, 'adjuster3', 'supervisor',"
+                    + " '2019-01-16')");
+            connection.createStatement().executeUpdate("insert into"
+                    + " SETTLEMENT values (9992, " + DAO_CLAIM + ", 100,"
                     + " 0, 0, FALSE, " + CAPPED_SETTLEMENT
                     + ", 'supervisor', '2019-03-01')");
             connection.commit();
@@ -217,6 +243,52 @@ public class ActionAuthorizationTest {
         assertFalse(new com.northstar.claims.dao.PaymentDAO()
                 .insertWithinSettlement(payment));
         assertEquals(before, paymentCount(CAPPED_CLAIM));
+    }
+
+    /** A settlement only funds payments recorded against its own claim. */
+    @Test
+    public void paymentInsertRefusesForeignSettlement() throws Exception {
+        com.northstar.claims.model.Payment payment = racingPayment();
+        payment.setClaimId(UNSETTLED_CLAIM);
+        payment.setAmount(1);
+        int before = paymentCount(UNSETTLED_CLAIM);
+        assertFalse(new com.northstar.claims.dao.PaymentDAO()
+                .insertWithinSettlement(payment));
+        assertEquals(before, paymentCount(UNSETTLED_CLAIM));
+    }
+
+    /** Individually valid payments cannot add up past the settlement. */
+    @Test
+    public void paymentInsertsStopAtTheSettlementTotal() throws Exception {
+        com.northstar.claims.model.Payment first = racingPayment();
+        first.setClaimId(DAO_CLAIM);
+        first.setSettlementId(9992);
+        first.setAmount(CAPPED_SETTLEMENT / 2);
+        com.northstar.claims.model.Payment second = racingPayment();
+        second.setPaymentId(99993);
+        second.setClaimId(DAO_CLAIM);
+        second.setSettlementId(9992);
+        second.setAmount(CAPPED_SETTLEMENT);
+        assertTrue(new com.northstar.claims.dao.PaymentDAO()
+                .insertWithinSettlement(first));
+        assertFalse(new com.northstar.claims.dao.PaymentDAO()
+                .insertWithinSettlement(second));
+        assertEquals(1, paymentCount(DAO_CLAIM));
+    }
+
+    private com.northstar.claims.model.Payment racingPayment() {
+        com.northstar.claims.model.Payment payment =
+                new com.northstar.claims.model.Payment();
+        payment.setPaymentId(99992);
+        payment.setClaimId(CAPPED_CLAIM);
+        payment.setSettlementId(9991);
+        payment.setPayeeName("Racing Claimant");
+        payment.setAmount(1);
+        payment.setPaymentMethod("CHECK");
+        payment.setCheckNumber("CHK-99992");
+        payment.setIssuedDate("2019-04-03");
+        payment.setStatus("ISSUED");
+        return payment;
     }
 
     @Test
