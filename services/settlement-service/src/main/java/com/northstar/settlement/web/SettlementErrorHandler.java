@@ -23,12 +23,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * (docs/changes/CHG-001-invalid-deductible.md); the
  * {@link NumberFormatException} mapping stays as the backstop for any other
  * unparseable value the legacy would have thrown on.
+ *
+ * <p>The monolith maps {@code java.lang.Exception} globally, so every failure
+ * of a settlement request reaches the same screen: a data access failure of
+ * the insert or of a lookup answers with the error screen here too, rather
+ * than with the container's own body.
  */
 @RestControllerAdvice
 public class SettlementErrorHandler {
 
-    @ExceptionHandler({NumberFormatException.class, MissingClaimException.class})
-    public ResponseEntity<SettlementResponse> error(RuntimeException failure) {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<SettlementResponse> error(Exception failure) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new SettlementResponse("error", Map.of(), List.of()));
     }
