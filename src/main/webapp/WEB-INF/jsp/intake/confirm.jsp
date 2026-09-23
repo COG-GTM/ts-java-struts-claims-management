@@ -30,7 +30,7 @@ if (nsValidationErrors != null) {
 <tr>
 <th><bean:message key="claim.status"/></th><td><ns:field name="claimStatus" value="${claimStatus}" type="text"/></td></tr>
 <tr>
-<th><bean:message key="intake.confirm.next"/></th><td><a href="../workbench/view.do?claimId=${claimId}"><bean:message
+<th><bean:message key="intake.confirm.next"/></th><td><a href="../workbench/view.do?claimId=<c:out value='${claimId}'/>"><bean:message
 key="intake.confirm.open"/></a></td></tr>
 </table>
 <p><bean:message key="intake.confirm.message"/></p>
