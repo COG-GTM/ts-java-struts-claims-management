@@ -21,8 +21,13 @@ public class CredentialTest {
     public static void seed() throws Exception {
         System.setProperty("claims.db.path", "target/db/test-northstar");
         DatabaseBootstrap.bootstrap(true);
+        discardPooledConnections();
     }
 
+    /**
+     * A bootstrap shuts the file database down, so pooled connections opened
+     * by another test class cannot be handed out again.
+     */
     @AfterClass
     public static void discardPooledConnections() throws Exception {
         ConnectionPool.getInstance().closeAll();
