@@ -192,7 +192,17 @@ def cell(values):
     return ", ".join(values) if values else "-"
 
 
+def require_full_history():
+    """A shallow clone has no history to read, and would fill the commit column
+    with the single commit it carries."""
+    if git("rev-parse", "--is-shallow-repository").strip() == "true":
+        raise SystemExit(
+            "tools/traceability.py needs the full history: run git fetch "
+            "--unshallow (in CI, check out with fetch-depth: 0)")
+
+
 def main():
+    require_full_history()
     rules, history = rules_and_history()
     citations = javadoc_citations()
     routes = json.loads(read(os.path.join("parity", "routes.json")))
