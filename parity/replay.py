@@ -117,6 +117,15 @@ def probe(base_url, routes, key):
     return "unconfigured", None, None
 
 
+def identity_field(routes, key):
+    """The field naming the row identity of this probe, if it has one."""
+    parts = key.split(".")
+    for pattern, spec in routes.get("probes", {}).items():
+        if pattern_matches(pattern, parts) is not None:
+            return spec.get("identity_field")
+    return None
+
+
 def probe_identities(base_url, routes, keys):
     """The identity each probe reads now, to compare with after the replay."""
     return {key: probe(base_url, routes, key)[2] for key in keys}
@@ -169,12 +178,14 @@ def differences(base_url, routes, transcript, status, body, before, writes):
         elif actual != value:
             found.append(difference("db:%s" % key, value, actual,
                                     "db %s: %r -> %r" % (key, value, actual)))
-        elif writes and identity is not None and identity == before.get(key):
+        elif writes and identity_field(routes, key) and identity == before.get(key):
+            seen = ("no row identity at all (%s missing from the response)"
+                    % identity_field(routes, key) if identity is None
+                    else "identity %s, unchanged" % identity)
             found.append(difference("db:%s" % key, "a row written by this request",
                                     "the row of an earlier run",
-                                    "db %s: %r is the row that was already there "
-                                    "(identity %s unchanged), so this request wrote nothing"
-                                    % (key, value, identity)))
+                                    "db %s: %r came back with %s, so this request "
+                                    "wrote nothing" % (key, value, seen)))
     return found, notes
 
 
@@ -227,7 +238,7 @@ def write_report(results, module, base_url, routes, revision):
         detail = result["detail"] or "-"
         lines.append("| `%s` | %s | %s | %s |" % (result["scenario"], result["verdict"], rules, detail))
     changed = [approved for approved in routes.get("approved_differences", [])
-               if any(r["verdict"] == "CHANGED" and approved["id"] in r["change_ids"] for r in results)]
+               if any(approved["id"] in result["change_ids"] for result in results)]
     if changed:
         lines += ["", "## Approved differences"]
         for approved in changed:
@@ -281,7 +292,8 @@ def main():
             reason = routes.get("skips", {}).get(scenario, "not handled by this service")
             results.append({"scenario": scenario, "description": entry["description"],
                             "verdict": "SKIP", "rules": rules, "detail": reason,
-                            "differences": [], "change_ids": [], "notes": []})
+                            "differences": [], "approved": [], "change_ids": [],
+                            "notes": []})
             print("%-30s SKIP %s" % (scenario, reason))
             continue
 
@@ -291,15 +303,11 @@ def main():
         status, body = replay(base_url, routes, transcript)
         found, notes = differences(base_url, routes, transcript, status, body, before, writes)
         verdict, failures, changes = judge(routes, scenario, found)
-        if verdict == "FAIL":
-            detail = "; ".join(failures)
-        elif verdict == "CHANGED":
-            detail = "; ".join("%s: %s" % (change_id, text) for change_id, text in changes)
-        else:
-            detail = ""
+        approved = ["%s: %s" % (change_id, text) for change_id, text in changes]
+        detail = "; ".join(failures + approved)
         results.append({"scenario": scenario, "description": entry["description"],
                         "verdict": verdict, "rules": rules, "detail": detail,
-                        "differences": failures,
+                        "differences": failures, "approved": approved,
                         "change_ids": sorted({change_id for change_id, _ in changes}),
                         "notes": notes})
         print("%-30s %-7s %s" % (scenario, verdict, detail))
