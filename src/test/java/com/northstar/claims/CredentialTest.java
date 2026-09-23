@@ -58,6 +58,18 @@ public class CredentialTest {
     }
 
     @Test
+    public void rejectsOversizedHashParameters() {
+        StringBuffer hex = new StringBuffer();
+        for (int i = 0; i < 400; i++) {
+            hex.append("ab");
+        }
+        assertFalse(PasswordHasher.verify("legacy1",
+                "pbkdf2-sha1$120000$" + hex + "$" + hex));
+        assertFalse(PasswordHasher.verify("legacy1",
+                "pbkdf2-sha1$900000000$0011$0011"));
+    }
+
+    @Test
     public void acceptsSeededOperator() throws Exception {
         Adjuster operator = new AdjusterDAO().authenticate("supervisor",
                 "supervisor");

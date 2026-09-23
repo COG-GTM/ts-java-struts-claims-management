@@ -24,6 +24,8 @@ public final class PasswordHasher {
     private static final int ITERATIONS = 120000;
     private static final int SALT_BYTES = 16;
     private static final int KEY_BITS = 160;
+    private static final int MAX_ITERATIONS = 1000000;
+    private static final int MAX_HEX_CHARS = 256;
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -51,6 +53,11 @@ public final class PasswordHasher {
             log.warn("Rejecting credential with unsupported hash format");
             return false;
         }
+        if (parts[2].length() > MAX_HEX_CHARS
+                || parts[3].length() > MAX_HEX_CHARS) {
+            log.warn("Rejecting credential with oversized hash value");
+            return false;
+        }
         int iterations;
         byte[] salt;
         byte[] expected;
@@ -62,7 +69,9 @@ public final class PasswordHasher {
             log.warn("Rejecting credential with unreadable hash value");
             return false;
         }
-        if (iterations <= 0 || salt.length == 0 || expected.length == 0) {
+        if (iterations <= 0 || iterations > MAX_ITERATIONS
+                || salt.length == 0 || expected.length == 0) {
+            log.warn("Rejecting credential with unsupported work factor");
             return false;
         }
         return MessageDigest.isEqual(expected, derive(password, salt, iterations));
