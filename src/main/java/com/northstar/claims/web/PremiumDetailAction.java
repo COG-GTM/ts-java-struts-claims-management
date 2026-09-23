@@ -14,6 +14,9 @@ public class PremiumDetailAction extends ClaimsActionSupport {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+        if (!canReadPortfolio(request)) {
+            return denied(mapping, request);
+        }
         java.util.List rows = new PolicyDAO().findAll();
         request.setAttribute("policies", rows);
         request.setAttribute("policyCount", new Integer(rows.size()));

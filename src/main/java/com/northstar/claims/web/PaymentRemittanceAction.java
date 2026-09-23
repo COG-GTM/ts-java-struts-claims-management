@@ -15,6 +15,9 @@ public class PaymentRemittanceAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int id = integer(request.getParameter("claimId"), 119);
+        if (authorizedClaim(request, id) == null) {
+            return denied(mapping, request);
+        }
         java.util.List rows = new PaymentDAO().findByClaim(id);
         request.setAttribute("payments", rows);
         request.setAttribute("claimId", new Integer(id));

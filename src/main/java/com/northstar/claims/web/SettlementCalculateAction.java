@@ -21,13 +21,14 @@ public class SettlementCalculateAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int claimId = integer(request.getParameter("claimId"), 119);
-        Claim claim = findClaim(claimId);
+        Claim claim = authorizedClaim(request, claimId);
+        if (claim == null) {
+            return denied(mapping, request);
+        }
         double limit = 10000;
-        if (claim != null) {
-            Policy policy = new PolicyDAO().findById(claim.getPolicyId());
-            if (policy != null) {
-                limit = policy.getPolicyLimit();
-            }
+        Policy policy = new PolicyDAO().findById(claim.getPolicyId());
+        if (policy != null) {
+            limit = policy.getPolicyLimit();
         }
         double covered = decimal(request.getParameter("coveredAmount"), 5000);
         double depreciation = decimal(request.getParameter("depreciation"), 0);

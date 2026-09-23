@@ -17,9 +17,12 @@ public class WorkbenchViewAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int claimId = integer(request.getParameter("claimId"), 119);
-        Claim claim = findClaim(claimId);
+        Claim claim = authorizedClaim(request, claimId);
+        if (claim == null) {
+            return denied(mapping, request);
+        }
         request.setAttribute("claim", claim);
-        if (claim != null) {
+        {
             request.setAttribute("claimId", new Integer(claim.getClaimId()));
             request.setAttribute("claimStatus", claim.getStatus());
             request.setAttribute("reserveAmount",

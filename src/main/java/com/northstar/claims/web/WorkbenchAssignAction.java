@@ -17,13 +17,15 @@ public class WorkbenchAssignAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int claimId = integer(request.getParameter("claimId"), 119);
-        String adjuster = request.getParameter("adjuster");
-        if (adjuster == null || adjuster.length() == 0) {
-            adjuster = "adjuster2";
+        if (!canReadPortfolio(request)
+                || authorizedClaim(request, claimId) == null) {
+            return denied(mapping, request);
         }
-        update("update CLAIM set assigned_adjuster = '" + adjuster
-                + "' where claim_id = " + claimId);
-        Claim claim = findClaim(claimId);
+        String adjuster = defaultText(request.getParameter("adjuster"),
+                "adjuster2");
+        updateClaim(request, claimId, "update CLAIM set assigned_adjuster = "
+                + quote(adjuster) + " where claim_id = " + claimId);
+        Claim claim = authorizedClaim(request, claimId);
         request.setAttribute("claim", claim);
         request.setAttribute("assignedAdjuster", adjuster);
         request.setAttribute("claimId", new Integer(claimId));

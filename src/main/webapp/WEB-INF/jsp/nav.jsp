@@ -1,5 +1,8 @@
 <%@ page isELIgnored="false" %>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
+<input type="hidden" id="csrfToken" name="csrfToken"
+ value="<%= session.getAttribute("csrfToken") == null ? ""
+ : session.getAttribute("csrfToken") %>"/>
 <table class="menu" cellpadding="2" cellspacing="0" border="0">
 <tr><td><bean:message key="nav.quickLinks"/></td></tr>
 <tr><td><a href="<%= request.getContextPath() %>/intake/new.do"><bean:message key="nav.newClaim"/></a></td></tr>

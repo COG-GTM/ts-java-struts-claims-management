@@ -15,6 +15,9 @@ public class PolicyCoverageDetailAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int id = integer(request.getParameter("policyId"), 9001);
+        if (!canAccessPolicy(request, id)) {
+            return denied(mapping, request);
+        }
         Policy policy = new PolicyDAO().findById(id);
         request.setAttribute("policy", policy);
         request.setAttribute("coverages", new java.util.ArrayList());

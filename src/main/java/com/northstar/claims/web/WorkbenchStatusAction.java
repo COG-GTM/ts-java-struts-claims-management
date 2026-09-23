@@ -17,13 +17,13 @@ public class WorkbenchStatusAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int claimId = integer(request.getParameter("claimId"), 119);
-        String status = request.getParameter("status");
-        if (status == null || status.length() == 0) {
-            status = "INVESTIGATING";
+        if (authorizedClaim(request, claimId) == null) {
+            return denied(mapping, request);
         }
-        update("update CLAIM set status = '" + status
-                + "' where claim_id = " + claimId);
-        request.setAttribute("claim", findClaim(claimId));
+        String status = normalizeStatus(request.getParameter("status"));
+        updateClaim(request, claimId, "update CLAIM set status = "
+                + quote(status) + " where claim_id = " + claimId);
+        request.setAttribute("claim", authorizedClaim(request, claimId));
         request.setAttribute("claimStatus", status);
         request.setAttribute("claimId", new Integer(claimId));
         request.setAttribute("screenName", "detail");

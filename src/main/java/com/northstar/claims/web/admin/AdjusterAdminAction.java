@@ -17,6 +17,9 @@ public class AdjusterAdminAction
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+        if (!canReadPortfolio(request)) {
+            return denied(mapping, request);
+        }
         java.util.List adjusters =
                 new com.northstar.claims.dao.AdjusterDAO().findAll();
         request.setAttribute("adjusters", adjusters);

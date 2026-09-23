@@ -17,10 +17,17 @@ public class WorkbenchReserveAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int claimId = integer(request.getParameter("claimId"), 119);
+        if (authorizedClaim(request, claimId) == null) {
+            return denied(mapping, request);
+        }
         double reserve = decimal(request.getParameter("reserveAmount"), 4500);
-        update("update CLAIM set reserve_amount = " + reserve
-                + " where claim_id = " + claimId);
-        request.setAttribute("claim", findClaim(claimId));
+        if (!financialAmount(reserve)) {
+            request.setAttribute("message", "errors.reserve.invalid");
+            return mapping.findForward("error");
+        }
+        updateClaim(request, claimId, "update CLAIM set reserve_amount = "
+                + reserve + " where claim_id = " + claimId);
+        request.setAttribute("claim", authorizedClaim(request, claimId));
         request.setAttribute("reserveAmount", new Double(reserve));
         request.setAttribute("claimId", new Integer(claimId));
         request.setAttribute("screenName", "detail");

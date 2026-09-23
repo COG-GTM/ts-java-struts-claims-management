@@ -21,6 +21,7 @@ CONTEXT_PATH = "/claims"
 FIELD_RE = re.compile(r'<span id="f_([^"]+)">(.*?)</span>', re.S)
 VIEW_RE = re.compile(r"<!--\s*ns:view\s+([^ ]+)\s*-->")
 ERROR_RE = re.compile(r"<!--\s*ns:error\s+([^ ]+)\s*-->")
+CSRF_RE = re.compile(r'id="csrfToken" name="csrfToken"\s*value="([^"]*)"')
 
 
 SCENARIOS = [
@@ -119,10 +120,15 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-def request(opener, method, path, form=None):
+def request(opener, method, path, form=None, csrf_token=None):
     url = BASE + path
     data = None
-    if form:
+    if form is not None and method == "POST":
+        submitted = dict(form)
+        if csrf_token:
+            submitted["csrfToken"] = csrf_token
+        data = urllib.parse.urlencode(submitted).encode("utf-8")
+    elif form:
         data = urllib.parse.urlencode(form).encode("utf-8")
     req = urllib.request.Request(url, data=data, method=method)
     try:
@@ -217,9 +223,17 @@ def start_server():
     raise RuntimeError("Jetty did not become ready")
 
 
-def write_transcript(opener, scenario):
+def csrf_token(opener):
+    """Reads the session anti-CSRF token rendered on every signed-in page."""
+    unused_code, unused_url, body = request(opener, "GET",
+                                            "/workbench/list.do")
+    match = CSRF_RE.search(body)
+    return match.group(1) if match else None
+
+
+def write_transcript(opener, scenario, token=None):
     name, module, description, method, path, form, probes = scenario
-    code, location, body = request(opener, method, path, form)
+    code, location, body = request(opener, method, path, form, token)
     state = {}
     for key, probe_path in sorted(probes.items()):
         state[key] = probe(opener, key, probe_path)
@@ -255,8 +269,11 @@ def main():
         opener = urllib.request.build_opener(
             urllib.request.HTTPCookieProcessor(jar))
         request(opener, "GET", "/login.do")
+        token = None
         for scenario in SCENARIOS:
-            transcript = write_transcript(opener, scenario)
+            transcript = write_transcript(opener, scenario, token)
+            if token is None:
+                token = csrf_token(opener)
             path = os.path.join(ROOT, "transcripts",
                                 transcript["scenario"] + ".json")
             with open(path, "w", encoding="utf-8") as stream:

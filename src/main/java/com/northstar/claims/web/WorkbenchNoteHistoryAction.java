@@ -17,11 +17,11 @@ public class WorkbenchNoteHistoryAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int id = integer(request.getParameter("claimId"), 119);
-        request.setAttribute("notes", new NoteDAO().findByClaim(id));
-        Claim claim = new ClaimDAO().findById(id);
+        Claim claim = authorizedClaim(request, id);
         if (claim == null) {
-            claim = new ClaimDAO().findById(119);
+            return denied(mapping, request);
         }
+        request.setAttribute("notes", new NoteDAO().findByClaim(id));
         putClaimSummary(request, claim);
         request.setAttribute("screenName", "detail");
         return mapping.findForward("notes");
