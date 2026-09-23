@@ -25,7 +25,9 @@
                         default="CLAIMS_APP" />
                 </Set>
                 <Set name="Password">
-                    <SystemProperty name="claims.db.password" />
+                    <SystemProperty
+                        name="claims.db.password"
+                        default="" />
                 </Set>
             </New>
         </Arg>
