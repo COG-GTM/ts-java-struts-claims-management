@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import com.northstar.claims.model.Adjuster;
+import com.northstar.claims.util.PasswordHasher;
 
 
 /**
@@ -96,18 +97,33 @@ public class AdjusterDAO {
         }
     }
 
-    /** Authenticates a user using the plaintext credential columns of the application. */
+    /**
+     * Authenticates a user against the stored salted password hash.
+     *
+     * The lookup is by username only; the submitted password is verified in
+     * the application with a constant-time comparison so the SQL layer never
+     * sees credential material.
+     */
     public Adjuster authenticate(String username, String password) throws SQLException {
+        if (username == null || password == null) {
+            return null;
+        }
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
             conn = ConnectionPool.getInstance().getConnection();
-            ps = conn.prepareStatement("select * from ADJUSTER where username = ? and password = ? and active = true");
+            ps = conn.prepareStatement("select * from ADJUSTER where username = ? and active = true");
             ps.setString(1, username);
-            ps.setString(2, password);
             rs = ps.executeQuery();
-            return rs.next() ? read(rs) : null;
+            if (!rs.next()) {
+                return null;
+            }
+            Adjuster candidate = read(rs);
+            if (!PasswordHasher.verify(password, candidate.getPasswordHash())) {
+                return null;
+            }
+            return candidate;
         } finally {
             try { rs.close(); } catch (Exception e) {}
             try { ps.close(); } catch (Exception e) {}
@@ -141,9 +157,10 @@ public class AdjusterDAO {
         Adjuster value = new Adjuster();
         value.setAdjusterId(rs.getInt("adjuster_id"));
         value.setUsername(rs.getString("username"));
-        value.setPassword(rs.getString("password"));
+        value.setPasswordHash(rs.getString("password_hash"));
         value.setFullName(rs.getString("full_name"));
         value.setRegion(rs.getString("region"));
+        value.setRole(rs.getString("role"));
         value.setActive(rs.getBoolean("active"));
         return value;
     }
