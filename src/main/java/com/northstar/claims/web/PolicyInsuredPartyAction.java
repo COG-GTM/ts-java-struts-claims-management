@@ -15,6 +15,9 @@ public class PolicyInsuredPartyAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int id = integer(request.getParameter("policyId"), 9001);
+        if (!canAccessPolicy(request, id)) {
+            return denied(mapping, request);
+        }
         Policy policy;
         try {
             policy = new PolicyDAO().findById(id);

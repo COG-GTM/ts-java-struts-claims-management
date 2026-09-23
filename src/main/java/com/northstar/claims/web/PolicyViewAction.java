@@ -18,6 +18,9 @@ public class PolicyViewAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int policyId = integer(request.getParameter("policyId"), 1);
+        if (!canAccessPolicy(request, policyId)) {
+            return denied(mapping, request);
+        }
         Policy policy = new PolicyDAO().findById(policyId);
         request.setAttribute("policy", policy);
         request.setAttribute("policyId", new Integer(policyId));

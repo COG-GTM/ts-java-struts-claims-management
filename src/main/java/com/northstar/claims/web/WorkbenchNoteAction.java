@@ -17,11 +17,15 @@ public class WorkbenchNoteAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int claimId = integer(request.getParameter("claimId"), 119);
+        Claim claim = authorizedClaim(request, claimId);
+        if (claim == null) {
+            return denied(mapping, request);
+        }
         String note = request.getParameter("noteText");
         if (note == null || note.length() == 0) {
             note = "Review completed";
         }
-        request.setAttribute("claim", findClaim(claimId));
+        request.setAttribute("claim", claim);
         request.setAttribute("noteText", note);
         request.setAttribute("claimId", new Integer(claimId));
         request.setAttribute("screenName", "detail");

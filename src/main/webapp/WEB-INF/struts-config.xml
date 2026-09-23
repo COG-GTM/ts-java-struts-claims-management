@@ -66,7 +66,9 @@
                 name="intakeInput"
                 path="/WEB-INF/jsp/intake/new.jsp"/><forward
                 name="error"
-                path="/WEB-INF/jsp/error.jsp"/></global-forwards>
+                path="/WEB-INF/jsp/error.jsp"/><forward
+                name="denied"
+                path="/WEB-INF/jsp/denied.jsp"/></global-forwards>
 <action-mappings>
 <action
     path="/login"

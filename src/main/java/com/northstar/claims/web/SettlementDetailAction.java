@@ -15,6 +15,9 @@ public class SettlementDetailAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int id = integer(request.getParameter("claimId"), 119);
+        if (authorizedClaim(request, id) == null) {
+            return denied(mapping, request);
+        }
         Settlement settlement = new SettlementDAO().findByClaim(id);
         request.setAttribute("settlement", settlement);
         request.setAttribute("screenName", "detail");

@@ -1,7 +1,7 @@
 package com.northstar.claims.web;
 
 import com.northstar.claims.dao.PaymentDAO;
-import com.northstar.claims.dao.SettlementDAO;
+import com.northstar.claims.model.Claim;
 import com.northstar.claims.model.Payment;
 import com.northstar.claims.model.Settlement;
 import org.apache.struts.action.ActionForward;
@@ -12,28 +12,56 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Handles the PaymentIssueAction request in the claims web module.
- * The action loads screen data and completes the configured request workflow.
+ * Issuing a check is restricted to payment authorizers acting on a claim
+ * within their scope, is accepted over POST only, and requires the session
+ * anti-CSRF token.
  */
 public class PaymentIssueAction extends ClaimsActionSupport {
+
+    private static final double MINIMUM_AMOUNT = 0.01;
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+        if (!isPost(request) || !validCsrfToken(request)) {
+            return denied(mapping, request);
+        }
         int claimId = integer(request.getParameter("claimId"), 119);
-        Settlement settlement = new SettlementDAO().findByClaim(claimId);
+        Claim claim = authorizedClaim(request, claimId);
+        if (claim == null || !canIssuePayment(request, claim)) {
+            return denied(mapping, request);
+        }
+        Settlement settlement = authorizedSettlement(request, claimId);
+        if (settlement == null) {
+            request.setAttribute("message", "payment.settlement.missing");
+            return mapping.findForward("error");
+        }
+        double amount = decimal(request.getParameter("amount"), Double.NaN);
+        double remaining = settlement.getSettlementAmount()
+                - new PaymentDAO().totalIssued(claimId);
+        String payee = defaultText(request.getParameter("payeeName"), "");
+        if (!validAmount(amount, remaining) || !hasText(payee)) {
+            request.setAttribute("message", "payment.request.invalid");
+            return mapping.findForward("error");
+        }
         Payment payment = new Payment();
         int paymentId = nextId("PAYMENT");
         payment.setPaymentId(paymentId);
         payment.setClaimId(claimId);
         payment.setSettlementId(settlement.getSettlementId());
-        payment.setPayeeName(request.getParameter("payeeName"));
-        payment.setAmount(decimal(request.getParameter("amount"),
-                settlement.getSettlementAmount()));
-        payment.setPaymentMethod(request.getParameter("paymentMethod"));
+        payment.setPayeeName(payee);
+        payment.setAmount(amount);
+        payment.setPaymentMethod(normalizeMethod(
+                request.getParameter("paymentMethod")));
         payment.setCheckNumber("CHK-" + paymentId);
         payment.setIssuedDate("2019-04-03");
         payment.setStatus("ISSUED");
-        new PaymentDAO().insert(payment);
+        if (!new PaymentDAO().insertWithinSettlement(payment)) {
+            request.setAttribute("message", "payment.request.invalid");
+            return mapping.findForward("error");
+        }
+        log.info("Payment " + paymentId + " issued on claim " + claimId
+                + " by " + currentOperator(request));
         request.setAttribute("paymentId", new Integer(paymentId));
         request.setAttribute("claimId", new Integer(claimId));
         request.setAttribute("paymentAmount", new Double(payment.getAmount()));
@@ -41,5 +69,11 @@ public class PaymentIssueAction extends ClaimsActionSupport {
         request.setAttribute("paymentStatus", payment.getStatus());
         request.setAttribute("screenName", "detail");
         return mapping.findForward("payment");
+    }
+
+    /** Payments stay positive, bounded, and within the unpaid balance. */
+    private boolean validAmount(double amount, double remaining) {
+        return financialAmount(amount) && amount >= MINIMUM_AMOUNT
+                && amount <= remaining;
     }
 }

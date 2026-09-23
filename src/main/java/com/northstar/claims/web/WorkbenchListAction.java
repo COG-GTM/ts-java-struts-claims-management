@@ -20,7 +20,8 @@ public class WorkbenchListAction extends ClaimsActionSupport {
             throws Exception {
         List claims;
         try {
-            claims = new ClaimDAO().findByStatus("OPEN");
+            claims = visibleClaims(request,
+                    new ClaimDAO().findByStatus("OPEN"));
         } catch (Exception failure) {
             claims = new ArrayList();
             log.warn("Open claim workbench failed", failure);

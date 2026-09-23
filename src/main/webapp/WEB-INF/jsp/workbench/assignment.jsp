@@ -20,6 +20,7 @@
 <th><bean:message key="jsp.current.status"/></th><td><ns:field name="assignmentStatus" value="${claim.status}" type="text"/></td></tr>
 </table>
 <form method="post" action="assign.do">
+<jsp:include page="/WEB-INF/jsp/csrfField.jsp"/>
 <input type="hidden" name="claimId" value="<bean:write name="claim" property="claimId"/>"/>
 <table class="form" cellpadding="3" cellspacing="0" border="0">
 <tr>

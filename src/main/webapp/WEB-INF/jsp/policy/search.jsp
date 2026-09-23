@@ -15,6 +15,7 @@
 <%@ include file="../nav.jsp" %>
 <h2><bean:message key="policy.search.heading"/></h2>
 <html:form action="/policy/search.do">
+<jsp:include page="/WEB-INF/jsp/csrfField.jsp"/>
 <table class="form" cellpadding="3" cellspacing="0" border="0">
 <tr><td><bean:message key="policy.line"/></td>
 <td><html:text property="lineOfBusiness" value="${searchLine}"/></td>

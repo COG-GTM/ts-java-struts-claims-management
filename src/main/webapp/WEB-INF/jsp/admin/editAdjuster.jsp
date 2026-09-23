@@ -15,6 +15,7 @@
 <%@ include file="../nav.jsp" %>
 <h2><bean:message key="admin.edit.heading"/></h2>
 <html:form action="/admin/adjusters.do">
+<jsp:include page="/WEB-INF/jsp/csrfField.jsp"/>
 <html:errors/>
 <table class="form" cellpadding="3" cellspacing="0" border="0">
 <tr><td><bean:message key="admin.name"/></td>

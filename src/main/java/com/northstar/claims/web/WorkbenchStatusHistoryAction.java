@@ -15,7 +15,10 @@ public class WorkbenchStatusHistoryAction extends ClaimsActionSupport {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         int id = integer(request.getParameter("claimId"), 119);
-        Claim claim = new ClaimDAO().findById(id);
+        Claim claim = authorizedClaim(request, id);
+        if (claim == null) {
+            return denied(mapping, request);
+        }
         putClaimSummary(request, claim);
         request.setAttribute("statusHistory", new java.util.ArrayList());
         request.setAttribute("screenName", "detail");

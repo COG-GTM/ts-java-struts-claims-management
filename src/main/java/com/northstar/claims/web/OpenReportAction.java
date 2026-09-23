@@ -17,6 +17,9 @@ public class OpenReportAction extends ClaimsActionSupport {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+        if (!canReadPortfolio(request)) {
+            return denied(mapping, request);
+        }
         List rows = new ReportDAO().openClaimsByAdjuster();
         request.setAttribute("reportRows", rows);
         request.setAttribute("reportType", "openByAdjuster");
