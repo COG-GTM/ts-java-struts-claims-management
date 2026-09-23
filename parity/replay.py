@@ -157,8 +157,13 @@ def identity_field(routes, key):
 
 
 def probe_identities(base_url, routes, keys):
-    """The identity each probe reads now, to compare with after the replay."""
-    return {key: probe(base_url, routes, key)[2] for key in keys}
+    """What each probe reads now, to compare with after the replay.
+
+    Keeps the outcome beside the identity: a baseline that could not be read is
+    not the same as a baseline that read no row, and a write judged against it
+    would call any row it then finds a new one.
+    """
+    return {key: probe(base_url, routes, key)[::2] for key in keys}
 
 
 def difference(kind, legacy, service, text):
@@ -169,9 +174,9 @@ def differences(base_url, routes, expected, status, body, before, writes):
     """Every expected -> service difference, with both values kept apart.
 
     ``expected`` is the transcript's recorded answer, or the answer a CHG
-    record approves in its place. ``before`` holds the row identity each probe
-    read before the request, and ``writes`` says whether the replayed path is a
-    write, in which case the probed row has to be a new one. A ``body`` of None
+    record approves in its place. ``before`` holds the outcome and row identity
+    each probe read before the request, and ``writes`` says whether the replayed
+    path is a write, in which case the probed row has to be a new one. A ``body`` of None
     means the service did not answer JSON at all, which is itself a difference.
     """
     found = []
@@ -223,14 +228,23 @@ def differences(base_url, routes, expected, status, body, before, writes):
         elif actual != value:
             found.append(difference("db:%s" % key, value, actual,
                                     "db %s: %r -> %r" % (key, value, actual)))
-        elif writes and identity_field(routes, key) and identity == before.get(key):
-            seen = ("no row identity at all (%s missing from the response)"
-                    % identity_field(routes, key) if identity is None
-                    else "identity %s, unchanged" % identity)
-            found.append(difference("db:%s" % key, "a row written by this request",
-                                    "the row of an earlier run",
-                                    "db %s: %r came back with %s, so this request "
-                                    "wrote nothing" % (key, value, seen)))
+        elif writes and identity_field(routes, key):
+            baseline, baseline_identity = before.get(key, ("unread", None))
+            if baseline != "read":
+                why = baseline[1] if isinstance(baseline, tuple) else baseline
+                found.append(difference("db:%s" % key, "a row written by this request",
+                                        "no baseline to judge it against",
+                                        "db %s: the read before the request did not "
+                                        "answer (%s), so a row found now cannot be told "
+                                        "from one an earlier run left" % (key, why)))
+            elif identity == baseline_identity:
+                seen = ("no row identity at all (%s missing from the response)"
+                        % identity_field(routes, key) if identity is None
+                        else "identity %s, unchanged" % identity)
+                found.append(difference("db:%s" % key, "a row written by this request",
+                                        "the row of an earlier run",
+                                        "db %s: %r came back with %s, so this request "
+                                        "wrote nothing" % (key, value, seen)))
     return found, notes
 
 
