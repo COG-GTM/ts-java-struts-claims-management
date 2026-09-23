@@ -25,6 +25,8 @@ public class LoginAction extends ClaimsActionSupport {
         if (valid) {
             request.getSession().setAttribute("user", username);
             request.getSession().setAttribute("displayName", username);
+            request.getSession().setAttribute("role",
+                    PaymentAuthorization.roleFor(username));
             request.setAttribute("loginStatus", "AUTHENTICATED");
             log.info("Authenticated operator " + username);
             System.out.println("login accepted: " + username);
