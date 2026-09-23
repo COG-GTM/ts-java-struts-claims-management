@@ -8,9 +8,10 @@
   },
   "module": "settlement",
   "result": "PASS",
-  "revision": "fc6be1a",
+  "revision": "1acfcf4",
   "scenarios": [
     {
+      "approved": [],
       "change_ids": [],
       "description": "Calculate a standard settlement",
       "detail": "",
@@ -36,6 +37,7 @@
       "verdict": "PASS"
     },
     {
+      "approved": [],
       "change_ids": [],
       "description": "Save the calculated settlement",
       "detail": "",
@@ -57,6 +59,7 @@
       "verdict": "PASS"
     },
     {
+      "approved": [],
       "change_ids": [],
       "description": "Issue a settlement payment",
       "detail": "Payment issue stays in the monolith: ADR-001 extracts only /settlement/calculate, /settlement/save and /settlement/detail; /claims/payment/issue.do has no service route.",
@@ -67,6 +70,7 @@
       "verdict": "SKIP"
     },
     {
+      "approved": [],
       "change_ids": [],
       "description": "Review payment history",
       "detail": "Payment history stays in the monolith: /claims/payment/history.do has no service route (ADR-001 'Out of scope').",
@@ -77,6 +81,7 @@
       "verdict": "SKIP"
     },
     {
+      "approved": [],
       "change_ids": [],
       "description": "FNOL settlement with a blank deductible",
       "detail": "",
@@ -98,6 +103,7 @@
       "verdict": "PASS"
     },
     {
+      "approved": [],
       "change_ids": [],
       "description": "Settlement using double half-cent rounding",
       "detail": "",
@@ -118,6 +124,7 @@
       "verdict": "PASS"
     },
     {
+      "approved": [],
       "change_ids": [],
       "description": "Settlement capped by the policy limit",
       "detail": "",
@@ -137,6 +144,7 @@
       "verdict": "PASS"
     },
     {
+      "approved": [],
       "change_ids": [],
       "description": "Settlement floored when deductible exceeds the loss",
       "detail": "",
@@ -156,6 +164,9 @@
       "verdict": "PASS"
     },
     {
+      "approved": [
+        "CHG-001: status class: 2xx -> 5xx"
+      ],
       "change_ids": [
         "CHG-001"
       ],
