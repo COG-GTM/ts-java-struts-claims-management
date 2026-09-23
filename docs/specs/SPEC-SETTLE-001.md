@@ -1,6 +1,6 @@
 # SPEC-SETTLE-001 — Settlement calculation
 
-Version: 0.1
+Version: 0.2
 
 Scope: the settlement calculate, save and detail request paths of the NorthStar
 claims web module, as shown by the `transcripts/settlement_*.json` transcripts
@@ -10,6 +10,9 @@ Each rule carries its evidence: `Observed: <transcript name>` for behaviour take
 from a captured transcript, `Read: <file and line>` for behaviour taken from the
 source. Rule identifiers are stable. When a rule changes, a new rule with the
 same number and a `v2` suffix is added and the old text is left in place.
+
+Open questions raised by this specification are tracked in
+`docs/specs/OPEN-QUESTIONS.md`.
 
 Reference data used by the transcripts: claim 119 belongs to policy 9001, whose
 policy limit is 1000; claim 120 belongs to policy 9002, whose policy limit is
@@ -51,6 +54,21 @@ claim identified by `claimId`. If the claim cannot be loaded, or the policy row
 is missing, the limit stays at the literal default `10000`.
 Read: src/main/java/com/northstar/claims/web/SettlementCalculateAction.java
 lines 24-31.
+
+**SETTLE-R05v2** — The limit variable is initialised to the literal `10000`
+*before* the claim is loaded, and is only overwritten when both the claim and
+its policy are found. The lookups are guarded by null checks and `findClaim`
+swallows its exception, so an unknown `claimId` is not an error: the
+calculation runs to completion against a limit of `10000`. A live request with
+`claimId=9999`, `coveredAmount=100`, `deductible=10`, `depreciation=0` returns
+`settlementAmount` `90.00` with `cappedAtLimit` `false`, and the same claim id
+with `coveredAmount=20000` returns `settlementAmount` `10000.00` with
+`cappedAtLimit` `true`, which is the `10000` fallback acting as the cap. The
+fallback is unreachable from the save path, which has no such guard
+(SETTLE-R21). Whether `10000` is an intended business limit is OQ-01.
+Read: src/main/java/com/northstar/claims/web/SettlementCalculateAction.java
+lines 25-31; src/main/java/com/northstar/claims/web/ClaimsActionSupport.java
+lines 93-100.
 
 **SETTLE-R06** — A missing or zero-length `deductible` parameter is replaced by
 the string `"0"` before the calculator is called; the calculator additionally
@@ -253,6 +271,7 @@ lines 60-75.
 | SETTLE-R03 | 0.1 | Initial rule. |
 | SETTLE-R04 | 0.1 | Initial rule. |
 | SETTLE-R05 | 0.1 | Initial rule. |
+| SETTLE-R05v2 | 0.2 | Replaces SETTLE-R05: states that `limit` is initialised to `10000` before the claim lookup, that a missing claim or policy is not an error, and that the fallback can itself cap the settlement. Verified against a running instance with `claimId=9999`. |
 | SETTLE-R06 | 0.1 | Initial rule. |
 | SETTLE-R07 | 0.1 | Initial rule. |
 | SETTLE-R08 | 0.1 | Initial rule. |
