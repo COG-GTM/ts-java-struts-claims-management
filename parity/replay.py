@@ -312,8 +312,9 @@ def main():
         for note in notes:
             print("%-30s note    %s" % ("", note))
 
-    revision = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"],
-                                       cwd=ROOT).decode().strip()
+    revision = subprocess.check_output(
+        ["git", "log", "-1", "--format=%h", "--", "parity/replay.py",
+         "parity/routes.json"], cwd=ROOT).decode().strip()
     overall = write_report(results, args.module, base_url, routes, revision)
     print("Result: %s" % overall)
     raise SystemExit(1 if overall == "FAIL" else 0)
