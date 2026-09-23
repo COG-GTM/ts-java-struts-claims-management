@@ -75,67 +75,115 @@ def replay(base_url, routes, transcript):
     return request_json(url, urllib.parse.urlencode(form).encode(), recorded["method"])
 
 
+def pattern_matches(pattern, parts):
+    """Match a dotted probe pattern, where `<name>` is a placeholder.
+
+    Returns the placeholder bindings, or None when the pattern does not match.
+    """
+    fields = pattern.split(".")
+    if len(fields) != len(parts):
+        return None
+    bindings = {}
+    for field, part in zip(fields, parts):
+        if field.startswith("<") and field.endswith(">"):
+            bindings[field] = part
+        elif field != part:
+            return None
+    return bindings
+
+
 def probe(base_url, routes, key):
     """Read one db_state probe key back out of the service.
 
-    Returns (value, None) when the probe ran, or (None, reason) when the key
-    names state outside this service's boundary.
+    Returns ``(outcome, value, identity)``, where outcome is ``"read"``, or the
+    routes.json ``unprobeable`` reason for a key naming state outside this
+    service's boundary, or ``"unconfigured"`` for a key with no probe at all —
+    which is a parity failure, not a note. ``identity`` is the identity of the
+    row the probe read, which tells a row this request wrote from an identical
+    row an earlier run left behind.
     """
     parts = key.split(".")
-    if len(parts) == 4 and parts[0] == "settlement" and parts[1] == "claim" and parts[3] == "amount":
-        url = base_url + "/settlement/detail?claimId=" + parts[2]
-        _, body = request_json(url)
-        return body.get("fields", {}).get("detailAmount"), None
+    for pattern, spec in routes.get("probes", {}).items():
+        bindings = pattern_matches(pattern, parts)
+        if bindings is None:
+            continue
+        query = {name: bindings.get(value, value) for name, value in spec["query"].items()}
+        _, body = request_json(base_url + spec["path"] + "?" + urllib.parse.urlencode(query))
+        fields = body.get("fields", {})
+        return "read", fields.get(spec["field"]), fields.get(spec.get("identity_field"))
     for pattern, reason in routes.get("unprobeable", {}).items():
-        if probe_matches(pattern, parts):
-            return None, reason
-    return None, "no probe defined for %s" % key
+        if pattern_matches(pattern, parts) is not None:
+            return reason, None, None
+    return "unconfigured", None, None
 
 
-def probe_matches(pattern, parts):
-    fields = pattern.split(".")
-    if len(fields) != len(parts):
-        return False
-    return all(f.startswith("<") or f == p for f, p in zip(fields, parts))
+def probe_identities(base_url, routes, keys):
+    """The identity each probe reads now, to compare with after the replay."""
+    return {key: probe(base_url, routes, key)[2] for key in keys}
 
 
-def differences(base_url, routes, transcript, status, body):
-    """Every legacy -> service difference, as (kind, description) pairs."""
+def difference(kind, legacy, service, text):
+    return {"kind": kind, "legacy": legacy, "service": service, "text": text}
+
+
+def differences(base_url, routes, transcript, status, body, before, writes):
+    """Every legacy -> service difference, with both values kept apart.
+
+    ``before`` holds the row identity each probe read before the request, and
+    ``writes`` says whether the replayed path is a write, in which case the
+    probed row has to be a new one.
+    """
     expected = transcript["expected"]
     found = []
 
     legacy_class = status_class(expected["status"])
     service_class = status_class(status)
     if legacy_class != service_class:
-        found.append(("status_class", "status class: %s -> %s" % (legacy_class, service_class)))
+        found.append(difference("status_class", legacy_class, service_class,
+                                "status class: %s -> %s" % (legacy_class, service_class)))
 
     fields = body.get("fields", {})
     for name, value in sorted(expected["business_fields"].items()):
         if fields.get(name) != value:
-            found.append(("field:%s" % name,
-                          "%s: %r -> %r" % (name, value, fields.get(name))))
+            found.append(difference("field:%s" % name, value, fields.get(name),
+                                    "%s: %r -> %r" % (name, value, fields.get(name))))
     for name in sorted(set(fields) - set(expected["business_fields"])):
-        found.append(("field:%s" % name,
-                      "%s: (not recorded) -> %r" % (name, fields[name])))
+        found.append(difference("field:%s" % name, None, fields[name],
+                                "%s: (not recorded) -> %r" % (name, fields[name])))
 
     errors = list(body.get("errors", []))
     if errors != list(expected["validation_errors"]):
-        found.append(("validation",
-                      "validation keys: %r -> %r" % (expected["validation_errors"], errors)))
+        found.append(difference("validation", expected["validation_errors"], errors,
+                                "validation keys: %r -> %r"
+                                % (expected["validation_errors"], errors)))
 
     notes = []
     for key, value in sorted(expected["db_state"].items()):
-        actual, reason = probe(base_url, routes, key)
-        if reason is not None:
-            notes.append("db %s not probed: %s" % (key, reason))
+        outcome, actual, identity = probe(base_url, routes, key)
+        if outcome == "unconfigured":
+            found.append(difference("db:%s" % key, value, "no probe configured",
+                                    "db %s: %r -> no probe is configured for this key"
+                                    % (key, value)))
+        elif outcome != "read":
+            notes.append("db %s not probed: %s" % (key, outcome))
         elif actual != value:
-            found.append(("db:%s" % key, "db %s: %r -> %r" % (key, value, actual)))
+            found.append(difference("db:%s" % key, value, actual,
+                                    "db %s: %r -> %r" % (key, value, actual)))
+        elif writes and identity is not None and identity == before.get(key):
+            found.append(difference("db:%s" % key, "a row written by this request",
+                                    "the row of an earlier run",
+                                    "db %s: %r is the row that was already there "
+                                    "(identity %s unchanged), so this request wrote nothing"
+                                    % (key, value, identity)))
     return found, notes
 
 
-def approvals(routes, scenario, kind):
+def approvals(routes, scenario, found):
+    """The CHG record approving exactly this difference, if there is one."""
     for approved in routes.get("approved_differences", []):
-        if scenario in approved["scenarios"] and approved["kind"] == kind:
+        if (scenario in approved["scenarios"] and approved["kind"] == found["kind"]
+                and str(approved["legacy"]) == str(found["legacy"])
+                and str(approved["service"]) == str(found["service"])):
             return approved
     return None
 
@@ -143,12 +191,12 @@ def approvals(routes, scenario, kind):
 def judge(routes, scenario, found):
     """PASS, CHANGED or FAIL, with the failing and approved differences split."""
     failures, changes = [], []
-    for kind, description in found:
-        approved = approvals(routes, scenario, kind)
+    for entry in found:
+        approved = approvals(routes, scenario, entry)
         if approved:
-            changes.append((approved["id"], description))
+            changes.append((approved["id"], entry["text"]))
         else:
-            failures.append(description)
+            failures.append(entry["text"])
     if failures:
         return "FAIL", failures, changes
     if changes:
@@ -171,7 +219,8 @@ def write_report(results, module, base_url, routes, revision):
               "Compared per ADR-001: status class, business fields, validation keys and",
               "the `db_state` probes read back through the service. HTML is not compared.",
               "",
-              "| Scenario | Verdict | SETTLE-R rules exercised | Detail |",
+              "| Scenario | Verdict | %s rules exercised | Detail |"
+              % routes["rule_family"],
               "| --- | --- | --- | --- |"]
     for result in results:
         rules = ", ".join(result["rules"]) or "-"
@@ -210,13 +259,22 @@ def main():
     args = parser.parse_args()
 
     routes = load_json(args.routes)
+    if args.module != routes["module"]:
+        parser.error("%s answers for the %s module, not %s"
+                     % (args.routes, routes["module"], args.module))
     base_url = (args.base_url or os.environ.get("SERVICE_BASE") or routes["base_url"]).rstrip("/")
     index = load_json(os.path.join(ROOT, "transcripts", "index.json"))
 
+    entries = [entry for entry in index if entry["module"] == args.module]
+    if not entries:
+        parser.error("transcripts/index.json has no %s scenarios to replay" % args.module)
+    handled = [entry for entry in entries if entry["scenario"] in routes["handles"]]
+    if not handled:
+        parser.error("%s handles none of the %d recorded %s scenarios"
+                     % (routes["service"], len(entries), args.module))
+
     results = []
-    for entry in index:
-        if entry["module"] != args.module:
-            continue
+    for entry in entries:
         scenario = entry["scenario"]
         rules = routes.get("rules", {}).get(scenario, [])
         if scenario not in routes["handles"]:
@@ -228,8 +286,10 @@ def main():
             continue
 
         transcript = load_json(os.path.join(ROOT, "transcripts", scenario + ".json"))
+        before = probe_identities(base_url, routes, transcript["expected"]["db_state"])
+        writes = routes["routes"][transcript["request"]["path"]] in routes.get("writes", [])
         status, body = replay(base_url, routes, transcript)
-        found, notes = differences(base_url, routes, transcript, status, body)
+        found, notes = differences(base_url, routes, transcript, status, body, before, writes)
         verdict, failures, changes = judge(routes, scenario, found)
         if verdict == "FAIL":
             detail = "; ".join(failures)

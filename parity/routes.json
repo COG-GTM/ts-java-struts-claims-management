@@ -2,6 +2,7 @@
   "service": "settlement-service",
   "base_url": "http://localhost:8083",
   "module": "settlement",
+  "rule_family": "SETTLE-R",
   "routes": {
     "/claims/settlement/calculate.do": "/settlement/calculate",
     "/claims/settlement/save.do": "/settlement/save",
@@ -26,11 +27,14 @@
     "payment_issue": "Payment issue stays in the monolith: ADR-001 extracts only /settlement/calculate, /settlement/save and /settlement/detail; /claims/payment/issue.do has no service route.",
     "payment_history": "Payment history stays in the monolith: /claims/payment/history.do has no service route (ADR-001 'Out of scope')."
   },
+  "writes": ["/settlement/save"],
   "probes": {
     "settlement.claim.<id>.amount": {
-      "request": "GET /settlement/detail?claimId=<id>",
+      "path": "/settlement/detail",
+      "query": {"claimId": "<id>"},
       "field": "detailAmount",
-      "why": "SETTLE-R30: detail returns the highest settlement_id for the claim, which is the row the save path just wrote."
+      "identity_field": "detailSettlementId",
+      "why": "SETTLE-R30: detail returns the highest settlement_id for the claim, which is the row the save path just wrote. The identity is compared with the reading taken before the replay, so a row an earlier run left behind cannot stand in for a save that did not happen."
     }
   },
   "unprobeable": {

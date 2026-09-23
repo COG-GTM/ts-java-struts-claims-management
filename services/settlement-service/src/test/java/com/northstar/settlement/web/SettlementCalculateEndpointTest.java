@@ -99,9 +99,16 @@ class SettlementCalculateEndpointTest {
     /**
      * Rules: SETTLE-R15, SETTLE-R16, SETTLE-R20, SETTLE-R21.
      * Transcript: settlement_half_cent.
+     *
+     * <p>Quirk QUIRK-01 and QUIRK-02 (docs/KNOWN_LEGACY_QUIRKS.md): 1.005 is
+     * not representable in binary, so {@code Math.round(1.005 * 100.0) / 100.0}
+     * settles at 1.00 while {@code String.format("%.2f", 1.005)} displays the
+     * same input as 1.01. Decimal arithmetic —
+     * {@code new BigDecimal("1.005").setScale(2, HALF_UP)} — gives 1.01 for
+     * both, so swapping the calculator to BigDecimal breaks this test.
      */
     @Test
-    void halfCentForClaim120() throws Exception {
+    void halfCentUsesLegacyDoubleMath() throws Exception {
         mvc.perform(post("/settlement/calculate")
                         .param("claimId", "120")
                         .param("coveredAmount", "1.005")
