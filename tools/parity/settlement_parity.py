@@ -91,11 +91,14 @@ def compare(name, transcript, status, body):
     if status_class(status) != status_class(expected["status"]) and not (
             expected["result"].endswith("error.jsp") and status >= 500):
         diffs.append("status class %s != %s" % (status_class(status), status_class(expected["status"])))
-    if body.get("fields", {}) != expected["business_fields"]:
+    fields = body.get("fields", {})
+    if fields != expected["business_fields"]:
         for key, value in expected["business_fields"].items():
-            got = body.get("fields", {}).get(key)
+            got = fields.get(key)
             if got != value:
                 diffs.append("%s %r != %r" % (key, got, value))
+        for key in fields.keys() - expected["business_fields"].keys():
+            diffs.append("unexpected field %s=%r" % (key, fields[key]))
     if body.get("errors", []) != expected["validation_errors"]:
         diffs.append("validation %r != %r" % (body.get("errors"), expected["validation_errors"]))
     actual_db = db_state(BASE, expected["db_state"])
