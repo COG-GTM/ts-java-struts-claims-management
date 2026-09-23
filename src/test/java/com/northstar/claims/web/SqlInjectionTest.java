@@ -28,6 +28,7 @@ public class SqlInjectionTest {
     public static void seed() throws Exception {
         System.setProperty("claims.db.path", "target/db/test-northstar");
         DatabaseBootstrap.bootstrap(true);
+        ConnectionPool.getInstance().closeAll();
     }
 
     @AfterClass
