@@ -1,0 +1,57 @@
+{
+  "legacy_context": "/claims",
+  "routes": {
+    "/settlement/calculate.do": "/settlement/calculate",
+    "/settlement/save.do": "/settlement/save",
+    "/settlement/detail.do": "/settlement/detail"
+  },
+  "probes": {
+    "settlement.claim.<id>.amount": {
+      "path": "/settlement/detail?claimId=<id>",
+      "field": "detailAmount"
+    },
+    "settlement.claim.<id>.detail_amount": {
+      "path": "/settlement/detail?claimId=<id>",
+      "field": "detailAmount"
+    }
+  },
+  "unrouted_probes": {
+    "claim.<id>.status": "/workbench/view.do"
+  },
+  "modules": {
+    "settlement": {
+      "scenarios": {
+        "settlement_calculate": [
+          "SETTLE-R01",
+          "SETTLE-R05 v2",
+          "SETTLE-R07",
+          "SETTLE-R08",
+          "SETTLE-R10",
+          "SETTLE-R11"
+        ],
+        "settlement_save": [
+          "SETTLE-R12",
+          "SETTLE-R13"
+        ],
+        "settlement_blank_deductible": [
+          "SETTLE-R04",
+          "SETTLE-R07"
+        ],
+        "settlement_deductible_floor": [
+          "SETTLE-R07"
+        ],
+        "settlement_policy_cap": [
+          "SETTLE-R08"
+        ],
+        "settlement_half_cent": [
+          "SETTLE-R09 v2",
+          "SETTLE-R10"
+        ],
+        "settlement_bad_deductible": [
+          "SETTLE-R06"
+        ]
+      },
+      "approved_differences": {}
+    }
+  }
+}

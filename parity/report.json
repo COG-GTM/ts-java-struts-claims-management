@@ -1,13 +1,15 @@
 {
   "base_url": "http://localhost:8083",
   "module": "settlement",
+  "routes": "parity/routes.json",
   "scenarios": [
     {
+      "change": null,
       "differences": [],
       "note": "",
       "rules": [
         "SETTLE-R01",
-        "SETTLE-R05",
+        "SETTLE-R05 v2",
         "SETTLE-R07",
         "SETTLE-R08",
         "SETTLE-R10",
@@ -18,6 +20,7 @@
       "verdict": "PASS"
     },
     {
+      "change": null,
       "differences": [],
       "note": "",
       "rules": [
@@ -29,35 +32,39 @@
       "verdict": "PASS"
     },
     {
+      "change": null,
       "differences": [],
-      "note": "screen not served by this service",
+      "note": "screen not routed to this service",
       "rules": [],
       "scenario": "payment_issue",
       "unprobed": [],
       "verdict": "SKIP"
     },
     {
+      "change": null,
       "differences": [],
-      "note": "screen not served by this service",
+      "note": "screen not routed to this service",
       "rules": [],
       "scenario": "payment_history",
       "unprobed": [],
       "verdict": "SKIP"
     },
     {
+      "change": null,
       "differences": [],
-      "note": "db_state not probed: claim.120.status (read through /workbench/view, not served)",
+      "note": "db_state not probed: claim.120.status (read through /workbench/view.do, not served)",
       "rules": [
         "SETTLE-R04",
         "SETTLE-R07"
       ],
       "scenario": "settlement_blank_deductible",
       "unprobed": [
-        "claim.120.status (read through /workbench/view, not served)"
+        "claim.120.status (read through /workbench/view.do, not served)"
       ],
       "verdict": "PASS"
     },
     {
+      "change": null,
       "differences": [],
       "note": "",
       "rules": [
@@ -69,6 +76,7 @@
       "verdict": "PASS"
     },
     {
+      "change": null,
       "differences": [],
       "note": "",
       "rules": [
@@ -79,6 +87,7 @@
       "verdict": "PASS"
     },
     {
+      "change": null,
       "differences": [],
       "note": "",
       "rules": [
@@ -89,6 +98,7 @@
       "verdict": "PASS"
     },
     {
+      "change": null,
       "differences": [],
       "note": "",
       "rules": [

@@ -4,34 +4,48 @@
 Each transcript under transcripts/ records what the Struts application did
 for one request: HTTP status, the JSP it forwarded to, the business fields
 the JSP rendered (the <span id="f_..."> values), the validation error keys
-and a few database probes. This script sends the same request to the new
-service, which answers {"screen": ..., "fields": {...}, "errors": [...]},
+and a few database probes. This script reads transcripts/index.json, takes
+every scenario in --module, sends the same request to the service named by
+--base-url, which answers {"screen": ..., "fields": {...}, "errors": [...]},
 and compares (ADR-001, decision 6):
 
-  status     must be equal
+  status     same class (2xx, 4xx, 5xx)
   result     forward:/WEB-INF/jsp/<screen>.jsp  <->  "screen": "<screen>"
-  fields     every legacy field with the same value, and no extra field
+  fields     every legacy business field with the same value, no extra field
   errors     the same validation keys, order ignored
   db_state   each probe re-read through the service's own read screen
 
-Database probes mirror tools/capture/capture.py. The save scenario probes
-GET /settlement/detail?claimId=N and reads detailAmount, the amount of the
-row that was actually written (SETTLE-R12, SETTLE-R13). A probe whose legacy
-read screen is outside the slice (claim.N.status is read through
-/workbench/view.do) cannot be re-read through this service; it is listed in
-the Note column as not probed and does not decide the verdict.
+HTML is never compared. parity/routes.json holds the mapping:
 
-Verdicts: PASS, FAIL, SKIP (scenario belongs to a screen this service does
-not serve). Exit code 1 when any scenario FAILs.
+  routes               legacy /x/y.do  ->  service /x/y; a scenario whose
+                       request path has no route is SKIP
+  probes               db_state key pattern -> service path and field, e.g.
+                       settlement.claim.<id>.amount ->
+                       GET /settlement/detail?claimId=<id>, field detailAmount
+  unrouted_probes      keys read through a screen outside the slice; listed
+                       in the Note column, do not decide the verdict
+  modules.<m>.scenarios            the SETTLE-R rules each scenario exercises
+  modules.<m>.approved_differences scenario -> {"change": "CHG-nnn",
+                       "expect": {...}} describing the service behaviour a
+                       change record approved
+
+Verdicts:
+  PASS     no difference
+  FAIL     differences listed as legacy -> service
+  SKIP     request path not routed to this service
+  CHANGED  every difference matches the approved CHG-nnn expectation
+
+Exit code 1 when any scenario FAILs.
 
 Usage: python3 parity/replay.py --base-url http://localhost:8083
-           [--module settlement] [--report parity/report.md]
-           [--json parity/report.json]
+           [--module settlement] [--routes parity/routes.json]
+           [--report parity/report.md] [--json parity/report.json]
 """
 
 import argparse
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.parse
@@ -39,47 +53,60 @@ import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TRANSCRIPTS = os.path.join(ROOT, "transcripts")
-LEGACY_CONTEXT = "/claims"
-
-# Legacy screens served by the settlement service, and the rules each
-# transcript exercises (SPEC-SETTLE-001).
-ROUTED = {
-    "/settlement/calculate": ["SETTLE-R01", "SETTLE-R02", "SETTLE-R03 v2",
-                              "SETTLE-R04", "SETTLE-R05", "SETTLE-R06",
-                              "SETTLE-R07", "SETTLE-R08", "SETTLE-R09 v2",
-                              "SETTLE-R10", "SETTLE-R11"],
-    "/settlement/save": ["SETTLE-R12"],
-    "/settlement/detail": ["SETTLE-R13"],
-}
-SCENARIO_RULES = {
-    "settlement_calculate": ["SETTLE-R01", "SETTLE-R05", "SETTLE-R07",
-                             "SETTLE-R08", "SETTLE-R10", "SETTLE-R11"],
-    "settlement_save": ["SETTLE-R12", "SETTLE-R13"],
-    "settlement_blank_deductible": ["SETTLE-R04", "SETTLE-R07"],
-    "settlement_deductible_floor": ["SETTLE-R07"],
-    "settlement_policy_cap": ["SETTLE-R08"],
-    "settlement_half_cent": ["SETTLE-R09 v2", "SETTLE-R10"],
-    "settlement_bad_deductible": ["SETTLE-R06"],
-}
 
 
-# db_state keys whose legacy read screen is not served by this service.
-UNROUTED_PROBES = {"claim.": "/workbench/view"}
+class Routes:
+    """The parity/routes.json contract between the transcripts and one service."""
+
+    def __init__(self, data, module):
+        self.legacy_context = data.get("legacy_context", "")
+        self.routes = data["routes"]
+        self.probes = [(self._pattern(key), spec)
+                       for key, spec in data.get("probes", {}).items()]
+        self.unrouted_probes = [(self._pattern(key), screen)
+                                for key, screen in
+                                data.get("unrouted_probes", {}).items()]
+        section = data.get("modules", {}).get(module, {})
+        self.scenario_rules = section.get("scenarios", {})
+        self.approved = section.get("approved_differences", {})
+
+    @staticmethod
+    def _pattern(key):
+        """settlement.claim.<id>.amount -> regex with a named group per <name>."""
+        parts = re.split(r"(<[a-z_]+>)", key)
+        regex = "".join(
+            "(?P%s[^.]+)" % part if part.startswith("<") else re.escape(part)
+            for part in parts)
+        return re.compile("^" + regex + "$")
+
+    def service_path(self, legacy_path):
+        """Returns (service path or None when unrouted, query string)."""
+        if legacy_path.startswith(self.legacy_context):
+            legacy_path = legacy_path[len(self.legacy_context):]
+        path, _, query = legacy_path.partition("?")
+        return self.routes.get(path), query
+
+    def probe_for(self, key):
+        """Maps a capture.py db_state key to (service path, field name)."""
+        for pattern, spec in self.probes:
+            match = pattern.match(key)
+            if match:
+                path = spec["path"]
+                for name, value in match.groupdict().items():
+                    path = path.replace("<%s>" % name, value)
+                return path, spec["field"]
+        return None
+
+    def unrouted_screen(self, key):
+        for pattern, screen in self.unrouted_probes:
+            if pattern.match(key):
+                return screen
+        return None
 
 
-def probe_for(key):
-    """Maps a capture.py db_state key to (service path, field name)."""
-    parts = key.split(".")
-    if key.startswith("settlement.claim.") and key.endswith(".detail_amount"):
-        return "/settlement/detail?claimId=" + parts[2], "detailAmount"
-    return None
-
-
-def unrouted_screen(key):
-    for prefix, screen in UNROUTED_PROBES.items():
-        if key.startswith(prefix):
-            return screen
-    return None
+def load_routes(path, module):
+    with open(os.path.join(ROOT, path), encoding="utf-8") as stream:
+        return Routes(json.load(stream), module)
 
 
 def load_transcripts(module):
@@ -95,15 +122,6 @@ def load_transcripts(module):
     return transcripts
 
 
-def service_path(legacy_path):
-    if legacy_path.startswith(LEGACY_CONTEXT):
-        legacy_path = legacy_path[len(LEGACY_CONTEXT):]
-    path, _, query = legacy_path.partition("?")
-    if path.endswith(".do"):
-        path = path[:-3]
-    return path, query
-
-
 def expected_screen(result):
     prefix, suffix = "forward:/WEB-INF/jsp/", ".jsp"
     if result.startswith(prefix) and result.endswith(suffix):
@@ -111,6 +129,10 @@ def expected_screen(result):
     if result.startswith("error:"):
         return "error"
     return result
+
+
+def status_class(status):
+    return "%dxx" % (status // 100)
 
 
 def call(base_url, method, path, form):
@@ -134,16 +156,18 @@ def call(base_url, method, path, form):
                                   "fields": {}, "errors": [body[:200]]}
 
 
-def compare(transcript, base_url):
+def compare(transcript, base_url, routes):
+    """Returns (differences as (what, legacy, service), unprobed notes)."""
     request = transcript["request"]
     expected = transcript["expected"]
-    path, query = service_path(request["path"])
+    path, query = routes.service_path(request["path"])
     status, body = call(base_url, request["method"],
                         path + ("?" + query if query else ""),
                         request.get("form", {}))
     differences = []
-    if status != expected["status"]:
-        differences.append(("status", expected["status"], status))
+    if status_class(status) != status_class(expected["status"]):
+        differences.append(("status", status_class(expected["status"]),
+                            status_class(status)))
     want_screen = expected_screen(expected["result"])
     if body.get("screen") != want_screen:
         differences.append(("result", want_screen, body.get("screen")))
@@ -159,9 +183,9 @@ def compare(transcript, base_url):
                             body.get("errors", [])))
     unprobed = []
     for key, value in sorted(expected.get("db_state", {}).items()):
-        probe = probe_for(key)
+        probe = routes.probe_for(key)
         if probe is None:
-            screen = unrouted_screen(key)
+            screen = routes.unrouted_screen(key)
             if screen is None:
                 differences.append(("db_state " + key, value,
                                     "no probe defined"))
@@ -177,26 +201,66 @@ def compare(transcript, base_url):
     return differences, unprobed
 
 
-def replay(base_url, module):
+def approved_value(expect, what):
+    """The service value a change record approves for one compared item."""
+    if what.startswith("field "):
+        return expect.get("fields", {}).get(what[len("field "):])
+    if what.startswith("db_state "):
+        return expect.get("db_state", {}).get(what[len("db_state "):])
+    if what == "result":
+        return expected_screen(expect["result"]) if "result" in expect else None
+    if what == "validation_errors":
+        value = expect.get(what)
+        return sorted(value) if value is not None else None
+    return expect.get(what)
+
+
+def verdict_for(differences, approval):
+    """PASS, FAIL or CHANGED; every difference must be covered by the approval."""
+    if not differences:
+        return "PASS"
+    if not approval:
+        return "FAIL"
+    expect = approval.get("expect", {})
+    for what, _, got in differences:
+        want = approved_value(expect, what)
+        if what == "validation_errors":
+            got = sorted(got)
+        if want is None or want != got:
+            return "FAIL"
+    return "CHANGED"
+
+
+def replay(base_url, module, routes):
     rows = []
     for transcript in load_transcripts(module):
         scenario = transcript["scenario"]
-        path, _ = service_path(transcript["request"]["path"])
-        if path not in ROUTED:
-            rows.append({"scenario": scenario, "rules": [], "verdict": "SKIP",
+        path, _ = routes.service_path(transcript["request"]["path"])
+        rules = routes.scenario_rules.get(scenario, [])
+        if path is None:
+            rows.append({"scenario": scenario, "rules": rules,
+                         "verdict": "SKIP", "change": None,
                          "differences": [], "unprobed": [],
-                         "note": "screen not served by this service"})
+                         "note": "screen not routed to this service"})
             continue
-        differences, unprobed = compare(transcript, base_url)
+        differences, unprobed = compare(transcript, base_url, routes)
+        approval = routes.approved.get(scenario)
+        verdict = verdict_for(differences, approval)
+        change = approval["change"] if verdict == "CHANGED" else None
+        notes = []
+        if change:
+            notes.append("approved by " + change)
+        if unprobed:
+            notes.append("db_state not probed: " + "; ".join(unprobed))
         rows.append({
             "scenario": scenario,
-            "rules": SCENARIO_RULES.get(scenario, ROUTED[path]),
-            "verdict": "PASS" if not differences else "FAIL",
+            "rules": rules,
+            "verdict": verdict,
+            "change": change,
             "differences": [{"what": what, "legacy": legacy, "service": got}
                             for what, legacy, got in differences],
             "unprobed": unprobed,
-            "note": ("db_state not probed: " + "; ".join(unprobed))
-                    if unprobed else "",
+            "note": "; ".join(notes),
         })
     return rows
 
@@ -206,8 +270,8 @@ def render(rows, base_url, module, counts):
     lines = [
         "# Parity report: %s" % module,
         "",
-        "Service: `%s`. Fixtures: `transcripts/*.json` with module `%s`."
-        % (base_url, module),
+        "Service: `%s`. Fixtures: `transcripts/*.json` with module `%s`,"
+        " routed by `parity/routes.json`." % (base_url, module),
         "Generated by `make parity` (`parity/replay.py`).",
         "",
         "Result: %s." % summary,
@@ -216,11 +280,14 @@ def render(rows, base_url, module, counts):
         "| --- | --- | --- | --- | --- |",
     ]
     for row in rows:
+        verdict = row["verdict"]
+        if row["change"]:
+            verdict = "%s (%s)" % (verdict, row["change"])
         diff_text = "<br>".join(
             "%s: `%s` -> `%s`" % (d["what"], d["legacy"], d["service"])
             for d in row["differences"])
         lines.append("| %s | %s | %s | %s | %s |" % (
-            row["scenario"], ", ".join(row["rules"]), row["verdict"],
+            row["scenario"], ", ".join(row["rules"]), verdict,
             diff_text, row["note"]))
     return "\n".join(lines) + "\n"
 
@@ -231,11 +298,13 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--base-url", required=True)
     parser.add_argument("--module", default="settlement")
+    parser.add_argument("--routes", default="parity/routes.json")
     parser.add_argument("--report", default=None)
     parser.add_argument("--json", dest="json_report", default=None)
     args = parser.parse_args()
 
-    rows = replay(args.base_url.rstrip("/"), args.module)
+    routes = load_routes(args.routes, args.module)
+    rows = replay(args.base_url.rstrip("/"), args.module, routes)
     counts = {}
     for row in rows:
         counts[row["verdict"]] = counts.get(row["verdict"], 0) + 1
@@ -248,7 +317,8 @@ def main():
         with open(os.path.join(ROOT, args.json_report), "w",
                   encoding="utf-8") as stream:
             json.dump({"module": args.module, "base_url": args.base_url,
-                       "summary": counts, "scenarios": rows},
+                       "routes": args.routes, "summary": counts,
+                       "scenarios": rows},
                       stream, indent=2, sort_keys=True)
             stream.write("\n")
     return 1 if counts.get("FAIL") else 0
