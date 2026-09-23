@@ -32,6 +32,19 @@ The database is stored under `target/db/northstar`. `make seed` recreates the
 schema and loads the fixed literal data. `make clean` removes generated
 database files and build output.
 
+## Database credentials
+
+The application runs as the restricted `CLAIMS_APP` account, which holds only
+`SELECT`, `INSERT`, `UPDATE` and `DELETE` on the claims tables. `make seed`
+creates that account, moves the database owner off its initial empty password
+and writes the generated passwords to `target/db/northstar.credentials`, which
+is generated output and never committed. Deployments that keep credentials in
+their own configuration or secret store override them with the
+`claims.db.user` / `claims.db.password` system properties or the
+`CLAIMS_DB_USER` / `CLAIMS_DB_PASSWORD` environment variables. A session is
+refused when no credential is configured and when the configured account is
+the database owner.
+
 ## Transcript harness
 
 `make capture` resets the database, starts Jetty, logs in, executes the fixed
