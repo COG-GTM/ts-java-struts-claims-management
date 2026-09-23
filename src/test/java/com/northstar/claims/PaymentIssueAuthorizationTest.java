@@ -16,6 +16,7 @@ import org.apache.struts.action.ActionMapping;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import com.northstar.claims.dao.ClaimDAO;
+import com.northstar.claims.dao.ConnectionPool;
 import com.northstar.claims.dao.PaymentDAO;
 import com.northstar.claims.model.Claim;
 import com.northstar.claims.util.DatabaseBootstrap;
@@ -29,8 +30,9 @@ public class PaymentIssueAuthorizationTest {
 
     @BeforeClass
     public static void seed() throws Exception {
-        System.setProperty("claims.db.path", "target/db/payment-auth");
+        System.setProperty("claims.db.path", "target/db/test-northstar");
         DatabaseBootstrap.bootstrap(true);
+        ConnectionPool.getInstance().closeAll();
     }
 
     @Test
