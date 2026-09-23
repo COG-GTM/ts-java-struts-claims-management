@@ -63,6 +63,12 @@ final class FakeRequest implements InvocationHandler {
                 String.valueOf(token));
     }
 
+    /** Plants a role on the session without the login entitlement check. */
+    FakeRequest sessionRole(String role) {
+        session.setAttribute(ClaimsActionSupport.ROLE_ATTRIBUTE, role);
+        return this;
+    }
+
     Object attribute(String name) {
         return attributes.get(name);
     }

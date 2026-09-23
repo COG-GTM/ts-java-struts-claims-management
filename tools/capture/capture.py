@@ -21,7 +21,7 @@ CONTEXT_PATH = "/claims"
 FIELD_RE = re.compile(r'<span id="f_([^"]+)">(.*?)</span>', re.S)
 VIEW_RE = re.compile(r"<!--\s*ns:view\s+([^ ]+)\s*-->")
 ERROR_RE = re.compile(r"<!--\s*ns:error\s+([^ ]+)\s*-->")
-CSRF_RE = re.compile(r'id="csrfToken" name="csrfToken"\s*value="([^"]*)"')
+CSRF_RE = re.compile(r'id="csrfToken"[^>]*>([^<]*)</span>')
 
 
 SCENARIOS = [

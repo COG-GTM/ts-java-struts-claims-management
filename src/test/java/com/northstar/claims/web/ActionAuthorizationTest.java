@@ -20,6 +20,8 @@ public class ActionAuthorizationTest {
 
     private static final int OWNED_CLAIM = 3;
     private static final int UNSETTLED_CLAIM = 9990;
+    private static final int CAPPED_CLAIM = 9991;
+    private static final double CAPPED_SETTLEMENT = 100.0;
     private static final double SETTLEMENT_AMOUNT = 1003.0;
 
     private final ActionMapping mapping = new NamedForwardMapping();
@@ -27,8 +29,10 @@ public class ActionAuthorizationTest {
     @BeforeClass
     public static void seed() throws Exception {
         System.setProperty("claims.db.path", "target/db/test-northstar");
+        ConnectionPool.getInstance().closeAll();
         DatabaseBootstrap.bootstrap(true);
         insertUnsettledClaim();
+        insertCappedClaim();
     }
 
     /**
@@ -52,6 +56,28 @@ public class ActionAuthorizationTest {
                     + " '2019-01-16', 'FIRE', 'Claim without settlement',"
                     + " 'OPEN', 1000, 'adjuster3', 'supervisor',"
                     + " '2019-01-16')");
+            connection.commit();
+        } finally {
+            connection.close();
+        }
+    }
+
+    private static void insertCappedClaim() throws Exception {
+        java.sql.Connection connection = java.sql.DriverManager.getConnection(
+                "jdbc:hsqldb:file:"
+                        + System.getProperty("claims.db.path"), "SA", "");
+        try {
+            int policyId = new ClaimDAO().findById(OWNED_CLAIM).getPolicyId();
+            connection.createStatement().executeUpdate("insert into CLAIM"
+                    + " values (" + CAPPED_CLAIM + ", 'CLM-09991', "
+                    + policyId + ", 'Capped Claimant', '2019-01-15',"
+                    + " '2019-01-16', 'FIRE', 'Claim with a small settlement',"
+                    + " 'OPEN', 1000, 'adjuster3', 'supervisor',"
+                    + " '2019-01-16')");
+            connection.createStatement().executeUpdate("insert into"
+                    + " SETTLEMENT values (9991, " + CAPPED_CLAIM + ", 100,"
+                    + " 0, 0, FALSE, " + CAPPED_SETTLEMENT
+                    + ", 'supervisor', '2019-03-01')");
             connection.commit();
         } finally {
             connection.close();
@@ -156,6 +182,46 @@ public class ActionAuthorizationTest {
     }
 
     @Test
+    public void paymentRejectsMalformedAmount() throws Exception {
+        int before = paymentCount(OWNED_CLAIM);
+        assertEquals("error",
+                issuePayment(paymentRequest("supervisor", "not-a-number")));
+        assertEquals(before, paymentCount(OWNED_CLAIM));
+    }
+
+    @Test
+    public void paymentRejectsAmountAboveRemainingBalance() throws Exception {
+        FakeRequest first = cappedPaymentRequest(
+                String.valueOf(CAPPED_SETTLEMENT));
+        assertEquals("payment", issuePayment(first));
+        int after = paymentCount(CAPPED_CLAIM);
+        assertEquals("error", issuePayment(cappedPaymentRequest("1")));
+        assertEquals(after, paymentCount(CAPPED_CLAIM));
+    }
+
+    @Test
+    public void forgedSupervisorRoleIsIgnored() throws Exception {
+        FakeRequest request = FakeRequest.create("adjuster2")
+                .sessionRole(ClaimsAuthorization.ROLE_SUPERVISOR)
+                .parameter("claimId", String.valueOf(OWNED_CLAIM));
+        assertEquals("denied", new WorkbenchViewAction().execute(mapping,
+                null, request.request(), null).getName());
+    }
+
+    @Test
+    public void claimListHidesForeignClaims() throws Exception {
+        FakeRequest request = FakeRequest.create("adjuster3");
+        new WorkbenchListAction().execute(mapping, null, request.request(),
+                null);
+        java.util.List claims = (java.util.List) request.attribute("claims");
+        assertFalse(claims.isEmpty());
+        for (int i = 0; i < claims.size(); i++) {
+            assertEquals("adjuster3", ((com.northstar.claims.model.Claim)
+                    claims.get(i)).getAssignedAdjuster());
+        }
+    }
+
+    @Test
     public void paymentRejectsNonPositiveAmount() throws Exception {
         int before = paymentCount(OWNED_CLAIM);
         assertEquals("error", issuePayment(paymentRequest("supervisor", "0")));
@@ -226,6 +292,15 @@ public class ActionAuthorizationTest {
                 .parameter(ClaimsActionSupport.CSRF_PARAMETER, "guessed");
         assertEquals("denied", issuePayment(request));
         assertEquals(before, paymentCount(OWNED_CLAIM));
+    }
+
+    private FakeRequest cappedPaymentRequest(String amount) {
+        return FakeRequest.create("supervisor")
+                .withCsrfToken()
+                .parameter("claimId", String.valueOf(CAPPED_CLAIM))
+                .parameter("payeeName", "Capped Claimant")
+                .parameter("paymentMethod", "CHECK")
+                .parameter("amount", amount);
     }
 
     private FakeRequest paymentRequest(String operator, String amount) {

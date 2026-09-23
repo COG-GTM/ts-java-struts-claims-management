@@ -36,10 +36,11 @@ public class PaymentIssueAction extends ClaimsActionSupport {
             request.setAttribute("message", "payment.settlement.missing");
             return mapping.findForward("error");
         }
-        double amount = decimal(request.getParameter("amount"),
-                settlement.getSettlementAmount());
+        double amount = decimal(request.getParameter("amount"), Double.NaN);
+        double remaining = settlement.getSettlementAmount()
+                - new PaymentDAO().totalIssued(claimId);
         String payee = defaultText(request.getParameter("payeeName"), "");
-        if (!validAmount(amount, settlement) || !hasText(payee)) {
+        if (!validAmount(amount, remaining) || !hasText(payee)) {
             request.setAttribute("message", "payment.request.invalid");
             return mapping.findForward("error");
         }
@@ -67,9 +68,9 @@ public class PaymentIssueAction extends ClaimsActionSupport {
         return mapping.findForward("payment");
     }
 
-    /** Payments stay positive, bounded, and within the saved settlement. */
-    private boolean validAmount(double amount, Settlement settlement) {
+    /** Payments stay positive, bounded, and within the unpaid balance. */
+    private boolean validAmount(double amount, double remaining) {
         return financialAmount(amount) && amount >= MINIMUM_AMOUNT
-                && amount <= settlement.getSettlementAmount();
+                && amount <= remaining;
     }
 }

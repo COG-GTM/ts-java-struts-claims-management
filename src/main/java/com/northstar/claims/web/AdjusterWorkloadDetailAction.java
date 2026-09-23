@@ -13,6 +13,9 @@ public class AdjusterWorkloadDetailAction extends ClaimsActionSupport {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+        if (!canReadPortfolio(request)) {
+            return denied(mapping, request);
+        }
         java.util.List rows = new ReportDAO().openClaimsByAdjuster();
         request.setAttribute("reportRows", rows);
         request.setAttribute("reportRowCount", new Integer(rows.size()));

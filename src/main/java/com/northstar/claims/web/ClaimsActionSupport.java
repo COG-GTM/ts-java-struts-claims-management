@@ -195,6 +195,25 @@ public abstract class ClaimsActionSupport extends Action {
         }
     }
 
+    /** Narrows a claim list to the rows the operator is entitled to see. */
+    protected java.util.List visibleClaims(HttpServletRequest request,
+            java.util.List claims) {
+        if (canReadPortfolio(request)) {
+            return claims;
+        }
+        String operator = currentOperator(request);
+        String role = currentRole(request);
+        java.util.List visible = new java.util.ArrayList();
+        for (int i = 0; i < claims.size(); i++) {
+            Claim claim = (Claim) claims.get(i);
+            if (ClaimsAuthorization.canAccessClaim(operator, role,
+                    claim.getAssignedAdjuster())) {
+                visible.add(claim);
+            }
+        }
+        return visible;
+    }
+
     /** True when the operator may read portfolio-wide reference screens. */
     protected boolean canReadPortfolio(HttpServletRequest request) {
         return ClaimsAuthorization.canReadPortfolio(currentOperator(request),
@@ -364,16 +383,20 @@ public abstract class ClaimsActionSupport extends Action {
     }
 
     /**
-     * Returns the role stored at login. Sessions established before the
-     * role was recorded fall back to the least privileged role.
+     * Returns the effective role: the least privileged of the role stored at
+     * login and the role the current operator name is entitled to, so a
+     * stale or forged session attribute cannot elevate privileges.
      */
     protected String currentRole(
             javax.servlet.http.HttpServletRequest request) {
-        Object value = request.getSession().getAttribute(ROLE_ATTRIBUTE);
-        if (value == null) {
+        String entitled = ClaimsAuthorization.roleFor(
+                currentOperator(request));
+        Object stored = request.getSession().getAttribute(ROLE_ATTRIBUTE);
+        if (stored == null) {
             return ClaimsAuthorization.ROLE_ADJUSTER;
         }
-        return String.valueOf(value);
+        return ClaimsAuthorization.leastPrivileged(String.valueOf(stored),
+                entitled);
     }
 
     protected boolean hasText(String value) {

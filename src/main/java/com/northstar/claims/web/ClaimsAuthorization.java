@@ -24,6 +24,13 @@ public final class ClaimsAuthorization {
                 ? ROLE_SUPERVISOR : ROLE_ADJUSTER;
     }
 
+    /** Supervisor only when both the session and the operator grant it. */
+    public static String leastPrivileged(String storedRole,
+            String entitledRole) {
+        return isSupervisor(storedRole) && isSupervisor(entitledRole)
+                ? ROLE_SUPERVISOR : ROLE_ADJUSTER;
+    }
+
     public static boolean isSupervisor(String role) {
         return ROLE_SUPERVISOR.equals(role);
     }

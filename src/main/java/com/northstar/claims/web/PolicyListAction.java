@@ -18,6 +18,9 @@ public class PolicyListAction extends ClaimsActionSupport {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+        if (!canReadPortfolio(request)) {
+            return denied(mapping, request);
+        }
         List policies;
         try {
             policies = new PolicyDAO().findAll();
