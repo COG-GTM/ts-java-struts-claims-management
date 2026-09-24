@@ -71,7 +71,7 @@ No new components, data stores, or external dependencies are introduced.
 - **Data classification:** unchanged (claims / policy business data, adjuster credentials).
 - **Encryption at rest:** unchanged (HSQLDB file, no encryption — pre-existing known issue).
 - **Encryption in transit:** unchanged (container-terminated TLS where deployed).
-- **AuthN / AuthZ:** unchanged (Struts form login, `AuthenticationFilter` on `*.do`).
+- **AuthN / AuthZ:** unchanged (Struts form login, `AuthFilter` mapped in web.xml).
 - **Secrets:** none added.
 - **Audit logging:** unchanged (`ScreenAudit`, commons-logging).
 - **Data residency / regions:** unchanged.
