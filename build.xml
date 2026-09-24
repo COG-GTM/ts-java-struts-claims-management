@@ -35,7 +35,7 @@
         </copy>
     </target>
     <target name="compile" depends="prepare">
-        <javac srcdir="${src}" destdir="${classes}" source="7" target="7"
+        <javac srcdir="${src}" destdir="${classes}" source="11" target="11"
                includeantruntime="false" encoding="UTF-8">
             <classpath refid="compile.path"/>
         </javac>
