@@ -63,6 +63,13 @@ def spec_commits(path):
     return [tuple(line.split("\0")) for line in out.splitlines() if line]
 
 
+def commit_order():
+    """Full sha -> position on the first-parent line of the branch, oldest first.
+    Commits are compared by this, not by date: two commits on one day share a date."""
+    shas = git("rev-list", "--first-parent", "--reverse", "HEAD").split()
+    return {sha: index for index, sha in enumerate(shas)}
+
+
 def file_at(sha, path):
     try:
         return subprocess.check_output(["git", "show", "%s:%s" % (sha, path)], cwd=ROOT,
@@ -163,7 +170,7 @@ def open_questions():
                 seen.add(row.group(1))
                 rows.append({"id": row.group(1), "question": row.group(2),
                              "blocks": row.group(3), "status": row.group(6),
-                             "commit": (short, date, subject)})
+                             "commit": (sha, short, date, subject)})
     current = {}
     if os.path.exists(os.path.join(ROOT, OPEN_QUESTIONS)):
         for line in traceability.read(OPEN_QUESTIONS).splitlines():
@@ -201,8 +208,10 @@ def collect():
                 "history": history.get(rule, ""), "superseded_in": None,
                 "superseded_by": None,
             })
-            record["prose"], record["evidence"] = found["prose"], found["evidence"]
+            record.setdefault("prose", found["prose"])
+            record.setdefault("evidence", found["evidence"])
             record["history"] = history.get(rule, record["history"])
+            record["removed_in"] = None
             text = (found["prose"], found["evidence"])
             if rule in previous_text and previous_text[rule] != text:
                 amended.append((rule, commit))
@@ -211,7 +220,7 @@ def collect():
                 record["superseded_in"] = commit
                 record["superseded_by"] = found["superseded_by"]
         for rule, record in versions.items():
-            if rule not in rules and record.get("removed_in") is None:
+            if rule not in rules and record["removed_in"] is None:
                 record["removed_in"] = commit
     for record in versions.values():
         cited = set()
@@ -245,7 +254,7 @@ def side_by_side(rule_id, chain):
     return lines
 
 
-def how_this_spec_changes(versions, questions):
+def how_this_spec_changes(versions, questions, order):
     corrections, approved = [], []
     for rule, record in sorted(versions.items(), key=lambda item: rule_sort_key(item[0])):
         if not record["superseded_by"]:
@@ -284,14 +293,15 @@ def how_this_spec_changes(versions, questions):
             rule_id = sorted(blocked)[0][0]
             chain = sorted((rule for rule in versions if rule[0] == rule_id), key=rule_sort_key)
             current = chain[-1] if chain else None
+            asked = order[question["commit"][0]]
             later = [rule for rule in chain
-                     if versions[rule]["introduced"][2] > question["commit"][1]]
+                     if order[versions[rule]["introduced"][0]] > asked]
             unchanged = ("no new version of %s has been added since" % rule_id if not later
                          else "%s has since moved on to %s" % (rule_id, label(later[-1])))
             return ("Example: %s, added in `%s` (%s, \"%s\"), asks: \"%s\" It blocks %s; "
                     "its status is %s. The rule it names keeps its current text (%s), and %s." % (
-                        question["id"], question["commit"][0], question["commit"][1],
-                        cell(question["commit"][2]), cell(question["question"]),
+                        question["id"], question["commit"][1], question["commit"][2],
+                        cell(question["commit"][3]), cell(question["question"]),
                         cell(question["blocks"]), cell(question["status"]),
                         label(current) if current else "-", unchanged))
         return "No example in this branch's history yet."
@@ -404,7 +414,8 @@ def main():
     lines += ["## Rule versions amended in place", ""]
     if amended:
         lines += ["The spec is append-only; these versions changed their words after they",
-                  "were published, which should not happen:", ""]
+                  "were published, which should not happen. The tables above show the text",
+                  "as first published:", ""]
         for rule, commit in amended:
             lines.append("* %s in %s" % (label(rule), commit_cell(commit)))
         lines.append("")
@@ -412,7 +423,7 @@ def main():
         lines += ["None: every rule version kept its text once published (reflowed line breaks",
                   "and the `superseded by` marker on the heading do not count).", ""]
 
-    lines += how_this_spec_changes(versions, questions)
+    lines += how_this_spec_changes(versions, questions, commit_order())
 
     with open(os.path.join(ROOT, OUTPUT), "w", encoding="utf-8") as handle:
         handle.write("\n".join(lines))
