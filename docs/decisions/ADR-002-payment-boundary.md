@@ -61,8 +61,9 @@ them) and `errors` (always empty: PAY-R08).
 The service runs against HSQLDB in memory, created at startup by executing the
 legacy `src/main/resources/db/schema.sql` and `src/main/resources/db/seed.sql`
 by file path, exactly as the settlement service does. The seeded rows the
-transcripts depend on (claim 119, settlement 119 with amount 1000.00, the 60
-seeded payments that make the next `payment_id` 61) are therefore identical to
+transcripts depend on (claim 119, settlement 119 — whose seeded `settlement_amount` is 0, so an
+omitted `amount` issues 0.00 — and the 60 seeded payments that make the next
+`payment_id` 61) are therefore identical to
 the legacy fixture.
 
 The only table written is `PAYMENT`. `SETTLEMENT` is read for the claim's
