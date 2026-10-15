@@ -39,8 +39,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SPEC = os.path.join("docs", "specs", "SPEC-SETTLE-001.md")
 OUTPUT = os.path.join("docs", "TRACEABILITY.md")
 
-GENERATED = [OUTPUT, os.path.join("parity", "report.md"),
-             os.path.join("parity", "report.json")]
+GENERATED = [OUTPUT, os.path.join("docs", "specs", "SPEC-SETTLE-001-history.md"),
+             os.path.join("parity", "report.md"), os.path.join("parity", "report.json")]
 SEARCHED = ["docs", "parity", "services", "src", "tools", "Makefile"]
 
 # "SETTLE-R06", "SETTLE-R06 (v2)", "SETTLE-R06 (v1, superseded by v2)",
