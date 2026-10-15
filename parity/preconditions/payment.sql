@@ -1,0 +1,22 @@
+-- State the legacy capture had when the payment transcripts were recorded.
+--
+-- tools/capture/capture.py resets the database once and then replays every
+-- scenario of transcripts/index.json in order against the same Jetty, so when
+-- payment_issue ran, settlement_save had already written claim 119's new
+-- settlement: id 121 (max 120 + 1, SETTLE-R27), covered 5000.00, deductible
+-- 500.00, depreciation 0.00, capped at the 1000 policy limit of policy 9001,
+-- settlement_amount 1000.00, calculated_by the session user, calculated_date
+-- the literal 2019-04-01 (transcripts/settlement_save.json db_state
+-- settlement.claim.119.amount = 1000.00; transcripts/settlement_calculate.json
+-- business fields; SETTLE-R27, SETTLE-R28).
+--
+-- The payment service loads only the legacy seed, where claim 119's latest
+-- settlement (119) has settlement_amount 0, so until PAY-R05 (v2) (CHG-002)
+-- the difference did not matter: payment_issue sends an explicit amount. Now
+-- that an amount above the settlement is rejected, the parity replay has to
+-- hold the same precondition the legacy run held, or 1000.00 against 0.00
+-- would trip the cap for a reason that has nothing to do with the change.
+--
+-- Loaded only by the "parity" Spring profile (make payment-run-parity); make
+-- payment-run and the service tests keep the plain legacy fixture.
+INSERT INTO SETTLEMENT VALUES (121, 119, 5000, 500, 0, TRUE, 1000, 'supervisor', '2019-04-01');

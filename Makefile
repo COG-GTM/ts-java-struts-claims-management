@@ -1,4 +1,4 @@
-.PHONY: build run seed test capture clean service-build service-test service-run payment-build payment-test payment-run parity traceability
+.PHONY: build run seed test capture clean service-build service-test service-run payment-build payment-test payment-run payment-run-parity parity traceability
 
 # Settlement service (ADR-001): Spring Boot 3.5 on Java 21, port 8083.
 SERVICE_DIR = services/settlement-service
@@ -39,9 +39,17 @@ payment-test:
 payment-run:
 	cd $(PAYMENT_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B spring-boot:run
 
+# The payment service with the state the legacy capture had reached when the
+# payment transcripts were recorded (parity/preconditions/payment.sql: the
+# settlement that settlement_save wrote for claim 119). make parity replays the
+# payment transcripts against this one; see CHG-002, "Parity effect".
+payment-run-parity:
+	cd $(PAYMENT_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B spring-boot:run -Dspring-boot.run.profiles=parity
+
 # Replays the settlement transcripts against a running settlement service
 # (make service-run, 8083) and the payment transcripts against a running
-# payment service (make payment-run, 8084). Both write into the same report,
+# payment service started with the legacy capture's preconditions
+# (make payment-run-parity, 8084). Both write into the same report,
 # which is removed first so a run that stops early cannot leave the other
 # slice's verdicts from an earlier run looking fresh.
 parity:

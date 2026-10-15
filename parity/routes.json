@@ -1,16 +1,56 @@
 {
-  "comment": "Approved differences between the legacy transcripts and the settlement service. A scenario listed here is judged against its 'expected' block instead of the transcript and is reported as CHANGED (<change>) by make parity; anything else is still a FAIL. Each entry must name a docs/changes/CHG-nnn record (ADR-001, 'Behaviour freeze').",
+  "comment": "Approved differences between the legacy transcripts and the settlement or payment service. A scenario listed here is judged against its 'expected' block instead of the transcript and is reported as CHANGED (<change>) by make parity; anything else is still a FAIL. Each entry must name a docs/changes/CHG-nnn record (ADR-001 and ADR-002, 'Behaviour freeze'). An entry whose scenario has no transcript (no recording of it exists and transcripts/ is written only by make capture) carries its own 'request' block and is replayed from it after the transcripts.",
   "transcript_rules_comment": "Which SPEC-SETTLE-001 / SPEC-PAY-001 rules each settlement or payment transcript is evidence for, taken from the 'Observed:' lines of the spec. tools/traceability.py reads this to put transcripts and their parity verdicts next to each rule. An entry without a version (SETTLE-R05) applies to every version of that rule; a version-qualified entry (SETTLE-R06 (v2)) applies to that version only.",
   "transcript_rules": {
-    "settlement_bad_deductible": ["SETTLE-R06 (v1)", "SETTLE-R06 (v2)"],
-    "settlement_blank_deductible": ["SETTLE-R05", "SETTLE-R10", "SETTLE-R24"],
-    "settlement_calculate": ["SETTLE-R01", "SETTLE-R11", "SETTLE-R13", "SETTLE-R20", "SETTLE-R22", "SETTLE-R24"],
-    "settlement_deductible_floor": ["SETTLE-R12", "SETTLE-R22"],
-    "settlement_half_cent": ["SETTLE-R16", "SETTLE-R21"],
-    "settlement_policy_cap": ["SETTLE-R13"],
-    "settlement_save": ["SETTLE-R25", "SETTLE-R27", "SETTLE-R28", "SETTLE-R29"],
-    "payment_issue": ["PAY-R01", "PAY-R09", "PAY-R10", "PAY-R11", "PAY-R13", "PAY-R14", "PAY-R15", "PAY-R27"],
-    "payment_history": ["PAY-R16", "PAY-R18", "PAY-R19"]
+    "settlement_bad_deductible": [
+      "SETTLE-R06 (v1)",
+      "SETTLE-R06 (v2)"
+    ],
+    "settlement_blank_deductible": [
+      "SETTLE-R05",
+      "SETTLE-R10",
+      "SETTLE-R24"
+    ],
+    "settlement_calculate": [
+      "SETTLE-R01",
+      "SETTLE-R11",
+      "SETTLE-R13",
+      "SETTLE-R20",
+      "SETTLE-R22",
+      "SETTLE-R24"
+    ],
+    "settlement_deductible_floor": [
+      "SETTLE-R12",
+      "SETTLE-R22"
+    ],
+    "settlement_half_cent": [
+      "SETTLE-R16",
+      "SETTLE-R21"
+    ],
+    "settlement_policy_cap": [
+      "SETTLE-R13"
+    ],
+    "settlement_save": [
+      "SETTLE-R25",
+      "SETTLE-R27",
+      "SETTLE-R28",
+      "SETTLE-R29"
+    ],
+    "payment_issue": [
+      "PAY-R01",
+      "PAY-R09",
+      "PAY-R10",
+      "PAY-R11",
+      "PAY-R13",
+      "PAY-R14",
+      "PAY-R15",
+      "PAY-R27"
+    ],
+    "payment_history": [
+      "PAY-R16",
+      "PAY-R18",
+      "PAY-R19"
+    ]
   },
   "approved_differences": [
     {
@@ -18,13 +58,48 @@
       "change": "CHG-001",
       "record": "docs/changes/CHG-001-invalid-deductible.md",
       "summary": "A non-blank, unparseable deductible is a validation error instead of the error screen",
-      "rules": ["SETTLE-R06 (v2)"],
+      "rules": [
+        "SETTLE-R06 (v2)"
+      ],
       "expected": {
         "status": 200,
         "screen": "calculate",
         "business_fields": {},
-        "validation_errors": ["settlement.deductible.invalid"],
+        "validation_errors": [
+          "settlement.deductible.invalid"
+        ],
         "db_state": {}
+      }
+    },
+    {
+      "scenario": "payment_issue_over_settlement",
+      "change": "CHG-002",
+      "record": "docs/changes/CHG-002-payment-exceeds-settlement.md",
+      "summary": "An amount above the claim's latest settlement amount is a validation error and writes no PAYMENT row",
+      "rules": [
+        "PAY-R05 (v2)"
+      ],
+      "description": "Issue 1500.00 against claim 118, whose latest settlement is 1118.00; no transcript exercises this, so the request is replayed from here (legacy evidence: CHG-002 record, Before)",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "Claimant 118",
+          "amount": "1500.00",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "screen": "issue",
+        "business_fields": {},
+        "validation_errors": [
+          "payment.amount.exceedsSettlement"
+        ],
+        "db_state": {
+          "payment.count.claim.118": "0"
+        }
       }
     }
   ]

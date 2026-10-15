@@ -65,8 +65,10 @@ def write(prefix, rows):
         handle.write("class, business fields, validation keys, db state.\n\n")
         handle.write("Scenarios listed in `parity/routes.json` are approved differences: they\n")
         handle.write("are judged against their `docs/changes/CHG-nnn` record and reported as\n")
-        handle.write("CHANGED, and still fail on anything the record does not approve. The\n")
-        handle.write("payment slice allows none (ADR-002, \"Behaviour freeze\").\n\n")
+        handle.write("CHANGED, and still fail on anything the record does not approve. An\n")
+        handle.write("approved difference no transcript exercises is replayed from the request\n")
+        handle.write("in `parity/routes.json` (CHG-002, \"Parity effect\"); the payment service is\n")
+        handle.write("replayed with the legacy capture's preconditions (`make payment-run-parity`).\n\n")
         handle.write("| Scenario | Legacy behaviour | Verdict | Difference |\n")
         handle.write("| --- | --- | --- | --- |\n")
         for row in merged:

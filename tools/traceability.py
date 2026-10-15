@@ -13,7 +13,9 @@ docs/specs/SPEC-SETTLE-001.md (SETTLE-Rnn) and docs/specs/SPEC-PAY-001.md
   (v1)``;
 * the tests whose javadoc cites the rule, under ``src/test`` and
   ``services/*/src/test``;
-* the transcripts mapped to the rule in ``parity/routes.json``;
+* the transcripts mapped to the rule in ``parity/routes.json``, plus the
+  approved differences whose ``rules`` name it (a scenario with no transcript
+  of its own is replayed from its ``request`` block in routes.json);
 * the parity verdict of each of those transcripts, from ``parity/report.json``
   (written by ``make parity``);
 * the ``docs/changes/CHG-nnn`` records that name the rule.
@@ -180,6 +182,10 @@ def transcripts_for(rule, routes):
     for scenario, cited in sorted(routes.get("transcript_rules", {}).items()):
         if any(refers_to(entry, rule) for entry in cited):
             found.append(scenario)
+    for approval in routes.get("approved_differences", []):
+        if approval["scenario"] not in found and any(
+                refers_to(entry, rule) for entry in approval.get("rules", [])):
+            found.append(approval["scenario"])
     return found
 
 
@@ -249,7 +255,8 @@ def main():
         "the rule's spec that last changed it, from its Rule",
         "history row. *Last commit* is the last commit whose changed lines mention",
         "that rule version. *Tests* are the tests whose javadoc cites it, *Transcripts*",
-        "the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in",
+        "the scenarios `parity/routes.json` maps to it (transcripts, and approved",
+        "differences replayed from their own request), and *Parity* their verdicts in",
         "`parity/report.json`.",
         "",
         "| Rule | Spec version | Last commit | Tests | Transcripts | Parity | Change record |",

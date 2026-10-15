@@ -15,8 +15,12 @@ import org.springframework.test.web.servlet.MockMvc;
 /** Endpoint tests for GET /payment/detail against the seeded fixture. */
 @SpringBootTest
 @AutoConfigureMockMvc
-@TestPropertySource(properties =
-        "spring.datasource.url=jdbc:hsqldb:mem:payment-detail-test")
+@TestPropertySource(properties = {
+        "spring.datasource.url=jdbc:hsqldb:mem:payment-detail-test",
+        // The state the legacy capture had reached before the payment transcripts
+        // were recorded (parity/preconditions/payment.sql; CHG-002, "Parity effect").
+        "spring.sql.init.data-locations=file:../../src/main/resources/db/seed.sql,"
+                + "file:../../parity/preconditions/payment.sql"})
 class PaymentDetailEndpointTest {
 
     @Autowired

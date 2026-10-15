@@ -1,6 +1,6 @@
 # SPEC-PAY-001 — Payment issue, history, detail and remittance
 
-Version: 0.1
+Version: 0.2
 
 Scope: the payment issue, history, detail and remittance request flows of the
 claims application. Every rule below is taken either from a recorded transcript
@@ -39,11 +39,35 @@ src/main/java/com/northstar/claims/dao/SettlementDAO.java:106-110;
 src/main/webapp/WEB-INF/struts-config.xml:59-60.
 Confirmed against the running legacy app (`claimId=9999`, 2026-10-15).
 
-**PAY-R05 (v1)** — `amount` is parsed as a double; when it is missing or not
-parseable the settlement amount of PAY-R03 is used. No other normalisation
-(trimming, currency symbols, rounding) is applied before storage.
+**PAY-R05 (v1, superseded by v2)** — `amount` is parsed as a double; when it is
+missing or not parseable the settlement amount of PAY-R03 is used. No other
+normalisation (trimming, currency symbols, rounding) is applied before storage.
 Read: src/main/java/com/northstar/claims/web/PaymentIssueAction.java:30-31;
 src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:39-45
+
+**PAY-R05 (v2)** — `amount` is parsed as in v1 (double; missing or unparseable
+falls back to the settlement amount of PAY-R03; no other normalisation). The
+resulting amount is then compared with the `settlement_amount` of the latest
+settlement of PAY-R03: if it is strictly greater, the request is rejected with
+status 200, the `issue` screen, no business fields and exactly one validation
+key, `payment.amount.exceedsSettlement`. No PAYMENT row is written and the
+next `payment_id` (PAY-R09) is not consumed. An amount equal to the settlement
+amount is issued as before. The check runs after the settlement lookup, so a
+claim with no settlement still fails per PAY-R04, not with this key. Service
+only (`services/payment-service`): the monolith keeps v1.
+The monolith applies no such bound: PaymentIssueAction.java:30-31 passes the
+parsed amount straight to the insert, and the running legacy app issued
+1500.00 against claim 118's 1118.00 settlement as payment 61, CHK-61, ISSUED
+(2026-10-15). PAY-R08 (no validation errors on any payment mapping) no longer
+holds for the service on this one path; it is unchanged for the monolith.
+Approved: docs/changes/CHG-002-payment-exceeds-settlement.md (no transcript
+records an over-settlement amount; the scenario payment_issue_over_settlement
+in parity/routes.json is replayed from its own request and recorded as
+CHANGED (CHG-002));
+Read: src/main/java/com/northstar/claims/web/PaymentIssueAction.java:30-34
+(the legacy behaviour this version departs from);
+services/payment-service/src/main/java/com/northstar/payment/web/PaymentController.java
+(`issue`, `AMOUNT_EXCEEDS_SETTLEMENT`)
 
 **PAY-R06 (v1)** — `payeeName` and `paymentMethod` are stored exactly as sent:
 no trimming, no case folding, and the `normalizeMethod` helper of
@@ -220,6 +244,7 @@ Read: src/main/java/com/northstar/claims/web/AuthFilter.java:31-42
 | PAY-R03 | v1 | Initial rule, version 0.1 |
 | PAY-R04 | v1 | Initial rule, version 0.1 |
 | PAY-R05 | v1 | Initial rule, version 0.1 |
+| PAY-R05 | v2 | Version 0.2: an amount above the claim's latest settlement amount becomes a validation error (status 200, issue screen, no business fields, key `payment.amount.exceedsSettlement`) with no PAYMENT row written and no payment_id consumed, in the service only, per docs/changes/CHG-002-payment-exceeds-settlement.md; v1 text retained above as the legacy behaviour |
 | PAY-R06 | v1 | Initial rule, version 0.1 |
 | PAY-R07 | v1 | Initial rule, version 0.1 |
 | PAY-R08 | v1 | Initial rule, version 0.1 |

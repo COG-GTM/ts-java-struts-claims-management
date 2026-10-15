@@ -9,10 +9,20 @@ judged"): status class, the business field values, the validation keys, and
 the database state.
 
 Scenarios are replayed in the order of ``transcripts/index.json``, because
-``payment_history`` expects the payment that ``payment_issue`` creates. There
-are no approved differences for this slice (ADR-002, "Behaviour freeze"): a
-payment scenario listed under ``approved_differences`` in parity/routes.json is
-itself an error.
+``payment_history`` expects the payment that ``payment_issue`` creates. The
+legacy capture replays every scenario against one database, so the service
+has to start with the state the capture had reached before the payment
+scenarios (``make payment-run-parity``, which loads
+parity/preconditions/payment.sql on top of the seed).
+
+A scenario listed under ``approved_differences`` in parity/routes.json is an
+approved difference (ADR-002, "Behaviour freeze", as amended by CHG-002): it is
+compared against the response its ``docs/changes/CHG-nnn`` record approves and
+reported as ``CHANGED (CHG-nnn)``; anything else is still a FAIL. An approved
+difference that no transcript exercises carries its own ``request`` block and
+is replayed after the transcripts, so the approved behaviour is still checked
+on every run even though transcripts/ (written only by ``make capture``) has
+no recording of it.
 
 Usage: python3 tools/parity/payment_parity.py [--base http://localhost:8084]
 Writes its rows into parity/report.md and parity/report.json through
@@ -52,25 +62,27 @@ def payment_scenarios():
     return [entry["scenario"] for entry in index if entry["scenario"].startswith("payment_")]
 
 
-def forbid_approved_differences():
+def approved_differences():
+    """The payment approved differences of parity/routes.json, keyed by scenario."""
     path = os.path.join(ROOT, "parity", "routes.json")
     if not os.path.exists(path):
-        return
+        return {}
     with open(path) as handle:
         routes = json.load(handle)
-    listed = [entry["scenario"] for entry in routes.get("approved_differences", [])
-              if entry["scenario"].startswith("payment_")]
-    if listed:
-        raise SystemExit("ADR-002 allows no approved differences for the payment slice; "
-                         "remove %s from parity/routes.json" % ", ".join(listed))
+    return {entry["scenario"]: entry for entry in routes.get("approved_differences", [])
+            if entry["scenario"].startswith("payment_")}
+
+
+PRECONDITION_HINT = ("payment_issue tripped the PAY-R05 (v2) cap: the service was started "
+                     "without the legacy capture's preconditions; use make payment-run-parity")
 
 
 def status_class(status):
     return "%dxx" % (status // 100)
 
 
-def call(base, transcript):
-    request = transcript["request"]
+def call(base, scenario):
+    request = scenario["request"]
     path = PATHS[request["path"]]
     form = dict(request.get("form", {}))
     data = urllib.parse.urlencode(form).encode()
@@ -139,31 +151,82 @@ def compare(base, transcript, status, body):
     return diffs
 
 
+def compare_approved(base, approval, status, body):
+    """Compare against the response a CHG-nnn record approves, not the transcript."""
+    expected = approval["expected"]
+    diffs = []
+    if status != expected["status"]:
+        diffs.append("status %s != %s" % (status, expected["status"]))
+    if "screen" in expected and body.get("screen") != expected["screen"]:
+        diffs.append("screen %r != %r" % (body.get("screen"), expected["screen"]))
+    if body.get("fields", {}) != expected["business_fields"]:
+        diffs.append("fields %r != %r" % (body.get("fields"), expected["business_fields"]))
+    if body.get("errors", []) != expected["validation_errors"]:
+        diffs.append("validation %r != %r" % (body.get("errors"), expected["validation_errors"]))
+    actual_db = db_state(base, expected["db_state"])
+    for key, value in expected["db_state"].items():
+        if actual_db[key] != value:
+            diffs.append("db %s %r != %r" % (key, actual_db[key], value))
+    return diffs
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--base", default=os.environ.get("PAYMENT_BASE", "http://localhost:8084"))
     args = parser.parse_args()
-    forbid_approved_differences()
+    approvals = approved_differences()
     rows = []
     failed = False
-    for name in payment_scenarios():
+
+    def record(name, description, verdict, approval, note):
+        rows.append({
+            "scenario": name,
+            "description": description,
+            "verdict": verdict,
+            "change": approval["change"] if approval else None,
+            "record": approval["record"] if approval else None,
+            "difference": note,
+        })
+        print("%-32s %s %s" % (name, verdict, note if verdict == "FAIL" else ""))
+
+    transcripts = payment_scenarios()
+    for name in transcripts:
         with open(os.path.join(ROOT, "transcripts", name + ".json")) as handle:
             transcript = json.load(handle)
         status, body = call(args.base, transcript)
-        diffs = compare(args.base, transcript, status, body)
-        verdict = "PASS" if not diffs else "FAIL"
+        approval = approvals.get(name)
+        if approval:
+            diffs = compare_approved(args.base, approval, status, body)
+            verdict = "CHANGED (%s)" % approval["change"] if not diffs else "FAIL"
+            note = approval["summary"] if not diffs else "; ".join(diffs)
+        else:
+            diffs = compare(args.base, transcript, status, body)
+            if name == "payment_issue" and cap_tripped(body):
+                diffs.append(PRECONDITION_HINT)
+            verdict = "PASS" if not diffs else "FAIL"
+            note = "; ".join(diffs) or "-"
         failed = failed or bool(diffs)
-        rows.append({
-            "scenario": name,
-            "description": transcript["description"],
-            "verdict": verdict,
-            "change": None,
-            "record": None,
-            "difference": "; ".join(diffs) or "-",
-        })
-        print("%-32s %s %s" % (name, verdict, "; ".join(diffs)))
+        record(name, transcript["description"], verdict, approval, note)
+
+    # Approved differences with no transcript: replayed from their own request.
+    for name, approval in approvals.items():
+        if name in transcripts:
+            continue
+        if "request" not in approval:
+            raise SystemExit("%s is not a transcript and has no request block in parity/routes.json" % name)
+        status, body = call(args.base, approval)
+        diffs = compare_approved(args.base, approval, status, body)
+        verdict = "CHANGED (%s)" % approval["change"] if not diffs else "FAIL"
+        note = approval["summary"] if not diffs else "; ".join(diffs)
+        failed = failed or bool(diffs)
+        record(name, approval["description"], verdict, approval, note)
+
     report.write("payment_", rows)
     raise SystemExit(1 if failed else 0)
+
+
+def cap_tripped(body):
+    return body.get("errors") == ["payment.amount.exceedsSettlement"]
 
 
 if __name__ == "__main__":

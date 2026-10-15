@@ -71,6 +71,14 @@
       "record": null,
       "scenario": "payment_history",
       "verdict": "PASS"
+    },
+    {
+      "change": "CHG-002",
+      "description": "Issue 1500.00 against claim 118, whose latest settlement is 1118.00; no transcript exercises this, so the request is replayed from here (legacy evidence: CHG-002 record, Before)",
+      "difference": "An amount above the claim's latest settlement amount is a validation error and writes no PAYMENT row",
+      "record": "docs/changes/CHG-002-payment-exceeds-settlement.md",
+      "scenario": "payment_issue_over_settlement",
+      "verdict": "CHANGED (CHG-002)"
     }
   ]
 }

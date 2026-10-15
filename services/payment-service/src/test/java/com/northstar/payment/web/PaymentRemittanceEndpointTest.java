@@ -19,8 +19,12 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@TestPropertySource(properties =
-        "spring.datasource.url=jdbc:hsqldb:mem:payment-remittance-test")
+@TestPropertySource(properties = {
+        "spring.datasource.url=jdbc:hsqldb:mem:payment-remittance-test",
+        // The state the legacy capture had reached before the payment transcripts
+        // were recorded (parity/preconditions/payment.sql; CHG-002, "Parity effect").
+        "spring.sql.init.data-locations=file:../../src/main/resources/db/seed.sql,"
+                + "file:../../parity/preconditions/payment.sql"})
 class PaymentRemittanceEndpointTest {
 
     @Autowired

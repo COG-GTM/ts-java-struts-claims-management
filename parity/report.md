@@ -10,8 +10,10 @@ class, business fields, validation keys, db state.
 
 Scenarios listed in `parity/routes.json` are approved differences: they
 are judged against their `docs/changes/CHG-nnn` record and reported as
-CHANGED, and still fail on anything the record does not approve. The
-payment slice allows none (ADR-002, "Behaviour freeze").
+CHANGED, and still fail on anything the record does not approve. An
+approved difference no transcript exercises is replayed from the request
+in `parity/routes.json` (CHG-002, "Parity effect"); the payment service is
+replayed with the legacy capture's preconditions (`make payment-run-parity`).
 
 | Scenario | Legacy behaviour | Verdict | Difference |
 | --- | --- | --- | --- |
@@ -24,6 +26,7 @@ payment slice allows none (ADR-002, "Behaviour freeze").
 | `settlement_save` | Save the calculated settlement | PASS | - |
 | `payment_issue` | Issue a settlement payment | PASS | - |
 | `payment_history` | Review payment history | PASS | - |
+| `payment_issue_over_settlement` | Issue 1500.00 against claim 118, whose latest settlement is 1118.00; no transcript exercises this, so the request is replayed from here (legacy evidence: CHG-002 record, Before) | CHANGED (CHG-002) | An amount above the claim's latest settlement amount is a validation error and writes no PAYMENT row |
 
 Status class: the legacy error path forwards to `error.jsp` with a 200;
 ADR-001:51,84 and ADR-002 replace that forward with the equivalent error

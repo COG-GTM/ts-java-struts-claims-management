@@ -105,6 +105,12 @@ Legacy behaviour is reproduced as-is. There are no approved differences for
 this slice and `parity/routes.json` has no `approved_differences` entry for any
 payment scenario; a payment row in the report must read `PASS`.
 
+Amended 2026-10-15 by docs/changes/CHG-002-payment-exceeds-settlement.md: the
+slice now has one approved difference, PAY-R05 (v2), registered in
+`parity/routes.json` as `payment_issue_over_settlement`. A payment row reads
+`PASS`, or `CHANGED (CHG-nnn)` when a change record approves it; anything else
+is still a failure, as for the settlement slice (ADR-001).
+
 ## Consequences
 
 The service has to reproduce these fallbacks and quirks:

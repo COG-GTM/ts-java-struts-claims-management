@@ -31,9 +31,17 @@ import com.northstar.payment.persistence.StoredPayment;
  *       four fields per payment plus {@code remitClaimId}, {@code remitCount},
  *       {@code remitTotal} (remittance.jsp:16-32).</li>
  * </ul>
+ *
+ * <p>PAY-R05 (v2) is the one place this controller departs from the legacy
+ * action: an {@code amount} above the claim's latest settlement amount is
+ * rejected before the key allocation and the insert
+ * (docs/changes/CHG-002-payment-exceeds-settlement.md).
  */
 @RestController
 public class PaymentController {
+
+    /** PAY-R05 (v2): the one validation key the slice produces (CHG-002). */
+    static final String AMOUNT_EXCEEDS_SETTLEMENT = "payment.amount.exceedsSettlement";
 
     private final PaymentRepository payments;
     private final SettlementLookupRepository settlements;
@@ -53,10 +61,14 @@ public class PaymentController {
         int claim = LegacyParameters.integer(claimId, LegacyParameters.DEFAULT_CLAIM_ID);
         ClaimSettlement settlement = settlements.findLatestByClaim(claim)
                 .orElseThrow(() -> new MissingSettlementException(claim));
+        double paymentAmount = LegacyParameters.decimal(amount, settlement.settlementAmount());
+        if (paymentAmount > settlement.settlementAmount()) {
+            return PaymentResponse.validationError("issue", AMOUNT_EXCEEDS_SETTLEMENT);
+        }
         int paymentId = payments.nextId();
         StoredPayment payment = new StoredPayment(paymentId, claim, settlement.settlementId(),
                 payeeName,
-                LegacyParameters.decimal(amount, settlement.settlementAmount()),
+                paymentAmount,
                 paymentMethod,
                 LegacyParameters.checkNumber(paymentId),
                 LegacyParameters.ISSUED_DATE,
