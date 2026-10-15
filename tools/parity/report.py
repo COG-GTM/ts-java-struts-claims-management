@@ -41,7 +41,12 @@ def existing_rows():
 def write(prefix, rows):
     """Replace the rows of one slice (scenarios starting with ``prefix``) and
     rewrite both report files from the merged list. Rows keep the order their
-    slice script produced; slices keep the order of ``SLICES``."""
+    slice script produced; slices keep the order of ``SLICES``.
+
+    Rows of the other slices are carried over from the existing report, so a
+    script run on its own refreshes only its slice. ``make parity`` deletes the
+    report before running every script, so its output never carries rows over.
+    """
     merged = [row for row in existing_rows() if not row["scenario"].startswith(prefix)]
     merged += rows
     merged.sort(key=lambda row: slice_index(row["scenario"]))

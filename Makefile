@@ -41,8 +41,11 @@ payment-run:
 
 # Replays the settlement transcripts against a running settlement service
 # (make service-run, 8083) and the payment transcripts against a running
-# payment service (make payment-run, 8084). Both write into the same report.
+# payment service (make payment-run, 8084). Both write into the same report,
+# which is removed first so a run that stops early cannot leave the other
+# slice's verdicts from an earlier run looking fresh.
 parity:
+	rm -f parity/report.json parity/report.md
 	python3 tools/parity/settlement_parity.py
 	python3 tools/parity/payment_parity.py
 
