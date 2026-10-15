@@ -5,8 +5,9 @@ every cell is read out of the spec, the git history, the tests,
 `parity/routes.json` and `parity/report.json`, and the file is rewritten
 byte for byte on every run.
 
-One row per rule version of `docs/specs/SPEC-SETTLE-001.md`. *Spec version*
-is the version of the spec that last changed the rule, from its Rule
+One row per rule version of `docs/specs/SPEC-SETTLE-001.md` (SETTLE-Rnn) and
+`docs/specs/SPEC-PAY-001.md` (PAY-Rnn). *Spec version* is the version of
+the rule's spec that last changed it, from its Rule
 history row. *Last commit* is the last commit whose changed lines mention
 that rule version. *Tests* are the tests whose javadoc cites it, *Transcripts*
 the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in
@@ -18,9 +19,9 @@ the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in
 | SETTLE-R02 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `LegacyParametersTest#claimIdFallsBackTo119`, `SettlementCalculateEndpointTest#getWithNoParametersUsesEveryFallback`, `SettlementDetailEndpointTest#detailWithoutAClaimIdDefaultsTo119` | - | - | - |
 | SETTLE-R03 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `LegacyParametersTest#amountsFallBackTo5000And0`, `SettlementCalculateEndpointTest#getWithNoParametersUsesEveryFallback` | - | - | - |
 | SETTLE-R04 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `LegacyParametersTest#amountsFallBackTo5000And0`, `SettlementCalculateEndpointTest#getWithNoParametersUsesEveryFallback` | - | - | - |
-| SETTLE-R05 (v1) | 0.1 | `46337e5` Generate the traceability matrix from the repository, and report parity as JSON | `LegacyParametersTest#nullOrEmptyDeductibleBecomesTheStringZero`, `LegacyParametersTest#onlyANonBlankUnparseableDeductibleIsInvalid`, `SettlementCalculateEndpointTest#blankDeductibleForClaim120`, `SettlementCalculateEndpointTest#getWithNoParametersUsesEveryFallback`, `SettlementCalculateEndpointTest#whitespaceDeductibleStillMeansZero`, `SettlementCalculatorTest#blankDeductibleCountsAsZeroAndDepreciationReducesTheGross`, `SettlementSaveEndpointTest#blankDeductibleStillSavesAZeroDeductible` | `settlement_blank_deductible` | settlement_blank_deductible: PASS | `docs/changes/CHG-001-invalid-deductible.md` |
+| SETTLE-R05 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `LegacyParametersTest#nullOrEmptyDeductibleBecomesTheStringZero`, `LegacyParametersTest#onlyANonBlankUnparseableDeductibleIsInvalid`, `SettlementCalculateEndpointTest#blankDeductibleForClaim120`, `SettlementCalculateEndpointTest#getWithNoParametersUsesEveryFallback`, `SettlementCalculateEndpointTest#whitespaceDeductibleStillMeansZero`, `SettlementCalculatorTest#blankDeductibleCountsAsZeroAndDepreciationReducesTheGross`, `SettlementSaveEndpointTest#blankDeductibleStillSavesAZeroDeductible` | `settlement_blank_deductible` | settlement_blank_deductible: PASS | `docs/changes/CHG-001-invalid-deductible.md` |
 | SETTLE-R06 (v1) | 0.1 | `46337e5` Generate the traceability matrix from the repository, and report parity as JSON | `SettlementCalculatorTest#nonNumericDeductibleThrows`, `SettlementSaveEndpointTest#saveAgainstAMissingClaimFails` | `settlement_bad_deductible` | settlement_bad_deductible: CHANGED (CHG-001) | `docs/changes/CHG-001-invalid-deductible.md` |
-| SETTLE-R06 (v2) | 0.4 | `46337e5` Generate the traceability matrix from the repository, and report parity as JSON | `LegacyParametersTest#onlyANonBlankUnparseableDeductibleIsInvalid`, `SettlementCalculateEndpointTest#nonNumericDeductibleIsAValidationError`, `SettlementCalculateEndpointTest#whitespaceDeductibleStillMeansZero`, `SettlementCalculatorTest#nonNumericDeductibleThrows`, `SettlementSaveEndpointTest#blankDeductibleStillSavesAZeroDeductible`, `SettlementSaveEndpointTest#invalidDeductibleIsCheckedBeforeTheClaimLookup`, `SettlementSaveEndpointTest#nonNumericDeductibleIsAValidationErrorAndWritesNothing`, `SettlementSaveEndpointTest#saveAgainstAMissingClaimFails` | `settlement_bad_deductible` | settlement_bad_deductible: CHANGED (CHG-001) | `docs/changes/CHG-001-invalid-deductible.md` |
+| SETTLE-R06 (v2) | 0.4 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `LegacyParametersTest#onlyANonBlankUnparseableDeductibleIsInvalid`, `SettlementCalculateEndpointTest#nonNumericDeductibleIsAValidationError`, `SettlementCalculateEndpointTest#whitespaceDeductibleStillMeansZero`, `SettlementCalculatorTest#nonNumericDeductibleThrows`, `SettlementSaveEndpointTest#blankDeductibleStillSavesAZeroDeductible`, `SettlementSaveEndpointTest#invalidDeductibleIsCheckedBeforeTheClaimLookup`, `SettlementSaveEndpointTest#nonNumericDeductibleIsAValidationErrorAndWritesNothing`, `SettlementSaveEndpointTest#saveAgainstAMissingClaimFails` | `settlement_bad_deductible` | settlement_bad_deductible: CHANGED (CHG-001) | `docs/changes/CHG-001-invalid-deductible.md` |
 | SETTLE-R07 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `SettlementCalculateEndpointTest#blankDeductibleForClaim120`, `SettlementCalculateEndpointTest#standardCalculationForClaim119` | - | - | - |
 | SETTLE-R08 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | - | - | - | - |
 | SETTLE-R08 (v2) | 0.2 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `SettlementCalculateEndpointTest#missingClaimFallsBackToTheLimit10000` | - | - | - |
@@ -40,13 +41,42 @@ the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in
 | SETTLE-R22 (v1) | 0.1 | `46337e5` Generate the traceability matrix from the repository, and report parity as JSON | `LegacyParametersTest#fieldFormattingMatchesTheFieldTag`, `SettlementCalculateEndpointTest#standardCalculationForClaim119` | `settlement_calculate`, `settlement_deductible_floor` | settlement_calculate: PASS, settlement_deductible_floor: PASS | - |
 | SETTLE-R23 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `SettlementCalculateEndpointTest#standardCalculationForClaim119` | - | - | - |
 | SETTLE-R24 (v1) | 0.1 | `46337e5` Generate the traceability matrix from the repository, and report parity as JSON | `SettlementSaveEndpointTest#nonNumericDeductibleIsAValidationErrorAndWritesNothing` | `settlement_blank_deductible`, `settlement_calculate` | settlement_blank_deductible: PASS, settlement_calculate: PASS | - |
-| SETTLE-R25 (v1) | 0.1 | `46337e5` Generate the traceability matrix from the repository, and report parity as JSON | `SettlementSaveEndpointTest#saveRecomputesAndInsertsOneRowForClaim119` | `settlement_save` | settlement_save: PASS | - |
+| SETTLE-R25 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `SettlementSaveEndpointTest#saveRecomputesAndInsertsOneRowForClaim119` | `settlement_save` | settlement_save: PASS | - |
 | SETTLE-R26 (v1) | 0.1 | `220a166` Leave Spring's own statuses alone in the error mapping | `SettlementSaveEndpointTest#invalidDeductibleIsCheckedBeforeTheClaimLookup`, `SettlementSaveEndpointTest#saveAgainstAMissingClaimFails` | - | - | `docs/changes/CHG-001-invalid-deductible.md` |
-| SETTLE-R27 (v1) | 0.1 | `46337e5` Generate the traceability matrix from the repository, and report parity as JSON | `SettlementSaveEndpointTest#saveRecomputesAndInsertsOneRowForClaim119` | `settlement_save` | settlement_save: PASS | - |
-| SETTLE-R28 (v1) | 0.1 | `46337e5` Generate the traceability matrix from the repository, and report parity as JSON | `SettlementSaveEndpointTest#blankDeductibleStillSavesAZeroDeductible`, `SettlementSaveEndpointTest#saveRecomputesAndInsertsOneRowForClaim119`, `SettlementSaveEndpointTest#savedRowKeepsTheUnroundedCoveredAmount` | `settlement_save` | settlement_save: PASS | - |
-| SETTLE-R29 (v1) | 0.1 | `46337e5` Generate the traceability matrix from the repository, and report parity as JSON | `SettlementSaveEndpointTest#saveRecomputesAndInsertsOneRowForClaim119` | `settlement_save` | settlement_save: PASS | - |
+| SETTLE-R27 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `SettlementSaveEndpointTest#saveRecomputesAndInsertsOneRowForClaim119` | `settlement_save` | settlement_save: PASS | - |
+| SETTLE-R28 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `SettlementSaveEndpointTest#blankDeductibleStillSavesAZeroDeductible`, `SettlementSaveEndpointTest#saveRecomputesAndInsertsOneRowForClaim119`, `SettlementSaveEndpointTest#savedRowKeepsTheUnroundedCoveredAmount` | `settlement_save` | settlement_save: PASS | - |
+| SETTLE-R29 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `SettlementSaveEndpointTest#saveRecomputesAndInsertsOneRowForClaim119` | `settlement_save` | settlement_save: PASS | - |
 | SETTLE-R30 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `SettlementDetailEndpointTest#detailForAClaimWithNoSettlementIsEmpty`, `SettlementDetailEndpointTest#detailShowsTheSeededSettlementForClaim119`, `SettlementDetailEndpointTest#detailTakesTheHighestSettlementIdForTheClaim`, `SettlementDetailEndpointTest#detailWithoutAClaimIdDefaultsTo119` | - | - | - |
 | SETTLE-R31 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `LegacyParametersTest#fieldFormattingMatchesTheFieldTag`, `SettlementDetailEndpointTest#detailShowsTheSeededSettlementForClaim119` | - | - | - |
+| PAY-R01 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `PaymentIssueEndpointTest#issueInsertsPayment61ForClaim119` | `payment_issue` | payment_issue: PASS | - |
+| PAY-R02 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentHistoryEndpointTest#historyOfClaimWithoutPaymentsIsEmpty`, `PaymentIssueEndpointTest#issueDefaultsClaimAndAmountFromTheLatestSettlement`, `PaymentParametersTest#claimIdFallsBackTo119`, `PaymentRemittanceEndpointTest#remittanceListsAndTotalsTheIssuedPayment` | - | - | - |
+| PAY-R03 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentIssueEndpointTest#issueDefaultsClaimAndAmountFromTheLatestSettlement` | - | - | - |
+| PAY-R04 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentIssueEndpointTest#issueForClaimWithoutSettlementIsAnErrorScreen` | - | - | - |
+| PAY-R05 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentIssueEndpointTest#issueDefaultsClaimAndAmountFromTheLatestSettlement`, `PaymentIssueEndpointTest#issueStoresNameAndMethodVerbatimAndLeavesClaimAlone`, `PaymentParametersTest#amountFallsBackToTheSettlementAmount` | - | - | - |
+| PAY-R06 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentIssueEndpointTest#issueStoresNameAndMethodVerbatimAndLeavesClaimAlone` | - | - | - |
+| PAY-R07 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentIssueEndpointTest#issueWithoutPayeeNameIsAnErrorScreenAndWritesNothing`, `PaymentIssueEndpointTest#issueWithoutPaymentMethodIsAnErrorScreen` | - | - | - |
+| PAY-R08 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentIssueEndpointTest#issueWithoutPayeeNameIsAnErrorScreenAndWritesNothing` | - | - | - |
+| PAY-R09 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `PaymentIssueEndpointTest#issueInsertsPayment61ForClaim119` | `payment_issue` | payment_issue: PASS | - |
+| PAY-R10 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `PaymentIssueEndpointTest#issueInsertsPayment61ForClaim119`, `PaymentParametersTest#checkNumberIsNotZeroPadded` | `payment_issue` | payment_issue: PASS | - |
+| PAY-R11 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `PaymentIssueEndpointTest#issueInsertsPayment61ForClaim119` | `payment_issue` | payment_issue: PASS | - |
+| PAY-R12 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentIssueEndpointTest#issueInsertsPayment61ForClaim119` | - | - | - |
+| PAY-R13 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `PaymentIssueEndpointTest#issueStoresNameAndMethodVerbatimAndLeavesClaimAlone` | `payment_issue` | payment_issue: PASS | - |
+| PAY-R14 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `PaymentIssueEndpointTest#issueInsertsPayment61ForClaim119` | `payment_issue` | payment_issue: PASS | - |
+| PAY-R15 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `PaymentIssueEndpointTest#issueInsertsPayment61ForClaim119` | `payment_issue` | payment_issue: PASS | - |
+| PAY-R16 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `PaymentHistoryEndpointTest#historyListsPayment61AfterIssue` | `payment_history` | payment_history: PASS | - |
+| PAY-R17 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentHistoryEndpointTest#historyListsSeededPaymentsInIdOrder`, `PaymentRemittanceEndpointTest#remittanceListsSeededPayment` | - | - | - |
+| PAY-R18 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `PaymentHistoryEndpointTest#historyListsPayment61AfterIssue`, `PaymentHistoryEndpointTest#historyListsSeededPaymentsInIdOrder`, `PaymentHistoryEndpointTest#historyOfClaimWithoutPaymentsIsEmpty` | `payment_history` | payment_history: PASS | - |
+| PAY-R19 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `PaymentHistoryEndpointTest#historyListsPayment61AfterIssue` | `payment_history` | payment_history: PASS | - |
+| PAY-R20 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentDetailEndpointTest#detailDefaultsToPayment61`, `PaymentParametersTest#paymentIdFallsBackTo61` | - | - | - |
+| PAY-R21 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `PaymentDetailEndpointTest#detailShowsSeededPayment` | - | - | - |
+| PAY-R22 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentDetailEndpointTest#detailDefaultsToPayment61`, `PaymentDetailEndpointTest#detailOfUnknownPaymentIsAnErrorScreen` | - | - | - |
+| PAY-R23 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentDetailEndpointTest#detailShowsSeededPayment` | - | - | - |
+| PAY-R24 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentRemittanceEndpointTest#remittanceOfClaimWithoutPaymentsIsZero` | - | - | - |
+| PAY-R25 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentRemittanceEndpointTest#remittanceListsAndTotalsTheIssuedPayment`, `PaymentRemittanceEndpointTest#remittanceListsSeededPayment` | - | - | - |
+| PAY-R26 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `PaymentRemittanceEndpointTest#remittanceListsAndTotalsTheIssuedPayment`, `PaymentRemittanceEndpointTest#remittanceOfClaimWithoutPaymentsIsZero` | - | - | - |
+| PAY-R27 (v1) | 0.1 | `130ee4b` parity and traceability for the payment slice (PAY-R01..PAY-R29): payment_parity.py, shared report writer, Makefile payment targets | `PaymentDetailEndpointTest#detailShowsSeededPayment`, `PaymentParametersTest#fieldsFormatAsTheTagWould` | `payment_issue` | payment_issue: PASS | - |
+| PAY-R28 (v1) | 0.1 | `dc1a3b8` payment-service: issue, history, detail, remittance endpoints (PAY-R01..PAY-R28) | `PaymentDetailEndpointTest#detailShowsSeededPayment`, `PaymentParametersTest#fieldsFormatAsTheTagWould` | - | - | - |
+| PAY-R29 (v1) | 0.1 | `86109fb` SPEC-PAY-001 and ADR-002: specify the payment slice (PAY-R01..PAY-R29) | - | - | - | - |
 
 ## Rule history
 
@@ -85,3 +115,32 @@ the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in
 | SETTLE-R29 (v1) | Initial rule, version 0.1 |
 | SETTLE-R30 (v1) | Initial rule, version 0.1 |
 | SETTLE-R31 (v1) | Initial rule, version 0.1 |
+| PAY-R01 (v1) | Initial rule, version 0.1 |
+| PAY-R02 (v1) | Initial rule, version 0.1 |
+| PAY-R03 (v1) | Initial rule, version 0.1 |
+| PAY-R04 (v1) | Initial rule, version 0.1 |
+| PAY-R05 (v1) | Initial rule, version 0.1 |
+| PAY-R06 (v1) | Initial rule, version 0.1 |
+| PAY-R07 (v1) | Initial rule, version 0.1 |
+| PAY-R08 (v1) | Initial rule, version 0.1 |
+| PAY-R09 (v1) | Initial rule, version 0.1 |
+| PAY-R10 (v1) | Initial rule, version 0.1 |
+| PAY-R11 (v1) | Initial rule, version 0.1 |
+| PAY-R12 (v1) | Initial rule, version 0.1 |
+| PAY-R13 (v1) | Initial rule, version 0.1 |
+| PAY-R14 (v1) | Initial rule, version 0.1 |
+| PAY-R15 (v1) | Initial rule, version 0.1 |
+| PAY-R16 (v1) | Initial rule, version 0.1 |
+| PAY-R17 (v1) | Initial rule, version 0.1 |
+| PAY-R18 (v1) | Initial rule, version 0.1 |
+| PAY-R19 (v1) | Initial rule, version 0.1 |
+| PAY-R20 (v1) | Initial rule, version 0.1 |
+| PAY-R21 (v1) | Initial rule, version 0.1 |
+| PAY-R22 (v1) | Initial rule, version 0.1 |
+| PAY-R23 (v1) | Initial rule, version 0.1 |
+| PAY-R24 (v1) | Initial rule, version 0.1 |
+| PAY-R25 (v1) | Initial rule, version 0.1 |
+| PAY-R26 (v1) | Initial rule, version 0.1 |
+| PAY-R27 (v1) | Initial rule, version 0.1 |
+| PAY-R28 (v1) | Initial rule, version 0.1 |
+| PAY-R29 (v1) | Initial rule, version 0.1 |

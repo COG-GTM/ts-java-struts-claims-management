@@ -55,6 +55,22 @@
       "record": null,
       "scenario": "settlement_save",
       "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Issue a settlement payment",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_issue",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Review payment history",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_history",
+      "verdict": "PASS"
     }
   ]
 }
