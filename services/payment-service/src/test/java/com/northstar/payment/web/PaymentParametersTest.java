@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for the ClaimsActionSupport coercions the payment actions inherit. */
-class LegacyParametersTest {
+class PaymentParametersTest {
 
     /**
      * Rules: PAY-R02.

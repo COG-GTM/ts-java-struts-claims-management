@@ -2,7 +2,8 @@
 """Generate docs/TRACEABILITY.md from the repository, one row per spec rule.
 
 Nothing in the matrix is typed by hand. For every rule version declared in
-docs/specs/SPEC-SETTLE-001.md the row is assembled from:
+docs/specs/SPEC-SETTLE-001.md (SETTLE-Rnn) and docs/specs/SPEC-PAY-001.md
+(PAY-Rnn) the row is assembled from:
 
 * the spec version that last changed the rule, from the "Rule history" table of
   the spec;
@@ -36,7 +37,12 @@ import re
 import subprocess
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SPEC = os.path.join("docs", "specs", "SPEC-SETTLE-001.md")
+# The specs, in the order their rules appear in the matrix. Each rule family
+# (SETTLE-Rnn, PAY-Rnn) lives in exactly one spec.
+SPECS = [
+    os.path.join("docs", "specs", "SPEC-SETTLE-001.md"),
+    os.path.join("docs", "specs", "SPEC-PAY-001.md"),
+]
 OUTPUT = os.path.join("docs", "TRACEABILITY.md")
 
 GENERATED = [OUTPUT, os.path.join("parity", "report.md"),
@@ -44,10 +50,12 @@ GENERATED = [OUTPUT, os.path.join("parity", "report.md"),
 SEARCHED = ["docs", "parity", "services", "src", "tools", "Makefile"]
 
 # "SETTLE-R06", "SETTLE-R06 (v2)", "SETTLE-R06 (v1, superseded by v2)",
-# "| SETTLE-R06 | v2 |": the id, and the version it is qualified with if any.
-MENTION = re.compile(r"(SETTLE-R\d+)[ \t]*[|(,]?[ \t]*(?:v(\d+))?")
-HEADING = re.compile(r"^\*\*(SETTLE-R\d+) \(v(\d+)")
-HISTORY = re.compile(r"^\| (SETTLE-R\d+) \| v(\d+) \| (.*?) \|\s*$")
+# "| SETTLE-R06 | v2 |", "PAY-R09": the id, and the version it is qualified
+# with if any.
+RULE_ID = r"((?:SETTLE|PAY)-R\d+)"
+MENTION = re.compile(RULE_ID + r"[ \t]*[|(,]?[ \t]*(?:v(\d+))?")
+HEADING = re.compile(r"^\*\*" + RULE_ID + r" \(v(\d+)")
+HISTORY = re.compile(r"^\| " + RULE_ID + r" \| v(\d+) \| (.*?) \|\s*$")
 SPEC_VERSION = re.compile(r"version (\d+\.\d+)", re.I)
 JAVADOC_END = re.compile(r"\*/")
 MEMBER = re.compile(r"(\w+)\s*\(")
@@ -74,20 +82,23 @@ def git(*args):
 
 
 def rules_and_history():
-    """The rule versions the spec declares, in spec order, and their history."""
+    """The rule versions the specs declare, in spec order, and their history."""
     rules = []
     history = {}
-    for line in read(SPEC).splitlines():
-        heading = HEADING.match(line)
-        if heading:
-            rules.append((heading.group(1), heading.group(2)))
+    for spec in SPECS:
+        if not os.path.exists(os.path.join(ROOT, spec)):
             continue
-        row = HISTORY.match(line)
-        if row:
-            change = row.group(3)
-            version = SPEC_VERSION.search(change)
-            history[(row.group(1), row.group(2))] = (
-                version.group(1) if version else "-", change)
+        for line in read(spec).splitlines():
+            heading = HEADING.match(line)
+            if heading:
+                rules.append((heading.group(1), heading.group(2)))
+                continue
+            row = HISTORY.match(line)
+            if row:
+                change = row.group(3)
+                version = SPEC_VERSION.search(change)
+                history[(row.group(1), row.group(2))] = (
+                    version.group(1) if version else "-", change)
     return rules, history
 
 
@@ -213,7 +224,7 @@ def main():
         spec_version, change = history.get(rule, ("-", ""))
         scenarios = transcripts_for(rule, routes)
         rows.append({
-            "rule": "SETTLE-R%s (v%s)" % (rule[0].split("-R")[1], rule[1]),
+            "rule": "%s (v%s)" % rule,
             "spec_version": spec_version,
             "history": change or "-",
             "commit": last_commit(rule),
@@ -233,8 +244,9 @@ def main():
         "`parity/routes.json` and `parity/report.json`, and the file is rewritten",
         "byte for byte on every run.",
         "",
-        "One row per rule version of `docs/specs/SPEC-SETTLE-001.md`. *Spec version*",
-        "is the version of the spec that last changed the rule, from its Rule",
+        "One row per rule version of `docs/specs/SPEC-SETTLE-001.md` (SETTLE-Rnn) and",
+        "`docs/specs/SPEC-PAY-001.md` (PAY-Rnn). *Spec version* is the version of",
+        "the rule's spec that last changed it, from its Rule",
         "history row. *Last commit* is the last commit whose changed lines mention",
         "that rule version. *Tests* are the tests whose javadoc cites it, *Transcripts*",
         "the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in",
