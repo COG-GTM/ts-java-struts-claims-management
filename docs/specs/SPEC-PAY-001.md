@@ -1,6 +1,6 @@
 # SPEC-PAY-001 — Payment issue, history, detail and remittance
 
-Version: 0.1
+Version: 0.2
 
 Scope: the payment issue, history, detail and remittance request flows of the
 claims application. Every rule below is taken either from a recorded transcript
@@ -39,11 +39,33 @@ src/main/java/com/northstar/claims/dao/SettlementDAO.java:106-110;
 src/main/webapp/WEB-INF/struts-config.xml:59-60.
 Confirmed against the running legacy app (`claimId=9999`, 2026-10-15).
 
-**PAY-R05 (v1)** — `amount` is parsed as a double; when it is missing or not
+**PAY-R05 (v1, superseded by v2)** — `amount` is parsed as a double; when it is missing or not
 parseable the settlement amount of PAY-R03 is used. No other normalisation
 (trimming, currency symbols, rounding) is applied before storage.
 Read: src/main/java/com/northstar/claims/web/PaymentIssueAction.java:30-31;
 src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:39-45
+
+**PAY-R05 (v2)** — CHG-002, payment service only; the legacy app keeps v1 of
+the rule. `amount` is parsed and falls back to the settlement amount exactly as
+in v1. The parsed value, unrounded, is then compared with the
+`settlement_amount` of the PAY-R03 settlement (the claim's latest saved
+settlement). When it is greater, the response is status 200, screen `issue`,
+no business fields and exactly one validation error,
+`payment.amount.exceedsSettlement`; no PAYMENT row is written and the next
+`payment_id` is not consumed. An amount equal to or below the settlement amount
+is issued as in v1, so the omitted-amount fallback is never rejected. The check
+runs after the settlement lookup: a claim with no settlement still fails as
+PAY-R04 says. `NaN` is not greater than any amount and is issued as in v1.
+Read: docs/changes/CHG-002-payment-above-settlement.md;
+src/main/java/com/northstar/claims/web/PaymentIssueAction.java:23,30-31.
+Observed (legacy, the behaviour this version replaces): manual run against
+localhost Jetty from a fresh `make seed`, after replaying transcript
+`settlement_save` (settlement 121, claim 119, `settlement_amount` 1000.0):
+`POST /claims/payment/issue.do` `claimId=119`, `payeeName=Reserved Claimant`,
+`amount=1500.00`, `paymentMethod=CHECK` answered 200,
+`forward:/WEB-INF/jsp/payment/issue.jsp`, `paymentAmount` 1500.00,
+`checkNumber` CHK-61, `paymentStatus` ISSUED, and wrote PAYMENT 61 (claim 119,
+settlement 121, amount 1500.0) (2026-10-16).
 
 **PAY-R06 (v1)** — `payeeName` and `paymentMethod` are stored exactly as sent:
 no trimming, no case folding, and the `normalizeMethod` helper of
@@ -220,6 +242,7 @@ Read: src/main/java/com/northstar/claims/web/AuthFilter.java:31-42
 | PAY-R03 | v1 | Initial rule, version 0.1 |
 | PAY-R04 | v1 | Initial rule, version 0.1 |
 | PAY-R05 | v1 | Initial rule, version 0.1 |
+| PAY-R05 | v2 | CHG-002: an amount above the latest settlement is a validation error in the payment service, version 0.2 |
 | PAY-R06 | v1 | Initial rule, version 0.1 |
 | PAY-R07 | v1 | Initial rule, version 0.1 |
 | PAY-R08 | v1 | Initial rule, version 0.1 |

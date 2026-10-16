@@ -9,21 +9,30 @@ judged"): status class, the business field values, the validation keys, and
 the database state.
 
 Scenarios are replayed in the order of ``transcripts/index.json``, because
-``payment_history`` expects the payment that ``payment_issue`` creates. There
-are no approved differences for this slice (ADR-002, "Behaviour freeze"): a
-payment scenario listed under ``approved_differences`` in parity/routes.json is
-itself an error.
+``payment_history`` expects the payment that ``payment_issue`` creates. A
+scenario listed in ``payment_preconditions`` of parity/routes.json first resets
+the service database to the seed plus that script from
+parity/preconditions/payment (``POST /parity/reset``, available under
+``make payment-run-parity``); an unlisted one continues from the previous
+scenario's database.
+
+Approved differences (ADR-002 as amended by CHG-002, "Behaviour freeze") are
+judged against the response their ``docs/changes/CHG-nnn`` record approves and
+reported as ``CHANGED (CHG-nnn)``; anything else is still a FAIL. An approved
+difference with its own ``request`` has no transcript: it is replayed after the
+transcripts, on its own ``precondition``.
 
 Usage: python3 tools/parity/payment_parity.py [--base http://localhost:8084]
-Writes its rows into parity/report.md and parity/report.json through
-tools/parity/report.py, next to the settlement rows, and exits non-zero on any
-FAIL.
+Writes its rows into parity/report.md, parity/report.json and
+parity/report.html through tools/parity/report.py, next to the settlement
+rows, and exits non-zero on any FAIL.
 """
 
 import argparse
 import json
 import os
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -52,25 +61,31 @@ def payment_scenarios():
     return [entry["scenario"] for entry in index if entry["scenario"].startswith("payment_")]
 
 
-def forbid_approved_differences():
+def routes():
     path = os.path.join(ROOT, "parity", "routes.json")
     if not os.path.exists(path):
-        return
+        return {}
     with open(path) as handle:
-        routes = json.load(handle)
-    listed = [entry["scenario"] for entry in routes.get("approved_differences", [])
-              if entry["scenario"].startswith("payment_")]
-    if listed:
-        raise SystemExit("ADR-002 allows no approved differences for the payment slice; "
-                         "remove %s from parity/routes.json" % ", ".join(listed))
+        return json.load(handle)
+
+
+def reset(base, precondition):
+    """Rebuild the service database: seed plus one precondition script."""
+    query = urllib.parse.urlencode({"precondition": precondition})
+    req = urllib.request.Request(base + "/parity/reset?" + query, data=b"", method="POST")
+    try:
+        with urllib.request.urlopen(req) as response:
+            response.read()
+    except urllib.error.HTTPError as error:
+        raise SystemExit("POST /parity/reset?%s answered %d: start the payment service "
+                         "with make payment-run-parity" % (query, error.code))
 
 
 def status_class(status):
     return "%dxx" % (status // 100)
 
 
-def call(base, transcript):
-    request = transcript["request"]
+def call(base, request):
     path = PATHS[request["path"]]
     form = dict(request.get("form", {}))
     data = urllib.parse.urlencode(form).encode()
@@ -139,31 +154,84 @@ def compare(base, transcript, status, body):
     return diffs
 
 
+def compare_approved(base, approval, status, body):
+    """Judge the response against what the CHG-nnn record approves."""
+    expected = approval["expected"]
+    diffs = []
+    if status != expected["status"]:
+        diffs.append("status %s != %s" % (status, expected["status"]))
+    if "screen" in expected and body.get("screen") != expected["screen"]:
+        diffs.append("screen %r != %r" % (body.get("screen"), expected["screen"]))
+    if body.get("fields", {}) != expected["business_fields"]:
+        diffs.append("fields %r != %r" % (body.get("fields"), expected["business_fields"]))
+    if body.get("errors", []) != expected["validation_errors"]:
+        diffs.append("validation %r != %r" % (body.get("errors"), expected["validation_errors"]))
+    actual_db = db_state(base, expected["db_state"])
+    for key, value in expected["db_state"].items():
+        if actual_db[key] != value:
+            diffs.append("db %s %r != %r" % (key, actual_db[key], value))
+    return diffs, actual_db
+
+
+def row(name, description, approval, diffs, precondition, request, status, body, db):
+    if approval and not diffs:
+        verdict = "CHANGED (%s)" % approval["change"]
+        difference = approval["summary"]
+    else:
+        verdict = "PASS" if not diffs else "FAIL"
+        difference = "; ".join(diffs) or "-"
+    print("%-32s %s %s" % (name, verdict, "; ".join(diffs)))
+    return {
+        "scenario": name,
+        "description": description,
+        "verdict": verdict,
+        "change": approval["change"] if approval else None,
+        "record": approval["record"] if approval else None,
+        "difference": difference,
+        "precondition": precondition,
+        "service_request": request,
+        "actual": {"status": status, "body": body, "db_state": db},
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--base", default=os.environ.get("PAYMENT_BASE", "http://localhost:8084"))
     args = parser.parse_args()
-    forbid_approved_differences()
+    config = routes()
+    preconditions = config.get("payment_preconditions", {})
+    approvals = {entry["scenario"]: entry for entry in config.get("approved_differences", [])
+                 if entry["scenario"].startswith("payment_")}
     rows = []
-    failed = False
-    for name in payment_scenarios():
+    transcripts = payment_scenarios()
+    for name in transcripts:
         with open(os.path.join(ROOT, "transcripts", name + ".json")) as handle:
             transcript = json.load(handle)
-        status, body = call(args.base, transcript)
-        diffs = compare(args.base, transcript, status, body)
-        verdict = "PASS" if not diffs else "FAIL"
-        failed = failed or bool(diffs)
-        rows.append({
-            "scenario": name,
-            "description": transcript["description"],
-            "verdict": verdict,
-            "change": None,
-            "record": None,
-            "difference": "; ".join(diffs) or "-",
-        })
-        print("%-32s %s %s" % (name, verdict, "; ".join(diffs)))
+        precondition = preconditions.get(name)
+        if precondition:
+            reset(args.base, precondition)
+        status, body = call(args.base, transcript["request"])
+        approval = approvals.get(name)
+        if approval:
+            diffs, db = compare_approved(args.base, approval, status, body)
+        else:
+            db = db_state(args.base, transcript["expected"]["db_state"])
+            diffs = compare(args.base, transcript, status, body)
+        rows.append(row(name, transcript["description"], approval, diffs, precondition,
+                        transcript["request"], status, body, db))
+    for name, approval in approvals.items():
+        if name in transcripts:
+            continue
+        if "request" not in approval or "precondition" not in approval:
+            raise SystemExit("%s has no transcript, so parity/routes.json must give it a "
+                             "request and a precondition" % name)
+        reset(args.base, approval["precondition"])
+        status, body = call(args.base, approval["request"])
+        diffs, db = compare_approved(args.base, approval, status, body)
+        rows.append(row(name, approval.get("description", approval["summary"]), approval,
+                        diffs, approval["precondition"], approval["request"], status, body, db))
     report.write("payment_", rows)
-    raise SystemExit(1 if failed else 0)
+    raise SystemExit(1 if any(item["verdict"] == "FAIL" for item in rows) else 0)
 
 
 if __name__ == "__main__":

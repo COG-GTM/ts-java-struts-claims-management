@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -22,11 +23,16 @@ class PaymentHistoryEndpointTest {
     @Autowired
     private MockMvc mvc;
 
+    @Autowired
+    private JdbcTemplate jdbc;
+
     /**
      * Rules: PAY-R16, PAY-R18, PAY-R19.
      * Transcript: payment_history — after payment_issue, GET with no
      * parameters lists claim 119's one payment as checkNumber_61 CHK-61,
      * paymentAmount_61 1000.00, paymentStatus_61 ISSUED, and nothing else.
+     * Settlement 121 at 1000.00 is inserted before the issue, as in the
+     * capture state, so the issue is not above it (CHG-002).
      */
     @Test
     void historyListsPayment61AfterIssue() throws Exception {
@@ -34,6 +40,7 @@ class PaymentHistoryEndpointTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.screen").value("history"))
                 .andExpect(jsonPath("$.fields").isEmpty());
+        jdbc.update(PaymentIssueEndpointTest.CAPTURE_STATE_SETTLEMENT);
         mvc.perform(post("/payment/issue")
                         .param("claimId", "119")
                         .param("payeeName", "Reserved Claimant")

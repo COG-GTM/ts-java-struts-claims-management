@@ -12,6 +12,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -25,6 +26,9 @@ class PaymentRemittanceEndpointTest {
 
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     /**
      * Rules: PAY-R24, PAY-R26.
@@ -47,6 +51,8 @@ class PaymentRemittanceEndpointTest {
 
     /**
      * Rules: PAY-R02, PAY-R25, PAY-R26.
+     * Settlement 121 at 1000.00 is inserted first, as in the capture state,
+     * so the issue is not above it (CHG-002).
      * After issuing 1000.00 for claim 119 (claimId omitted, so 119 by
      * default), the remittance lists remitCheck_61, remitDate_61,
      * remitAmount_61, remitStatus_61 and totals one payment of 1000.00
@@ -55,6 +61,7 @@ class PaymentRemittanceEndpointTest {
     @Test
     @Order(2)
     void remittanceListsAndTotalsTheIssuedPayment() throws Exception {
+        jdbc.update(PaymentIssueEndpointTest.CAPTURE_STATE_SETTLEMENT);
         mvc.perform(post("/payment/issue")
                         .param("payeeName", "Reserved Claimant")
                         .param("amount", "1000.00")

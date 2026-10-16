@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -21,6 +22,9 @@ class PaymentDetailEndpointTest {
 
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     /**
      * Rules: PAY-R21, PAY-R23, PAY-R27, PAY-R28.
@@ -46,6 +50,8 @@ class PaymentDetailEndpointTest {
      * Rules: PAY-R20, PAY-R22.
      * With no paymentId the default is 61: before any issue that row does not
      * exist and the answer is the error screen; after the issue it is shown.
+     * Settlement 121 at 1000.00 is inserted before the issue, as in the
+     * capture state, so the issue is not above it (CHG-002).
      */
     @Test
     void detailDefaultsToPayment61() throws Exception {
@@ -53,6 +59,7 @@ class PaymentDetailEndpointTest {
                 .andExpect(status().is5xxServerError())
                 .andExpect(jsonPath("$.screen").value("error"))
                 .andExpect(jsonPath("$.fields").isEmpty());
+        jdbc.update(PaymentIssueEndpointTest.CAPTURE_STATE_SETTLEMENT);
         mvc.perform(post("/payment/issue")
                         .param("claimId", "119")
                         .param("payeeName", "Reserved Claimant")

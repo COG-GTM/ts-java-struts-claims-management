@@ -1,4 +1,4 @@
-.PHONY: build run seed test capture clean service-build service-test service-run payment-build payment-test payment-run parity traceability
+.PHONY: build run seed test capture clean service-build service-test service-run payment-build payment-test payment-run payment-run-parity payment-legacy-observe parity traceability
 
 # Settlement service (ADR-001): Spring Boot 3.5 on Java 21, port 8083.
 SERVICE_DIR = services/settlement-service
@@ -39,13 +39,26 @@ payment-test:
 payment-run:
 	cd $(PAYMENT_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B spring-boot:run
 
+# The payment service with the parity profile, which adds
+# POST /parity/reset?precondition=<file> so make parity can put each payment
+# scenario on its own database precondition (parity/preconditions/payment).
+payment-run-parity:
+	cd $(PAYMENT_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B spring-boot:run -Dspring-boot.run.profiles=parity
+
+# Records the legacy response for each approved difference that has no
+# transcript (parity/legacy/<scenario>.json). Seeds the database and starts its
+# own Jetty on 8080, as make capture does, so stop make run first.
+payment-legacy-observe:
+	python3 tools/parity/legacy_observe.py
+
 # Replays the settlement transcripts against a running settlement service
-# (make service-run, 8083) and the payment transcripts against a running
-# payment service (make payment-run, 8084). Both write into the same report,
-# which is removed first so a run that stops early cannot leave the other
-# slice's verdicts from an earlier run looking fresh.
+# (make service-run, 8083) and the payment transcripts and approved payment
+# differences against a running payment service (make payment-run-parity,
+# 8084). Both write into the same report (report.json, report.md and the
+# interactive report.html), which is removed first so a run that stops early
+# cannot leave the other slice's verdicts from an earlier run looking fresh.
 parity:
-	rm -f parity/report.json parity/report.md
+	rm -f parity/report.json parity/report.md parity/report.html
 	python3 tools/parity/settlement_parity.py
 	python3 tools/parity/payment_parity.py
 

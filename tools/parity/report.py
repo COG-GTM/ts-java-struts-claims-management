@@ -1,20 +1,24 @@
-"""Shared writer for parity/report.json and parity/report.md.
+"""Shared writer for parity/report.json, parity/report.md and parity/report.html.
 
 Each slice script (settlement_parity.py for 8083, payment_parity.py for 8084)
 replays its own transcripts and hands its rows here. The writer merges them
 with the rows of the other slices already in parity/report.json, so running
 the scripts in either order leaves one report covering every slice, and
-rewrites report.md from the merged rows. Neither output carries a revision or
-a timestamp, so replaying the same scenarios against the same services
-rewrites the same bytes.
+rewrites report.md and report.html from the merged rows. No output carries a
+revision or a timestamp, so replaying the same scenarios against the same
+services rewrites the same bytes. report.html is self-contained (data and code
+inline) and is built by tools/parity/report_html.py.
 """
 
 import json
 import os
 
+import report_html
+
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 REPORT_JSON = os.path.join(ROOT, "parity", "report.json")
 REPORT_MD = os.path.join(ROOT, "parity", "report.md")
+REPORT_HTML = os.path.join(ROOT, "parity", "report.html")
 
 # Slices in the order their rows appear in the report, and the ADR that
 # defines parity for each.
@@ -66,7 +70,9 @@ def write(prefix, rows):
         handle.write("Scenarios listed in `parity/routes.json` are approved differences: they\n")
         handle.write("are judged against their `docs/changes/CHG-nnn` record and reported as\n")
         handle.write("CHANGED, and still fail on anything the record does not approve. The\n")
-        handle.write("payment slice allows none (ADR-002, \"Behaviour freeze\").\n\n")
+        handle.write("payment slice allows one, CHG-002 (ADR-002, \"Behaviour freeze\"), on\n")
+        handle.write("its own database precondition. `parity/report.html` shows every row\n")
+        handle.write("with its request, precondition and legacy, approved and service answers.\n\n")
         handle.write("| Scenario | Legacy behaviour | Verdict | Difference |\n")
         handle.write("| --- | --- | --- | --- |\n")
         for row in merged:
@@ -75,3 +81,4 @@ def write(prefix, rows):
         handle.write("\nStatus class: the legacy error path forwards to `error.jsp` with a 200;\n")
         handle.write("ADR-001:51,84 and ADR-002 replace that forward with the equivalent error\n")
         handle.write("status class, so a 5xx there is parity, not a change.\n")
+    report_html.write(merged, REPORT_HTML)

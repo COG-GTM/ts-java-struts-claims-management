@@ -13,7 +13,8 @@ docs/specs/SPEC-SETTLE-001.md (SETTLE-Rnn) and docs/specs/SPEC-PAY-001.md
   (v1)``;
 * the tests whose javadoc cites the rule, under ``src/test`` and
   ``services/*/src/test``;
-* the transcripts mapped to the rule in ``parity/routes.json``;
+* the transcripts mapped to the rule in ``parity/routes.json``, and the
+  approved-difference scenarios there whose ``rules`` name it;
 * the parity verdict of each of those transcripts, from ``parity/report.json``
   (written by ``make parity``);
 * the ``docs/changes/CHG-nnn`` records that name the rule.
@@ -46,7 +47,8 @@ SPECS = [
 OUTPUT = os.path.join("docs", "TRACEABILITY.md")
 
 GENERATED = [OUTPUT, os.path.join("parity", "report.md"),
-             os.path.join("parity", "report.json")]
+             os.path.join("parity", "report.json"),
+             os.path.join("parity", "report.html")]
 SEARCHED = ["docs", "parity", "services", "src", "tools", "Makefile"]
 
 # "SETTLE-R06", "SETTLE-R06 (v2)", "SETTLE-R06 (v1, superseded by v2)",
@@ -176,11 +178,17 @@ def tests_for(rule, citations):
 
 
 def transcripts_for(rule, routes):
-    found = []
-    for scenario, cited in sorted(routes.get("transcript_rules", {}).items()):
+    """The scenarios evidencing the rule: transcripts from ``transcript_rules``
+    plus approved differences (which may have no transcript) from their
+    ``rules``."""
+    found = set()
+    for scenario, cited in routes.get("transcript_rules", {}).items():
         if any(refers_to(entry, rule) for entry in cited):
-            found.append(scenario)
-    return found
+            found.add(scenario)
+    for approval in routes.get("approved_differences", []):
+        if any(refers_to(entry, rule) for entry in approval.get("rules", [])):
+            found.add(approval["scenario"])
+    return sorted(found)
 
 
 def change_records_for(rule):

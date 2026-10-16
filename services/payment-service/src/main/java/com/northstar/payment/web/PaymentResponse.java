@@ -7,7 +7,9 @@ import java.util.Map;
  * What a payment screen carries: the legacy forward name, the business
  * fields the JSP's {@code <ns:field>} tags would print, and the validation
  * errors. PAY-R08: every payment mapping is {@code validate="false"} and the
- * form's validate is empty, so {@code errors} is always empty.
+ * form's validate is empty, so the legacy screens never carry errors. The
+ * service adds one key, on one path: CHG-002's
+ * {@code payment.amount.exceedsSettlement} on the issue screen.
  */
 public record PaymentResponse(String screen, Map<String, String> fields,
         List<String> errors) {

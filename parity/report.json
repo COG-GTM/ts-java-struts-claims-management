@@ -57,20 +57,99 @@
       "verdict": "PASS"
     },
     {
+      "actual": {
+        "body": {
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-61",
+            "paymentAmount": "1000.00",
+            "paymentStatus": "ISSUED"
+          },
+          "screen": "issue"
+        },
+        "db_state": {
+          "payment.61.amount": "1000.00",
+          "payment.61.status": "ISSUED",
+          "payment.count.claim.119": "1"
+        },
+        "status": 200
+      },
       "change": null,
       "description": "Issue a settlement payment",
       "difference": "-",
+      "precondition": "capture-state.sql",
       "record": null,
       "scenario": "payment_issue",
+      "service_request": {
+        "form": {
+          "amount": "1000.00",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
       "verdict": "PASS"
     },
     {
+      "actual": {
+        "body": {
+          "errors": [],
+          "fields": {
+            "checkNumber_61": "CHK-61",
+            "paymentAmount_61": "1000.00",
+            "paymentStatus_61": "ISSUED"
+          },
+          "screen": "history"
+        },
+        "db_state": {},
+        "status": 200
+      },
       "change": null,
       "description": "Review payment history",
       "difference": "-",
+      "precondition": null,
       "record": null,
       "scenario": "payment_history",
+      "service_request": {
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/history.do"
+      },
       "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "errors": [
+            "payment.amount.exceedsSettlement"
+          ],
+          "fields": {},
+          "screen": "issue"
+        },
+        "db_state": {
+          "payment.count.claim.119": "0"
+        },
+        "status": 200
+      },
+      "change": "CHG-002",
+      "description": "Payment above the latest saved settlement (legacy issues it)",
+      "difference": "A payment amount above the claim's latest saved settlement is a validation error instead of an issued payment",
+      "precondition": "chg-002-above-settlement.sql",
+      "record": "docs/changes/CHG-002-payment-above-settlement.md",
+      "scenario": "payment_issue_above_settlement",
+      "service_request": {
+        "form": {
+          "amount": "1500.00",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "verdict": "CHANGED (CHG-002)"
     }
   ]
 }

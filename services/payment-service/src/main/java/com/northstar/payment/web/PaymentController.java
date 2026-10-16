@@ -31,9 +31,17 @@ import com.northstar.payment.persistence.StoredPayment;
  *       four fields per payment plus {@code remitClaimId}, {@code remitCount},
  *       {@code remitTotal} (remittance.jsp:16-32).</li>
  * </ul>
+ *
+ * <p>CHG-002 (PAY-R05 (v2)) is the one approved difference from the legacy
+ * action: an amount above the claim's latest settlement amount is answered
+ * with the issue screen, no fields and the validation key
+ * {@link #AMOUNT_EXCEEDS_SETTLEMENT}, and nothing is written.
  */
 @RestController
 public class PaymentController {
+
+    /** CHG-002: the validation key for an amount above the latest settlement. */
+    static final String AMOUNT_EXCEEDS_SETTLEMENT = "payment.amount.exceedsSettlement";
 
     private final PaymentRepository payments;
     private final SettlementLookupRepository settlements;
@@ -43,7 +51,11 @@ public class PaymentController {
         this.settlements = settlements;
     }
 
-    /** PaymentIssueAction.java:20-43. */
+    /**
+     * PaymentIssueAction.java:20-43, plus the CHG-002 check (PAY-R05 (v2)):
+     * after the settlement lookup (so a claim without one still fails as
+     * PAY-R04 says) and before the id is read or the row inserted.
+     */
     @PostMapping("/payment/issue")
     public PaymentResponse issue(
             @RequestParam(required = false) String claimId,
@@ -53,10 +65,14 @@ public class PaymentController {
         int claim = LegacyParameters.integer(claimId, LegacyParameters.DEFAULT_CLAIM_ID);
         ClaimSettlement settlement = settlements.findLatestByClaim(claim)
                 .orElseThrow(() -> new MissingSettlementException(claim));
+        double paymentAmount = LegacyParameters.decimal(amount, settlement.settlementAmount());
+        if (paymentAmount > settlement.settlementAmount()) {
+            return new PaymentResponse("issue", Map.of(), List.of(AMOUNT_EXCEEDS_SETTLEMENT));
+        }
         int paymentId = payments.nextId();
         StoredPayment payment = new StoredPayment(paymentId, claim, settlement.settlementId(),
                 payeeName,
-                LegacyParameters.decimal(amount, settlement.settlementAmount()),
+                paymentAmount,
                 paymentMethod,
                 LegacyParameters.checkNumber(paymentId),
                 LegacyParameters.ISSUED_DATE,

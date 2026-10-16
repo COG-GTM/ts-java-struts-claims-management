@@ -105,6 +105,15 @@ Legacy behaviour is reproduced as-is. There are no approved differences for
 this slice and `parity/routes.json` has no `approved_differences` entry for any
 payment scenario; a payment row in the report must read `PASS`.
 
+Amended by CHG-002 (`docs/changes/CHG-002-payment-above-settlement.md`): the
+service rejects an amount above the claim's latest settlement, which the legacy
+app issues. That one difference is registered in `parity/routes.json` as
+scenario `payment_issue_above_settlement` and reported as `CHANGED (CHG-002)`;
+every other payment row must still read `PASS`. The amendment also makes the
+database each payment scenario starts from explicit: `make payment-run-parity`
+adds `POST /parity/reset?precondition=<file>`, and the scripts live in
+`parity/preconditions/payment`.
+
 ## Consequences
 
 The service has to reproduce these fallbacks and quirks:

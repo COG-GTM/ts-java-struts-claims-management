@@ -1,0 +1,32 @@
+{
+  "actor": "supervisor",
+  "description": "Payment above the latest saved settlement (legacy issues it)",
+  "expected": {
+    "business_fields": {
+      "checkNumber": "CHK-61",
+      "paymentAmount": "1500.00",
+      "paymentStatus": "ISSUED"
+    },
+    "db_state": {
+      "payment.61.amount": "1500.00",
+      "payment.count.claim.119": "1"
+    },
+    "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+    "status": 200,
+    "validation_errors": []
+  },
+  "legacy_setup": [
+    "settlement_save"
+  ],
+  "request": {
+    "form": {
+      "amount": "1500.00",
+      "claimId": "119",
+      "payeeName": "Reserved Claimant",
+      "paymentMethod": "CHECK"
+    },
+    "method": "POST",
+    "path": "/claims/payment/issue.do"
+  },
+  "scenario": "payment_issue_above_settlement"
+}

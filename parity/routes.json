@@ -12,6 +12,10 @@
     "payment_issue": ["PAY-R01", "PAY-R09", "PAY-R10", "PAY-R11", "PAY-R13", "PAY-R14", "PAY-R15", "PAY-R27"],
     "payment_history": ["PAY-R16", "PAY-R18", "PAY-R19"]
   },
+  "preconditions_comment": "The database each payment scenario starts from (ADR-002 as amended by CHG-002). Before a listed scenario tools/parity/payment_parity.py calls POST /parity/reset?precondition=<file> on the payment service (make payment-run-parity), which rebuilds the database from the legacy schema.sql and seed.sql and then runs parity/preconditions/payment/<file>. An unlisted transcript continues from the database the previous scenario left: payment_history reads the payment that payment_issue writes. An approved difference names its own precondition.",
+  "payment_preconditions": {
+    "payment_issue": "capture-state.sql"
+  },
   "approved_differences": [
     {
       "scenario": "settlement_bad_deductible",
@@ -25,6 +29,39 @@
         "business_fields": {},
         "validation_errors": ["settlement.deductible.invalid"],
         "db_state": {}
+      }
+    },
+    {
+      "scenario": "payment_issue_above_settlement",
+      "change": "CHG-002",
+      "record": "docs/changes/CHG-002-payment-above-settlement.md",
+      "description": "Payment above the latest saved settlement (legacy issues it)",
+      "summary": "A payment amount above the claim's latest saved settlement is a validation error instead of an issued payment",
+      "rules": ["PAY-R05 (v2)"],
+      "precondition": "chg-002-above-settlement.sql",
+      "legacy_setup": ["settlement_save"],
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "amount": "1500.00",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "legacy_probes": {
+        "payment.61.amount": "/payment/history.do?claimId=119",
+        "payment.count.claim.119": "/payment/history.do?claimId=119"
+      },
+      "expected": {
+        "status": 200,
+        "screen": "issue",
+        "business_fields": {},
+        "validation_errors": ["payment.amount.exceedsSettlement"],
+        "db_state": {
+          "payment.count.claim.119": "0"
+        }
       }
     }
   ]
