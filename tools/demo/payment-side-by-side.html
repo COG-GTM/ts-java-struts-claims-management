@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Payment: legacy app and payment service side by side</title>
+<!--
+  Sends the same payment request to the legacy Struts app (8080) and to the
+  payment service (8084) and shows both answers next to each other.
+  Start both from the seed: make seed && make run (Java 11), and
+  make payment-service-run (Java 21). Serve this page over http on localhost
+  (python3 -m http.server 8090 --directory tools/demo) so the legacy session
+  cookie is kept in its frame. Run the steps in order: ids and totals depend on
+  what was issued before, as in SPEC-PAY-001-live.json.
+-->
+<style>
+body { margin:0; font:14px/1.4 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color:#1d2433; background:#f6f7f9; }
+header { padding:10px 16px; background:#fff; border-bottom:1px solid #d9dee7; }
+h1 { font-size:17px; margin:0 0 6px; }
+.steps { display:flex; flex-wrap:wrap; gap:6px; }
+.steps button { font:inherit; padding:5px 10px; border:1px solid #c5ccd8; border-radius:6px; background:#fff; cursor:pointer; }
+.steps button.done { background:#e6edfb; border-color:#2b59c3; }
+#current { margin:8px 0 0; font-family:Menlo, Consolas, monospace; font-size:12.5px; color:#3b4456; min-height:1.4em; }
+.panes { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px 16px; height:calc(100vh - 150px); }
+.pane { display:flex; flex-direction:column; background:#fff; border:1px solid #d9dee7; border-radius:8px; overflow:hidden; }
+.pane h2 { margin:0; padding:6px 10px; font-size:13px; background:#eef1f5; border-bottom:1px solid #d9dee7; }
+.pane .url { padding:4px 10px; font-family:Menlo, Consolas, monospace; font-size:12px; color:#5d6779; border-bottom:1px solid #eef1f5; word-break:break-all; min-height:1.4em; }
+iframe { flex:1; border:0; width:100%; background:#fff; }
+</style>
+</head>
+<body>
+<header>
+<h1>Same payment request: legacy Struts app (left) and payment service (right)</h1>
+<div class="steps" id="steps"></div>
+<div id="current">Run the steps in order from a fresh seed.</div>
+</header>
+<div class="panes">
+<div class="pane"><h2>Legacy app - http://localhost:8080/claims</h2><div class="url" id="legacy-url"></div><iframe name="legacy" title="Legacy app"></iframe></div>
+<div class="pane"><h2>Payment service - http://localhost:8084</h2><div class="url" id="service-url"></div><iframe name="service" title="Payment service"></iframe></div>
+</div>
+<script>
+(function () {
+  "use strict";
+  var LEGACY = "http://localhost:8080/claims";
+  var SERVICE = "http://localhost:8084";
+  // Same requests as live steps L02, L03, L04, L08, L11, L18, L24, L27-style detail and L32.
+  var steps = [
+    { label: "0. Sign in (legacy session)", legacy: ["POST", "/login.do", { username: "supervisor", password: "supervisor" }], service: null },
+    { label: "1. Remittance, claim 119", legacy: ["GET", "/payment/remittance.do", { claimId: "119" }], service: ["GET", "/payment/remittance", { claimId: "119" }] },
+    { label: "2. Issue, amount omitted", legacy: ["POST", "/payment/issue.do", { claimId: "119", payeeName: "Reserved Claimant", paymentMethod: "CHECK" }], service: ["POST", "/payment/issue", { claimId: "119", payeeName: "Reserved Claimant", paymentMethod: "CHECK" }] },
+    { label: "3. Issue -250.00", legacy: ["POST", "/payment/issue.do", { claimId: "119", payeeName: "Reserved Claimant", amount: "-250.00", paymentMethod: "CHECK" }], service: ["POST", "/payment/issue", { claimId: "119", payeeName: "Reserved Claimant", amount: "-250.00", paymentMethod: "CHECK" }] },
+    { label: "4. Issue NaN", legacy: ["POST", "/payment/issue.do", { claimId: "119", payeeName: "Reserved Claimant", amount: "NaN", paymentMethod: "CHECK" }], service: ["POST", "/payment/issue", { claimId: "119", payeeName: "Reserved Claimant", amount: "NaN", paymentMethod: "CHECK" }] },
+    { label: "5. Issue, claim 9999 (no settlement)", legacy: ["POST", "/payment/issue.do", { claimId: "9999", payeeName: "Reserved Claimant", amount: "10.00", paymentMethod: "CHECK" }], service: ["POST", "/payment/issue", { claimId: "9999", payeeName: "Reserved Claimant", amount: "10.00", paymentMethod: "CHECK" }] },
+    { label: "6. History, claim 119", legacy: ["GET", "/payment/history.do", {}], service: ["GET", "/payment/history", {}] },
+    { label: "7. Detail, payment 62", legacy: ["GET", "/payment/detail.do", { paymentId: "62" }], service: ["GET", "/payment/detail", { paymentId: "62" }] },
+    { label: "8. Remittance, claim 119 (total NaN)", legacy: ["GET", "/payment/remittance.do", {}], service: ["GET", "/payment/remittance", {}] }
+  ];
+
+  function describe(method, url, params) {
+    var query = Object.keys(params).map(function (k) { return k + "=" + params[k]; }).join("&");
+    return method + " " + url + (query ? (method === "GET" ? "?" : "  body: ") + query : "");
+  }
+
+  function send(target, base, request, extra) {
+    var params = {};
+    Object.keys(request[2]).forEach(function (k) { params[k] = request[2][k]; });
+    Object.keys(extra).forEach(function (k) { params[k] = extra[k]; });
+    var form = document.createElement("form");
+    form.method = request[0];
+    form.action = base + request[1];
+    form.target = target;
+    Object.keys(params).forEach(function (k) {
+      var input = document.createElement("input");
+      input.type = "hidden"; input.name = k; input.value = params[k];
+      form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
+    return describe(request[0], base + request[1], params);
+  }
+
+  var box = document.getElementById("steps");
+  steps.forEach(function (step) {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.textContent = step.label;
+    button.addEventListener("click", function () {
+      button.className = "done";
+      document.getElementById("current").textContent = step.label;
+      document.getElementById("legacy-url").textContent = send("legacy", LEGACY, step.legacy, {});
+      if (step.service) {
+        // The service takes the signed-in user as a parameter (ADR-002, "Sign-in").
+        document.getElementById("service-url").textContent = send("service", SERVICE, step.service, { user: "supervisor" });
+      } else {
+        document.getElementById("service-url").textContent = "(no sign-in: the service takes user=supervisor on each request)";
+      }
+    });
+    box.appendChild(button);
+  });
+})();
+</script>
+</body>
+</html>
