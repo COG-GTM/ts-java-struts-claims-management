@@ -16,8 +16,8 @@ import re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CITATION = re.compile(r"`?((?:src|services|tools|docs|parity)/[\w./-]+\.(?:java|xml|jsp|sql|py|json|md)):(\d+(?:-\d+)?)`?")
-RULE = re.compile(r"\b([A-Z]+)-R(\d+)\b(?: \((v\d+)[^)]*\))?")
-SCENARIO = re.compile(r"`(payment_[a-z0-9_]+|settlement_[a-z0-9_]+)`")
+RULE = re.compile(r"\b([A-Z]+)-R(\d+)\b(?: \((v\d+)[^)]*\)| (v\d+)\b)?")  # "<SLICE>-Rnn (v2, ...)" or "<SLICE>-Rnn v1"
+SCENARIO = re.compile(r"`(payment_[A-Za-z0-9_]+|settlement_[A-Za-z0-9_]+)`")
 TEMPLATE = os.path.join(ROOT, "tools", "changes", "change_view_template.html")
 
 
@@ -78,7 +78,7 @@ def inline(text, spec_links, scenarios=frozenset()):
         chunk = SCENARIO.sub(scenario_link, chunk)
         chunk = re.sub(r"`([^`]+)`", r"<code>\1</code>", chunk)
         def rule_link(match):
-            slice_name, version = match.group(1), match.group(3)
+            slice_name, version = match.group(1), match.group(3) or match.group(4)
             spec = spec_links.get(slice_name)
             label = match.group(0)
             if not spec:
