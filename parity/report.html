@@ -128,18 +128,19 @@ function detail(r) {
   const precondition = r.precondition ? `<p><code>parity/preconditions/${esc(r.slice)}/${esc(r.precondition)}.sql</code> applied on top of the legacy seed.</p>` : '<p class="muted">The legacy seed, as the settlement service loads it.</p>';
   let compare = "";
   if (r.expected && r.actual) {
+    const expectedLabel = r.change ? `expected (approved service behaviour, ${esc(r.change)})` : "expected (legacy)";
     const sections = [["status", "Status"], ["screen", "Screen"], ["business_fields", "Business fields"], ["display", "Display texts"], ["links", "Links"], ["validation_errors", "Validation errors"], ["db_state", "Database state"], ["payment_rows", "PAYMENT rows from 61"]];
     compare = sections.filter(([k]) => r.expected[k] !== undefined || r.actual[k] !== undefined).map(([k, label]) => {
       const e = r.expected[k], a = r.actual[k];
       let same = JSON.stringify(e) === JSON.stringify(a);
       if (k === "status" && r.actual.status_parity) {
         same = true;
-        return `<h3>${label} <span class="v PASS">parity</span></h3><div class="cols"><div><div class="muted">expected (legacy)</div><pre>${esc(pretty(e))}</pre></div><div><div class="muted">actual (service)</div><pre>${esc(pretty(a))}</pre></div></div><p class="muted">${esc(r.actual.status_parity)}</p>`;
+        return `<h3>${label} <span class="v PASS">parity</span></h3><div class="cols"><div><div class="muted">${expectedLabel}</div><pre>${esc(pretty(e))}</pre></div><div><div class="muted">actual (service)</div><pre>${esc(pretty(a))}</pre></div></div><p class="muted">${esc(r.actual.status_parity)}</p>`;
       }
       if (k === "business_fields" || k === "display" || k === "db_state") {
         return `<h3>${label} ${same ? "" : "<span class=\"v FAIL\">differs</span>"}</h3>${markDiff(e, a)}`;
       }
-      return `<h3>${label} ${same ? "" : "<span class=\"v FAIL\">differs</span>"}</h3><div class="cols"><div><div class="muted">expected (legacy)</div><pre>${esc(pretty(e))}</pre></div><div><div class="muted">actual (service)</div><pre>${esc(pretty(a))}</pre></div></div>`;
+      return `<h3>${label} ${same ? "" : "<span class=\"v FAIL\">differs</span>"}</h3><div class="cols"><div><div class="muted">${expectedLabel}</div><pre>${esc(pretty(e))}</pre></div><div><div class="muted">actual (service)</div><pre>${esc(pretty(a))}</pre></div></div>`;
     }).join("");
   } else {
     compare = `<h3>Difference</h3><p>${esc(r.difference)}</p>`;
