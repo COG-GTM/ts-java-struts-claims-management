@@ -178,7 +178,9 @@ def build_history(commits):
                 entry.setdefault("restored", []).append(commit)
                 entry["removed_in"] = None
                 restored.append(rule)
-            elif before is None:
+                before = {"text": entry["last_text"],
+                          "superseded_by": entry["last_superseded_by"]}
+            if before is None:
                 entry.update({
                     "introduced": commit, "intro_text": block["text"],
                     "intro_version": spec["version"],
@@ -193,6 +195,8 @@ def build_history(commits):
                 edited.append(rule)
                 if block["superseded_by"] and not before["superseded_by"]:
                     superseded.append(rule)
+            entry["last_text"] = block["text"]
+            entry["last_superseded_by"] = block["superseded_by"]
         if previous:
             for rule in previous["order"]:
                 if rule not in spec["rules"]:
