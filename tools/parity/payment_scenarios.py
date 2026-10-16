@@ -60,7 +60,7 @@ def rules_by_step(spec_text):
     rule = None
     observed = False
     for line in spec_text.splitlines():
-        head = re.match(r"\*\*(PAY-R\d+) \(v\d+\)\*\*", line)
+        head = re.match(r"\*\*(PAY-R\d+) \(v\d+(?:, superseded by v\d+)?\)\*\*", line)
         if head:
             rule = head.group(1)
             observed = False

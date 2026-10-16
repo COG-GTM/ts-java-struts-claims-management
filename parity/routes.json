@@ -642,6 +642,7 @@
       },
       "rules": [
         "PAY-R03",
+        "PAY-R05",
         "PAY-R12"
       ],
       "scenario": "payment_live_L21",
@@ -676,6 +677,7 @@
       },
       "rules": [
         "PAY-R03",
+        "PAY-R05",
         "PAY-R12"
       ],
       "scenario": "payment_live_L22",
@@ -709,6 +711,7 @@
         "path": "/payment/issue"
       },
       "rules": [
+        "PAY-R05",
         "PAY-R09"
       ],
       "scenario": "payment_live_L23",
@@ -1211,6 +1214,7 @@
         "path": "/payment/issue"
       },
       "rules": [
+        "PAY-R05",
         "PAY-R12"
       ],
       "scenario": "payment_live_L36",
@@ -1314,6 +1318,138 @@
     "settlement_save": ["SETTLE-R25", "SETTLE-R27", "SETTLE-R28", "SETTLE-R29"]
   },
   "approved_differences": [
+    {
+      "change": "CHG-002",
+      "expected": {
+        "business_fields": {},
+        "payment_rows_through": 65,
+        "screen": "issue",
+        "status": 200,
+        "validation_errors": [
+          "payment.amount.aboveSettlement"
+        ]
+      },
+      "record": "docs/changes/CHG-002-payment-above-settlement.md",
+      "rules": [
+        "PAY-R05 (v2)"
+      ],
+      "scenario": "payment_live_L10",
+      "summary": "amount=5000.00 is above the claim's latest settlement (1000.00); the legacy app issues CHK-66, the service answers one validation error and writes no row"
+    },
+    {
+      "change": "CHG-002",
+      "expected": {
+        "business_fields": {},
+        "payment_rows_through": 72,
+        "screen": "issue",
+        "status": 200,
+        "validation_errors": [
+          "payment.amount.aboveSettlement"
+        ]
+      },
+      "record": "docs/changes/CHG-002-payment-above-settlement.md",
+      "rules": [
+        "PAY-R05 (v2)"
+      ],
+      "scenario": "payment_live_L21",
+      "summary": "amount=5 is above the claim's latest settlement (0.00); the legacy app issues CHK-73, the service answers one validation error and writes no row"
+    },
+    {
+      "change": "CHG-002",
+      "expected": {
+        "business_fields": {},
+        "payment_rows_through": 73,
+        "screen": "issue",
+        "status": 200,
+        "validation_errors": [
+          "payment.amount.aboveSettlement"
+        ]
+      },
+      "record": "docs/changes/CHG-002-payment-above-settlement.md",
+      "rules": [
+        "PAY-R05 (v2)"
+      ],
+      "scenario": "payment_live_L22",
+      "summary": "amount=20.00 is above the claim's latest settlement (0.00); the legacy app issues CHK-74, the service answers one validation error and writes no row"
+    },
+    {
+      "change": "CHG-002",
+      "expected": {
+        "business_fields": {},
+        "payment_rows_through": 74,
+        "screen": "issue",
+        "status": 200,
+        "validation_errors": [
+          "payment.amount.aboveSettlement"
+        ]
+      },
+      "record": "docs/changes/CHG-002-payment-above-settlement.md",
+      "rules": [
+        "PAY-R05 (v2)"
+      ],
+      "scenario": "payment_live_L23",
+      "summary": "amount=1.00 is above the claim's latest settlement (0.00); the legacy app issues CHK-75, the service answers one validation error and writes no row"
+    },
+    {
+      "change": "CHG-002",
+      "expected": {
+        "business_fields": {},
+        "payment_rows_through": 75,
+        "screen": "issue",
+        "status": 200,
+        "validation_errors": [
+          "payment.amount.aboveSettlement"
+        ]
+      },
+      "record": "docs/changes/CHG-002-payment-above-settlement.md",
+      "rules": [
+        "PAY-R05 (v2)"
+      ],
+      "scenario": "payment_live_L36",
+      "summary": "amount=2.00 is above the claim's latest settlement (0.00); the legacy app issues CHK-76, the service answers one validation error and writes no row"
+    },
+    {
+      "change": "CHG-002",
+      "description": "An amount above the claim's latest saved settlement is rejected by the service and accepted by the legacy app",
+      "expected": {
+        "business_fields": {},
+        "payment_rows_through": 60,
+        "screen": "issue",
+        "status": 200,
+        "validation_errors": [
+          "payment.amount.aboveSettlement"
+        ]
+      },
+      "legacy": {
+        "business_fields": {
+          "checkNumber": "CHK-61",
+          "paymentAmount": "5000.00",
+          "paymentStatus": "ISSUED"
+        },
+        "observed": "Legacy app on port 8080 after make seed plus parity/preconditions/payment/chg-002-settlement-1000.sql, POST /claims/payment/issue.do with the same form (login supervisor/supervisor); the same request on a seed with payments to 65 is live L10 of docs/specs/SPEC-PAY-001-live.json (CHK-66).",
+        "payment_rows_through": 61,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "validation_errors": []
+      },
+      "precondition": "chg-002-settlement-1000",
+      "record": "docs/changes/CHG-002-payment-above-settlement.md",
+      "request": {
+        "form": {
+          "amount": "5000.00",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/payment/issue"
+      },
+      "rules": [
+        "PAY-R05 (v2)"
+      ],
+      "scenario": "payment_above_settlement_rejected",
+      "summary": "CHG-002 scenario with its own precondition: settlement 121 (1000.00) on claim 119 and no payment above 60; amount=5000.00 is rejected with one validation error and no row, where the legacy app issues CHK-61"
+    },
     {
       "scenario": "settlement_bad_deductible",
       "change": "CHG-001",

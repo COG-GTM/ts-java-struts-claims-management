@@ -122,7 +122,7 @@ def rules_and_history():
 
 # Spec twins and live-proof captures are generated from the spec: a refresh of
 # them is not a change to any rule.
-GENERATED_GLOBS = ["docs/specs/*.html", "docs/specs/*-live.json"]
+GENERATED_GLOBS = ["docs/specs/*.html", "docs/specs/*-live.json", "docs/changes/*.html"]
 
 
 def searched_paths():
@@ -206,6 +206,9 @@ def transcripts_for(rule, routes):
     mapped = dict(routes.get("transcript_rules", {}))
     for scenario in routes.get("payment_scenarios", []):
         mapped.setdefault(scenario["scenario"], scenario["rules"])
+    for entry in routes.get("approved_differences", []):
+        if "request" in entry:
+            mapped.setdefault(entry["scenario"], entry["rules"])
     found = []
     for scenario, cited in sorted(mapped.items()):
         if any(refers_to(entry, rule) for entry in cited):

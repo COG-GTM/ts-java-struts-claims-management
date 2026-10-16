@@ -27,7 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
  *       (src/main/java/com/northstar/claims/web/PaymentIssueAction.java:22-36;
  *       src/main/webapp/WEB-INF/jsp/payment/issue.jsp).</li>
  *   <li>PAY-R02, PAY-R04, PAY-R05, PAY-R16 — parameter coercion, delegated to
- *       {@link LegacyParameters}.</li>
+ *       {@link LegacyParameters}; PAY-R05 (v2) adds the above-settlement check
+ *       of CHG-002 in {@link #issue}.</li>
  *   <li>PAY-R03 — the newest settlement of the claim (PaymentIssueAction.java:23,28).</li>
  *   <li>PAY-R06 — payment_id is {@code max(payment_id)+1} and one row is
  *       inserted (PaymentIssueAction.java:25-26,36).</li>
@@ -67,7 +68,17 @@ public class PaymentController {
         this.settlements = settlements;
     }
 
-    /** PaymentIssueAction.java:22-36. Mapped for GET too (PAY-R12). */
+    /**
+     * PaymentIssueAction.java:22-36. Mapped for GET too (PAY-R12).
+     *
+     * <p>PAY-R05 (v2), CHG-002 (docs/changes/CHG-002-payment-above-settlement.md):
+     * an amount greater than the latest settlement's settlement_amount is
+     * answered as a validation error before {@code nextId()} and before the
+     * insert, so no row is written and no id is used. The comparison is a plain
+     * {@code >}: an equal amount passes, and NaN, which is not greater than any
+     * number, is still stored as v1 of the rule says. The monolith has no such
+     * check (PaymentIssueAction.java:28-31).
+     */
     @RequestMapping(value = "/issue", method = {
             org.springframework.web.bind.annotation.RequestMethod.GET,
             org.springframework.web.bind.annotation.RequestMethod.POST})
@@ -78,9 +89,13 @@ public class PaymentController {
         int claim = LegacyParameters.integer(claimId, 119);
         LatestSettlement settlement = settlements.findLatestByClaim(claim)
                 .orElseThrow(() -> new MissingSettlementException(claim));
+        double paymentAmount = LegacyParameters.decimal(amount, settlement.settlementAmount());
+        if (paymentAmount > settlement.settlementAmount()) {
+            return PaymentResponse.rejected("issue", List.of("payment.amount.aboveSettlement"));
+        }
         int paymentId = payments.nextId();
         StoredPayment payment = new StoredPayment(paymentId, claim, settlement.settlementId(),
-                payeeName, LegacyParameters.decimal(amount, settlement.settlementAmount()),
+                payeeName, paymentAmount,
                 paymentMethod, "CHK-" + paymentId, "2019-04-03", "ISSUED");
         payments.insert(payment);
         Map<String, String> fields = new LinkedHashMap<>();

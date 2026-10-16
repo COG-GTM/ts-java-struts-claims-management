@@ -1,6 +1,6 @@
 # SPEC-PAY-001 — Payment issue, history, detail and remittance
 
-Version: 0.1
+Version: 0.2
 
 Scope: the four payment request flows of the claims application:
 `/claims/payment/issue.do`, `history.do`, `detail.do` and `remittance.do`.
@@ -16,6 +16,9 @@ Each rule carries a status:
   proved by an exact request and response against the running legacy app.
 * **Open question** — not proved; kept out of this spec and listed in
   `docs/specs/OPEN-QUESTIONS.md` (see the last section).
+* **Changed** — an approved departure from the legacy behaviour, named by a
+  `docs/changes/CHG-nnn` record; it applies to `services/payment-service`
+  only, the monolith keeps the superseded version.
 
 ## Evidence
 
@@ -71,7 +74,7 @@ live L06 (no `amount`: 1000.00); live L07 (`amount=abc`: 1000.00).
 Read: src/main/java/com/northstar/claims/web/PaymentIssueAction.java:30-31;
 src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:39-45
 
-**PAY-R05 (v1)** — Any amount that parses as a double is stored as sent, with no
+**PAY-R05 (v1, superseded by v2)** — Any amount that parses as a double is stored as sent, with no
 validation, no cap and no rounding: a negative amount (`-250.00`), an amount
 above the settlement (`5000.00`), `NaN` and exponent notation (`1e3` = 1000)
 are all issued. The form is not validated (`validate="false"`). The stored
@@ -83,6 +86,31 @@ Observed: live L08, L09, L10, L11, L12; `db_after.payment_rows_after_seed`
 Read: src/main/java/com/northstar/claims/web/PaymentIssueAction.java:30-31;
 src/main/webapp/WEB-INF/struts-config.xml:223-231;
 src/main/java/com/northstar/claims/web/tag/FieldTag.java:48-58
+
+**PAY-R05 (v2)** — An `amount` that parses as a double and is greater than the
+`settlement_amount` of the claim's latest settlement (the settlement of PAY-R03)
+is rejected before a payment id is read and before any write: the response is
+status 200 on the issue screen with no business fields and exactly one
+validation error, key `payment.amount.aboveSettlement`; no PAYMENT row is
+written and no id is used, so the next accepted request still takes
+`max(payment_id) + 1`. An amount equal to the settlement is accepted. Every
+other case of v1 is kept as it was: a missing or unparseable amount falls back
+to the settlement amount (PAY-R04), and a negative amount, `1.005`, exponent
+notation and `NaN` (which is not greater than any number) are stored as sent
+and shown with `%.2f`. This is a deliberate difference from the legacy
+behaviour of v1, which the monolith keeps; it applies to
+`services/payment-service` only.
+Status: Changed.
+Approved: docs/changes/CHG-002-payment-above-settlement.md.
+Observed: live L10 (`amount=5000.00` against settlement 121 at 1000.00: the
+legacy app issues `CHK-66`), live L21, L22, L23, L36 (5.00, 20.00, 1.00 and
+2.00 against settlements 1 and 120 at 0: issued as `CHK-73` to `CHK-76`); all
+five are recorded as CHANGED (CHG-002) in parity/routes.json, together with
+the scenario `payment_above_settlement_rejected` whose legacy answer is quoted
+in the change record.
+Read: src/main/java/com/northstar/claims/web/PaymentIssueAction.java:28-31;
+src/main/java/com/northstar/claims/dao/SettlementDAO.java:100-110;
+src/main/webapp/WEB-INF/struts-config.xml:223-231
 
 **PAY-R06 (v1)** — The payment id is `max(payment_id) + 1` over the whole
 PAYMENT table, read when the request runs. Every successful request inserts one
@@ -243,8 +271,10 @@ Not proved, so not rules. Tracked in `docs/specs/OPEN-QUESTIONS.md`:
   `max(payment_id)`; whether the second fails or duplicates was not reproduced.
 * OQ-03 — whether the fixed issued date 2019-04-03 is meant to be the business
   "as of" date or is a leftover constant.
-* OQ-04 — whether negative, NaN and above-settlement amounts (PAY-R05) and the
-  fixed `paymentId=61` history links (PAY-R15) are intended behaviour.
+* OQ-04 — whether negative and NaN amounts (PAY-R05) and the fixed
+  `paymentId=61` history links (PAY-R15) are intended behaviour. The
+  above-settlement part of the question is answered for the service by
+  CHG-002 (PAY-R05 v2); the monolith still accepts such amounts.
 
 ## Rule history
 
@@ -255,6 +285,7 @@ Not proved, so not rules. Tracked in `docs/specs/OPEN-QUESTIONS.md`:
 | PAY-R03 | v1 | Initial rule, version 0.1 |
 | PAY-R04 | v1 | Initial rule, version 0.1 |
 | PAY-R05 | v1 | Initial rule, version 0.1 |
+| PAY-R05 | v2 | Version 0.2: an amount above the claim's latest settlement_amount is a validation error (status 200, issue screen, no business fields, key `payment.amount.aboveSettlement`) with no row written and no id used, per docs/changes/CHG-002-payment-above-settlement.md; negative, NaN, exponent and 1.005 amounts and the equal amount stay as in v1; v1 text retained above as the legacy behaviour |
 | PAY-R06 | v1 | Initial rule, version 0.1 |
 | PAY-R07 | v1 | Initial rule, version 0.1 |
 | PAY-R08 | v1 | Initial rule, version 0.1 |
