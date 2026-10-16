@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Payment slice: legacy (8080) and payment service (8084) side by side</title>
+<style>
+body { margin: 0; font: 17px/1.4 system-ui, sans-serif; color: #1b1b1b; background: #fff; }
+header { padding: 12px 20px 6px; border-bottom: 1px solid #ddd; }
+h1 { font-size: 22px; margin: 0 0 6px; }
+form.step { display: inline-flex; gap: 6px; align-items: center; margin: 4px 8px 4px 0; }
+form.step button { font: inherit; padding: 6px 12px; border: 1px solid #0b5cad; background: #0b5cad; color: #fff; border-radius: 6px; cursor: pointer; }
+form.step code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 14px; }
+main { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px 20px; }
+section h2 { font-size: 18px; margin: 0 0 6px; }
+iframe { width: 100%; height: 560px; border: 1px solid #ccc; background: #fff; }
+p.note { margin: 6px 20px; color: #555; font-size: 15px; }
+</style>
+</head>
+<body>
+<header>
+<h1>Same payment request to the legacy app (left) and the payment service (right)</h1>
+<p class="note">The legacy app has no payment input form (issue.jsp is a confirmation page), so these forms POST/GET the real
+<code>/claims/payment/*.do</code> endpoints on 8080 and the equivalent <code>/payment/*</code> endpoints on 8084. Sign in once first; the
+legacy frames share the browser session. Run with <code>make run</code> (legacy, Java 11) and <code>make payment-run</code> (service, Java 21).</p>
+<div id="steps"></div>
+</header>
+<main>
+<section><h2>Legacy Struts app, http://localhost:8080/claims</h2><iframe name="legacy" src="http://localhost:8080/claims/login.do" title="legacy"></iframe></section>
+<section><h2>payment-service, http://localhost:8084</h2><iframe name="service" src="about:blank" title="service"></iframe></section>
+</main>
+<script>
+(function () {
+  var LEGACY = 'http://localhost:8080/claims', SERVICE = 'http://localhost:8084';
+  var steps = [
+    {label: 'Sign in (legacy only)', method: 'POST', legacy: '/login.do', service: null, form: {username: 'supervisor', password: 'supervisor'}},
+    {label: 'Issue: claim 118, no amount (falls back to newest settlement, PAY-R06)', method: 'POST', legacy: '/payment/issue.do', service: '/payment/issue', form: {claimId: '118', payeeName: 'Live Payee', paymentMethod: 'wire'}},
+    {label: 'Issue: claimId=abc, amount 12.345 (PAY-R04, PAY-R09)', method: 'POST', legacy: '/payment/issue.do', service: '/payment/issue', form: {claimId: 'abc', payeeName: 'Third Payee', amount: '12.345', paymentMethod: 'CHECK'}},
+    {label: 'Issue by GET, amount 7 (PAY-R03)', method: 'GET', legacy: '/payment/issue.do', service: '/payment/issue', form: {claimId: '118', payeeName: 'Get Payee', amount: '7', paymentMethod: 'CHECK'}},
+    {label: 'Issue: amount -5 (PAY-R07)', method: 'POST', legacy: '/payment/issue.do', service: '/payment/issue', form: {claimId: '118', payeeName: 'Negative Payee', amount: '-5', paymentMethod: 'CHECK'}},
+    {label: 'Issue: claim 9999 has no settlement (PAY-R05, PAY-R29)', method: 'POST', legacy: '/payment/issue.do', service: '/payment/issue', form: {claimId: '9999', payeeName: 'Nobody', amount: '1', paymentMethod: 'CHECK'}},
+    {label: 'History, claim 118 (PAY-R18, PAY-R19)', method: 'GET', legacy: '/payment/history.do', service: '/payment/history', form: {claimId: '118'}},
+    {label: 'Detail, no paymentId (defaults to 61, PAY-R22)', method: 'GET', legacy: '/payment/detail.do', service: '/payment/detail', form: {}},
+    {label: 'Remittance, claim 118 (PAY-R26, PAY-R27)', method: 'GET', legacy: '/payment/remittance.do', service: '/payment/remittance', form: {claimId: '118'}}
+  ];
+  var holder = document.getElementById('steps');
+  steps.forEach(function (step, i) {
+    var form = document.createElement('form');
+    form.className = 'step';
+    form.method = step.method;
+    var button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = (i + 1) + '. ' + step.label;
+    form.appendChild(button);
+    var code = document.createElement('code');
+    code.textContent = step.method + ' ' + (step.service || step.legacy) + ' ' + JSON.stringify(step.form);
+    form.appendChild(code);
+    Object.keys(step.form).forEach(function (name) {
+      var input = document.createElement('input');
+      input.type = 'hidden'; input.name = name; input.value = step.form[name];
+      form.appendChild(input);
+    });
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      submitTo(step, LEGACY + step.legacy, 'legacy');
+      if (step.service) submitTo(step, SERVICE + step.service, 'service');
+    });
+    holder.appendChild(form);
+  });
+  function submitTo(step, action, target) {
+    var form = document.createElement('form');
+    form.method = step.method; form.action = action; form.target = target; form.style.display = 'none';
+    Object.keys(step.form).forEach(function (name) {
+      var input = document.createElement('input');
+      input.type = 'hidden'; input.name = name; input.value = step.form[name];
+      form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+  }
+})();
+</script>
+</body>
+</html>

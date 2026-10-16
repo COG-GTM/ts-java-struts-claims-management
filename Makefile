@@ -1,8 +1,11 @@
-.PHONY: build run seed test capture clean service-build service-test service-run parity traceability
+.PHONY: build run seed test capture clean service-build service-test service-run payment-build payment-test payment-run payment-run-parity parity traceability
 
 # Settlement service (ADR-001): Spring Boot 3.5 on Java 21, port 8083.
 SERVICE_DIR = services/settlement-service
 SERVICE_JAVA_HOME = /usr/lib/jvm/java-21-openjdk-amd64
+
+# Payment service (ADR-002): Spring Boot 3.5 on Java 21, port 8084.
+PAYMENT_DIR = services/payment-service
 
 build:
 	mvn -B clean package
@@ -28,11 +31,35 @@ service-test:
 service-run:
 	cd $(SERVICE_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B spring-boot:run
 
-# Replays the settlement transcripts against a running service (make service-run).
-parity:
-	python3 tools/parity/settlement_parity.py
+payment-build:
+	cd $(PAYMENT_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B clean package -DskipTests
 
-# Regenerates docs/TRACEABILITY.md from the spec, the git history, the tests,
+payment-test:
+	cd $(PAYMENT_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B clean verify
+
+payment-run:
+	cd $(PAYMENT_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B spring-boot:run
+
+# The payment service with the "parity" Spring profile, which adds
+# POST /parity/reset so that tools/parity/payment_parity.py can put the
+# database into each scenario's declared precondition
+# (parity/preconditions/payment) before replaying it. make parity needs this
+# one, not payment-run.
+payment-run-parity:
+	cd $(PAYMENT_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B spring-boot:run -Dspring-boot.run.profiles=parity
+
+# Replays the settlement transcripts against a running settlement service
+# (make service-run, 8083) and the payment scenarios of parity/routes.json
+# against a running payment service (make payment-run-parity, 8084). Both
+# write into the same report (parity/report.json, .md and .html), which is
+# removed first so a run that stops early cannot leave the other slice's
+# verdicts from an earlier run looking fresh.
+parity:
+	rm -f parity/report.json parity/report.md parity/report.html
+	python3 tools/parity/settlement_parity.py
+	python3 tools/parity/payment_parity.py
+
+# Regenerates docs/TRACEABILITY.md from both specs, the git history, the tests,
 # parity/routes.json and parity/report.json. Needs nothing running.
 traceability:
 	python3 tools/traceability.py

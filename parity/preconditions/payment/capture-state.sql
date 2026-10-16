@@ -1,0 +1,16 @@
+-- State the legacy capture had when transcripts/payment_issue.json was recorded.
+--
+-- tools/capture/capture.py resets the database once and replays every scenario
+-- of transcripts/index.json in order against the same Jetty, so when
+-- payment_issue ran, settlement_save had already written claim 119's new
+-- settlement: id 121 (max 120 + 1), covered 5000.00, deductible 500.00,
+-- depreciation 0.00, capped at the 1000 policy limit of policy 9001,
+-- settlement_amount 1000.00, calculated_by the session user, calculated_date
+-- the literal 2019-04-01 (transcripts/settlement_save.json db_state
+-- settlement.claim.119.amount = 1000.00; transcripts/settlement_calculate.json
+-- business fields). payment_issue therefore wrote payment 61 against
+-- settlement 121, not the seeded settlement 119 whose amount is 0 (PAY-R05).
+--
+-- Applied by POST /parity/reset on the payment service (parity profile) before
+-- the transcript scenarios in parity/routes.json.
+INSERT INTO SETTLEMENT VALUES (121, 119, 5000, 500, 0, TRUE, 1000, 'supervisor', '2019-04-01');

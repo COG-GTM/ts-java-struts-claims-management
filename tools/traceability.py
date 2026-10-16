@@ -2,7 +2,8 @@
 """Generate docs/TRACEABILITY.md from the repository, one row per spec rule.
 
 Nothing in the matrix is typed by hand. For every rule version declared in
-docs/specs/SPEC-SETTLE-001.md the row is assembled from:
+docs/specs/SPEC-SETTLE-001.md (SETTLE-Rnn) and docs/specs/SPEC-PAY-001.md
+(PAY-Rnn) the row is assembled from:
 
 * the spec version that last changed the rule, from the "Rule history" table of
   the spec;
@@ -12,14 +13,20 @@ docs/specs/SPEC-SETTLE-001.md the row is assembled from:
   (v1)``;
 * the tests whose javadoc cites the rule, under ``src/test`` and
   ``services/*/src/test``;
-* the transcripts mapped to the rule in ``parity/routes.json``;
-* the parity verdict of each of those transcripts, from ``parity/report.json``
+* the parity scenarios mapped to the rule in ``parity/routes.json``: the
+  transcripts of ``transcript_rules`` and, for the payment slice, the
+  ``payment_scenarios`` whose ``rules`` name it;
+* the parity verdict of each of those scenarios, from ``parity/report.json``
   (written by ``make parity``);
 * the ``docs/changes/CHG-nnn`` records that name the rule.
 
 A mention without a version (``SETTLE-R05``) belongs to every version of that
 rule; a qualified mention (``SETTLE-R06 (v2)``, ``| SETTLE-R06 | v2 |``) belongs
 to that version only.
+
+Each spec may name only its own slice's rule ids: a SETTLE-Rnn mention in
+SPEC-PAY-001.md (or the reverse) is an error, so that a rule's evidence never
+leaks across slices.
 
 The output holds no commit of its own and no timestamp, so running it twice on
 the same commit writes the same bytes. The generated files are excluded from the
@@ -36,18 +43,26 @@ import re
 import subprocess
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SPEC = os.path.join("docs", "specs", "SPEC-SETTLE-001.md")
+# The specs, in the order their rules appear in the matrix. Each rule family
+# (SETTLE-Rnn, PAY-Rnn) lives in exactly one spec.
+SPECS = [
+    os.path.join("docs", "specs", "SPEC-SETTLE-001.md"),
+    os.path.join("docs", "specs", "SPEC-PAY-001.md"),
+]
 OUTPUT = os.path.join("docs", "TRACEABILITY.md")
 
 GENERATED = [OUTPUT, os.path.join("parity", "report.md"),
-             os.path.join("parity", "report.json")]
+             os.path.join("parity", "report.json"),
+             os.path.join("parity", "report.html")]
 SEARCHED = ["docs", "parity", "services", "src", "tools", "Makefile"]
 
 # "SETTLE-R06", "SETTLE-R06 (v2)", "SETTLE-R06 (v1, superseded by v2)",
 # "| SETTLE-R06 | v2 |": the id, and the version it is qualified with if any.
-MENTION = re.compile(r"(SETTLE-R\d+)[ \t]*[|(,]?[ \t]*(?:v(\d+))?")
-HEADING = re.compile(r"^\*\*(SETTLE-R\d+) \(v(\d+)")
-HISTORY = re.compile(r"^\| (SETTLE-R\d+) \| v(\d+) \| (.*?) \|\s*$")
+# The same shapes with the PAY-Rnn family of SPEC-PAY-001.
+RULE_ID = r"((?:SETTLE|PAY)-R\d+)"
+MENTION = re.compile(RULE_ID + r"[ \t]*[|(,]?[ \t]*(?:v(\d+))?")
+HEADING = re.compile(r"^\*\*" + RULE_ID + r" \(v(\d+)")
+HISTORY = re.compile(r"^\| " + RULE_ID + r" \| v(\d+) \| (.*?) \|\s*$")
 SPEC_VERSION = re.compile(r"version (\d+\.\d+)", re.I)
 JAVADOC_END = re.compile(r"\*/")
 MEMBER = re.compile(r"(\w+)\s*\(")
@@ -73,21 +88,36 @@ def git(*args):
     return subprocess.check_output(["git"] + list(args), cwd=ROOT).decode("utf-8")
 
 
+def family(spec):
+    """SPEC-SETTLE-001.md -> SETTLE, SPEC-PAY-001.md -> PAY."""
+    return os.path.basename(spec).split("-")[1]
+
+
 def rules_and_history():
-    """The rule versions the spec declares, in spec order, and their history."""
+    """The rule versions the specs declare, in spec order, and their history.
+
+    A spec that mentions another slice's rule id stops the run."""
     rules = []
     history = {}
-    for line in read(SPEC).splitlines():
-        heading = HEADING.match(line)
-        if heading:
-            rules.append((heading.group(1), heading.group(2)))
+    for spec in SPECS:
+        if not os.path.exists(os.path.join(ROOT, spec)):
             continue
-        row = HISTORY.match(line)
-        if row:
-            change = row.group(3)
-            version = SPEC_VERSION.search(change)
-            history[(row.group(1), row.group(2))] = (
-                version.group(1) if version else "-", change)
+        text = read(spec)
+        foreign = sorted({rule_id for rule_id, unused in mentions(text)
+                          if not rule_id.startswith(family(spec) + "-R")})
+        if foreign:
+            raise SystemExit("%s names rules of another slice: %s" % (spec, ", ".join(foreign)))
+        for line in text.splitlines():
+            heading = HEADING.match(line)
+            if heading:
+                rules.append((heading.group(1), heading.group(2)))
+                continue
+            row = HISTORY.match(line)
+            if row:
+                change = row.group(3)
+                version = SPEC_VERSION.search(change)
+                history[(row.group(1), row.group(2))] = (
+                    version.group(1) if version else "-", change)
     return rules, history
 
 
@@ -165,10 +195,18 @@ def tests_for(rule, citations):
 
 
 def transcripts_for(rule, routes):
+    """The transcripts of ``transcript_rules`` and the payment scenarios of
+    ``payment_scenarios`` that are evidence for the rule (a transcript scenario
+    listed in both appears once)."""
     found = []
     for scenario, cited in sorted(routes.get("transcript_rules", {}).items()):
         if any(refers_to(entry, rule) for entry in cited):
             found.append(scenario)
+    for scenario in routes.get("payment_scenarios", []):
+        if scenario["scenario"] in found:
+            continue
+        if any(refers_to(entry, rule) for entry in scenario.get("rules", [])):
+            found.append(scenario["scenario"])
     return found
 
 
@@ -213,7 +251,7 @@ def main():
         spec_version, change = history.get(rule, ("-", ""))
         scenarios = transcripts_for(rule, routes)
         rows.append({
-            "rule": "SETTLE-R%s (v%s)" % (rule[0].split("-R")[1], rule[1]),
+            "rule": "%s (v%s)" % rule,
             "spec_version": spec_version,
             "history": change or "-",
             "commit": last_commit(rule),
@@ -233,12 +271,14 @@ def main():
         "`parity/routes.json` and `parity/report.json`, and the file is rewritten",
         "byte for byte on every run.",
         "",
-        "One row per rule version of `docs/specs/SPEC-SETTLE-001.md`. *Spec version*",
-        "is the version of the spec that last changed the rule, from its Rule",
-        "history row. *Last commit* is the last commit whose changed lines mention",
-        "that rule version. *Tests* are the tests whose javadoc cites it, *Transcripts*",
-        "the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in",
-        "`parity/report.json`.",
+        "One row per rule version of `docs/specs/SPEC-SETTLE-001.md` (SETTLE-Rnn) and",
+        "`docs/specs/SPEC-PAY-001.md` (PAY-Rnn). *Spec version* is the version of",
+        "the rule's spec that last changed it, from its Rule history row. *Last",
+        "commit* is the last commit whose changed lines mention that rule version.",
+        "*Tests* are the tests whose javadoc cites it, *Transcripts* the parity",
+        "scenarios `parity/routes.json` maps to it (transcripts, and for the payment",
+        "slice the live-run scenarios of `payment_scenarios`), and *Parity* their",
+        "verdicts in `parity/report.json`.",
         "",
         "| Rule | Spec version | Last commit | Tests | Transcripts | Parity | Change record |",
         "| --- | --- | --- | --- | --- | --- | --- |",

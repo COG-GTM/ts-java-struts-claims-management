@@ -2,6 +2,8 @@
   "comment": "Approved differences between the legacy transcripts and the settlement service. A scenario listed here is judged against its 'expected' block instead of the transcript and is reported as CHANGED (<change>) by make parity; anything else is still a FAIL. Each entry must name a docs/changes/CHG-nnn record (ADR-001, 'Behaviour freeze').",
   "transcript_rules_comment": "Which SPEC-SETTLE-001 rules each settlement transcript is evidence for, taken from the 'Observed:' lines of the spec. tools/traceability.py reads this to put transcripts and their parity verdicts next to each rule. An entry without a version (SETTLE-R05) applies to every version of that rule; a version-qualified entry (SETTLE-R06 (v2)) applies to that version only.",
   "transcript_rules": {
+    "payment_issue": ["PAY-R02", "PAY-R14", "PAY-R15", "PAY-R16", "PAY-R17"],
+    "payment_history": ["PAY-R18", "PAY-R19"],
     "settlement_bad_deductible": ["SETTLE-R06 (v1)", "SETTLE-R06 (v2)"],
     "settlement_blank_deductible": ["SETTLE-R05", "SETTLE-R10", "SETTLE-R24"],
     "settlement_calculate": ["SETTLE-R01", "SETTLE-R11", "SETTLE-R13", "SETTLE-R20", "SETTLE-R22", "SETTLE-R24"],
@@ -10,6 +12,1499 @@
     "settlement_policy_cap": ["SETTLE-R13"],
     "settlement_save": ["SETTLE-R25", "SETTLE-R27", "SETTLE-R28", "SETTLE-R29"]
   },
+  "payment_scenarios_comment": "Payment slice (ADR-002, SPEC-PAY-001): transcript_rules above also maps the two payment transcripts to their PAY rules, from the spec's transcript_rules block. The payment parity scenarios tools/parity/payment_parity.py replays against the payment service (ADR-002, 'How parity is judged'). Each scenario states its database precondition explicitly: the scripts under parity/preconditions/payment applied, in order, on top of the legacy seed by POST /parity/reset before the request, so scenarios do not depend on the order they run in. A scenario with a 'transcript' is judged against that transcripts/<name>.json. A scenario with its own 'request' and 'expected' has no transcript: both are copied verbatim from the legacy run recorded in docs/specs/SPEC-PAY-001-live.json ('observed' names the step), and 'expected.db_state' is read back through the service as for transcripts (payment.<id>.amount / payment.<id>.status via /payment/detail, payment.count.claim.<id> via /payment/remittance). 'rules' are the SPEC-PAY-001 rules the scenario is evidence for, from the rule's Observed: line.",
+  "payment_scenarios": [
+    {
+      "scenario": "payment_issue",
+      "transcript": "payment_issue",
+      "precondition": [
+        "capture-state.sql"
+      ],
+      "rules": [
+        "PAY-R02",
+        "PAY-R14",
+        "PAY-R15",
+        "PAY-R16",
+        "PAY-R17"
+      ]
+    },
+    {
+      "scenario": "payment_history",
+      "transcript": "payment_history",
+      "precondition": [
+        "capture-state.sql",
+        "capture-state-payment-61.sql"
+      ],
+      "rules": [
+        "PAY-R18",
+        "PAY-R19"
+      ]
+    },
+    {
+      "scenario": "payment_history_seeded_claim",
+      "description": "History for claim 1 (seeded payment 1)",
+      "precondition": [],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L05",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/history.do",
+        "form": {
+          "claimId": "1"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/history.jsp",
+        "business_fields": {
+          "checkNumber_1": "CHK-00001",
+          "paymentAmount_1": "500.00",
+          "paymentStatus_1": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R18",
+        "PAY-R19"
+      ]
+    },
+    {
+      "scenario": "payment_history_claim_fallback",
+      "description": "History, claimId=abc falls back to 119",
+      "precondition": [],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L06",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/history.do",
+        "form": {
+          "claimId": "abc"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/history.jsp",
+        "business_fields": {},
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R18",
+        "PAY-R21"
+      ]
+    },
+    {
+      "scenario": "payment_detail_default_absent",
+      "description": "Detail, no parameters, fresh seed (default 61 absent)",
+      "precondition": [],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L07",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/detail.do",
+        "form": {}
+      },
+      "expected": {
+        "status": 200,
+        "result": "error.jsp (Reference status: null)",
+        "business_fields": {},
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R22",
+        "PAY-R23",
+        "PAY-R29"
+      ]
+    },
+    {
+      "scenario": "payment_detail_unknown",
+      "description": "Detail for missing payment 9999",
+      "precondition": [],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L08",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/detail.do",
+        "form": {
+          "paymentId": "9999"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "error.jsp (Reference status: null)",
+        "business_fields": {},
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R23",
+        "PAY-R29"
+      ]
+    },
+    {
+      "scenario": "payment_detail_seeded",
+      "description": "Detail for seeded payment 1",
+      "precondition": [],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L09",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/detail.do",
+        "form": {
+          "paymentId": "1"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/detail.jsp",
+        "business_fields": {
+          "detailPaymentId": "1",
+          "detailPaymentClaim": "1",
+          "detailPaymentAmount": "500.00",
+          "detailPaymentCheck": "CHK-00001",
+          "detailPaymentDate": "2019-03-15",
+          "detailPaymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R22",
+        "PAY-R24",
+        "PAY-R28"
+      ]
+    },
+    {
+      "scenario": "payment_detail_fallback_absent",
+      "description": "Detail, paymentId=abc falls back to 61 (absent)",
+      "precondition": [],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L10",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/detail.do",
+        "form": {
+          "paymentId": "abc"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "error.jsp (Reference status: null)",
+        "business_fields": {},
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R22",
+        "PAY-R23"
+      ]
+    },
+    {
+      "scenario": "payment_remittance_default",
+      "description": "Remittance, no parameters, fresh seed",
+      "precondition": [],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L11",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/remittance.do",
+        "form": {}
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+        "business_fields": {
+          "remitClaimId": "119",
+          "remitCount": "0",
+          "remitTotal": "0.00"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R25",
+        "PAY-R27"
+      ]
+    },
+    {
+      "scenario": "payment_remittance_seeded_claim",
+      "description": "Remittance for claim 1",
+      "precondition": [],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L12",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/remittance.do",
+        "form": {
+          "claimId": "1"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+        "business_fields": {
+          "remitCheck_1": "CHK-00001",
+          "remitDate_1": "2019-03-15",
+          "remitAmount_1": "500.00",
+          "remitStatus_1": "ISSUED",
+          "remitClaimId": "1",
+          "remitCount": "1",
+          "remitTotal": "500.00"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R26",
+        "PAY-R27",
+        "PAY-R28"
+      ]
+    },
+    {
+      "scenario": "payment_remittance_claim_fallback",
+      "description": "Remittance, claimId=abc falls back to 119",
+      "precondition": [],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L13",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/remittance.do",
+        "form": {
+          "claimId": "abc"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+        "business_fields": {
+          "remitClaimId": "119",
+          "remitCount": "0",
+          "remitTotal": "0.00"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R25",
+        "PAY-R27"
+      ]
+    },
+    {
+      "scenario": "payment_issue_amount_omitted",
+      "description": "Issue, no amount: falls back to settlement amount",
+      "precondition": [],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L14",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "Live Payee",
+          "paymentMethod": "wire"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "business_fields": {
+          "paymentAmount": "1118.00",
+          "checkNumber": "CHK-61",
+          "paymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {
+          "payment.61.amount": "1118.00",
+          "payment.61.status": "ISSUED",
+          "payment.count.claim.118": "1"
+        }
+      },
+      "rules": [
+        "PAY-R02",
+        "PAY-R06",
+        "PAY-R10",
+        "PAY-R14",
+        "PAY-R17"
+      ]
+    },
+    {
+      "scenario": "payment_issue_amount_unparseable",
+      "description": "Issue, amount=abc: falls back to settlement amount",
+      "precondition": [
+        "live-after-L14.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L15",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "Second Payee",
+          "amount": "abc",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "business_fields": {
+          "paymentAmount": "1118.00",
+          "checkNumber": "CHK-62",
+          "paymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {
+          "payment.62.amount": "1118.00",
+          "payment.count.claim.118": "2"
+        }
+      },
+      "rules": [
+        "PAY-R06"
+      ]
+    },
+    {
+      "scenario": "payment_issue_claim_fallback_unrounded",
+      "description": "Issue, claimId=abc falls back to 119; amount 12.345",
+      "precondition": [
+        "live-after-L15.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L16",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "abc",
+          "payeeName": "Third Payee",
+          "amount": "12.345",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "business_fields": {
+          "paymentAmount": "12.35",
+          "checkNumber": "CHK-63",
+          "paymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {
+          "payment.63.amount": "12.35",
+          "payment.count.claim.119": "1"
+        }
+      },
+      "rules": [
+        "PAY-R04",
+        "PAY-R09"
+      ]
+    },
+    {
+      "scenario": "payment_issue_zero_settlement",
+      "description": "Issue, claim 120 (settlement amount 0), no amount",
+      "precondition": [
+        "live-after-L16.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L17",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "120",
+          "payeeName": "Zero Payee",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "business_fields": {
+          "paymentAmount": "0.00",
+          "checkNumber": "CHK-64",
+          "paymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {
+          "payment.64.amount": "0.00",
+          "payment.count.claim.120": "1"
+        }
+      },
+      "rules": [
+        "PAY-R06"
+      ]
+    },
+    {
+      "scenario": "payment_issue_no_settlement",
+      "description": "Issue for claim without a settlement",
+      "precondition": [
+        "live-after-L17.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L18",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "9999",
+          "payeeName": "Nobody",
+          "amount": "1",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "error.jsp (Reference status: null)",
+        "business_fields": {},
+        "validation_errors": [],
+        "db_state": {
+          "payment.count.claim.118": "2"
+        }
+      },
+      "rules": [
+        "PAY-R05",
+        "PAY-R13",
+        "PAY-R29"
+      ]
+    },
+    {
+      "scenario": "payment_issue_missing_payee",
+      "description": "Issue without payeeName",
+      "precondition": [
+        "live-after-L17.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L19",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "amount": "1",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "error.jsp (Reference status: null)",
+        "business_fields": {},
+        "validation_errors": [],
+        "db_state": {
+          "payment.count.claim.118": "2"
+        }
+      },
+      "rules": [
+        "PAY-R12",
+        "PAY-R13",
+        "PAY-R29"
+      ]
+    },
+    {
+      "scenario": "payment_issue_missing_method",
+      "description": "Issue without paymentMethod",
+      "precondition": [
+        "live-after-L17.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L20",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "No Method",
+          "amount": "1"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "error.jsp (Reference status: null)",
+        "business_fields": {},
+        "validation_errors": [],
+        "db_state": {
+          "payment.count.claim.118": "2"
+        }
+      },
+      "rules": [
+        "PAY-R12",
+        "PAY-R13",
+        "PAY-R29"
+      ]
+    },
+    {
+      "scenario": "payment_issue_payee_too_long",
+      "description": "Issue with 101-char payeeName",
+      "precondition": [
+        "live-after-L17.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L21",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP",
+          "amount": "1",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "error.jsp (Reference status: null)",
+        "business_fields": {},
+        "validation_errors": [],
+        "db_state": {
+          "payment.count.claim.118": "2"
+        }
+      },
+      "rules": [
+        "PAY-R12",
+        "PAY-R13",
+        "PAY-R29"
+      ]
+    },
+    {
+      "scenario": "payment_issue_method_too_long",
+      "description": "Issue with 21-char paymentMethod",
+      "precondition": [
+        "live-after-L17.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L22",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "Long Method",
+          "amount": "1",
+          "paymentMethod": "MMMMMMMMMMMMMMMMMMMMM"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "error.jsp (Reference status: null)",
+        "business_fields": {},
+        "validation_errors": [],
+        "db_state": {
+          "payment.count.claim.118": "2"
+        }
+      },
+      "rules": [
+        "PAY-R12",
+        "PAY-R13",
+        "PAY-R29"
+      ]
+    },
+    {
+      "scenario": "payment_issue_empty_payee",
+      "description": "Issue with empty payeeName",
+      "precondition": [
+        "live-after-L17.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L23",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "",
+          "amount": "1",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "business_fields": {
+          "paymentAmount": "1.00",
+          "checkNumber": "CHK-65",
+          "paymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {
+          "payment.65.amount": "1.00",
+          "payment.count.claim.118": "3"
+        }
+      },
+      "rules": [
+        "PAY-R10",
+        "PAY-R13"
+      ]
+    },
+    {
+      "scenario": "payment_remittance_after_failures",
+      "description": "Remittance 118 after failures (count unchanged)",
+      "precondition": [
+        "live-after-L23.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L24",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/remittance.do",
+        "form": {
+          "claimId": "118"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+        "business_fields": {
+          "remitCheck_61": "CHK-61",
+          "remitDate_61": "2019-04-03",
+          "remitAmount_61": "1118.00",
+          "remitStatus_61": "ISSUED",
+          "remitCheck_62": "CHK-62",
+          "remitDate_62": "2019-04-03",
+          "remitAmount_62": "1118.00",
+          "remitStatus_62": "ISSUED",
+          "remitCheck_65": "CHK-65",
+          "remitDate_65": "2019-04-03",
+          "remitAmount_65": "1.00",
+          "remitStatus_65": "ISSUED",
+          "remitClaimId": "118",
+          "remitCount": "3",
+          "remitTotal": "2237.00"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R13",
+        "PAY-R26",
+        "PAY-R27"
+      ]
+    },
+    {
+      "scenario": "payment_issue_negative",
+      "description": "Issue, negative amount",
+      "precondition": [
+        "live-after-L23.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L25",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "Negative Payee",
+          "amount": "-5",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "business_fields": {
+          "paymentAmount": "-5.00",
+          "checkNumber": "CHK-66",
+          "paymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {
+          "payment.66.amount": "-5.00"
+        }
+      },
+      "rules": [
+        "PAY-R07"
+      ]
+    },
+    {
+      "scenario": "payment_issue_get",
+      "description": "Issue by GET",
+      "precondition": [
+        "live-after-L25.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L26",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "Get Payee",
+          "amount": "7",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "business_fields": {
+          "paymentAmount": "7.00",
+          "checkNumber": "CHK-67",
+          "paymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {
+          "payment.67.amount": "7.00",
+          "payment.67.status": "ISSUED",
+          "payment.count.claim.118": "5"
+        }
+      },
+      "rules": [
+        "PAY-R03"
+      ]
+    },
+    {
+      "scenario": "payment_issue_scientific",
+      "description": "Issue, amount=1e3",
+      "precondition": [
+        "live-after-L26.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L27",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "Sci Payee",
+          "amount": "1e3",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "business_fields": {
+          "paymentAmount": "1000.00",
+          "checkNumber": "CHK-68",
+          "paymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {
+          "payment.68.amount": "1000.00"
+        }
+      },
+      "rules": [
+        "PAY-R07"
+      ]
+    },
+    {
+      "scenario": "payment_issue_comma_amount",
+      "description": "Issue, amount=1,000 (unparseable, falls back)",
+      "precondition": [
+        "live-after-L27.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L28",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "Comma Payee",
+          "amount": "1,000",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "business_fields": {
+          "paymentAmount": "1118.00",
+          "checkNumber": "CHK-69",
+          "paymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {
+          "payment.69.amount": "1118.00"
+        }
+      },
+      "rules": [
+        "PAY-R06"
+      ]
+    },
+    {
+      "scenario": "payment_issue_spaced_amount",
+      "description": "Issue, amount with surrounding spaces",
+      "precondition": [
+        "live-after-L28.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L29",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "Space Payee",
+          "amount": " 5 ",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "business_fields": {
+          "paymentAmount": "5.00",
+          "checkNumber": "CHK-70",
+          "paymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {
+          "payment.70.amount": "5.00"
+        }
+      },
+      "rules": [
+        "PAY-R07"
+      ]
+    },
+    {
+      "scenario": "payment_issue_check_number_ignored",
+      "description": "Issue, client checkNumber ignored, 100-char payee and 20-char method accepted",
+      "precondition": [
+        "live-after-L29.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L30",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ",
+          "amount": "1",
+          "paymentMethod": "NNNNNNNNNNNNNNNNNNNN",
+          "checkNumber": "MINE-1"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "business_fields": {
+          "paymentAmount": "1.00",
+          "checkNumber": "CHK-71",
+          "paymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {
+          "payment.71.amount": "1.00"
+        }
+      },
+      "rules": [
+        "PAY-R11",
+        "PAY-R12"
+      ]
+    },
+    {
+      "scenario": "payment_issue_verbatim_payee",
+      "description": "Issue, payee with HTML characters",
+      "precondition": [
+        "live-after-L30.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L31",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "O'Brien <b>&</b> \"Co\"",
+          "amount": "2",
+          "paymentMethod": "ach"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "business_fields": {
+          "paymentAmount": "2.00",
+          "checkNumber": "CHK-72",
+          "paymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {
+          "payment.72.amount": "2.00"
+        }
+      },
+      "rules": [
+        "PAY-R10"
+      ]
+    },
+    {
+      "scenario": "payment_issue_nan",
+      "description": "Issue, amount=NaN",
+      "precondition": [
+        "live-after-L31.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L32",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "NaN Payee",
+          "amount": "NaN",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "business_fields": {
+          "paymentAmount": "NaN",
+          "checkNumber": "CHK-73",
+          "paymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {
+          "payment.73.amount": "NaN"
+        }
+      },
+      "rules": [
+        "PAY-R08"
+      ]
+    },
+    {
+      "scenario": "payment_detail_issued",
+      "description": "Detail of payment 61 (issued in L14, method wire)",
+      "precondition": [
+        "live-after-L32.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L33",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/detail.do",
+        "form": {
+          "paymentId": "61"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/detail.jsp",
+        "business_fields": {
+          "detailPaymentId": "61",
+          "detailPaymentClaim": "118",
+          "detailPaymentAmount": "1118.00",
+          "detailPaymentCheck": "CHK-61",
+          "detailPaymentDate": "2019-04-03",
+          "detailPaymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R15",
+        "PAY-R22",
+        "PAY-R24",
+        "PAY-R28"
+      ]
+    },
+    {
+      "scenario": "payment_detail_verbatim_payee",
+      "description": "Detail of payment 72 (HTML payee, method ach)",
+      "precondition": [
+        "live-after-L32.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L34",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/detail.do",
+        "form": {
+          "paymentId": "72"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/detail.jsp",
+        "business_fields": {
+          "detailPaymentId": "72",
+          "detailPaymentClaim": "118",
+          "detailPaymentAmount": "2.00",
+          "detailPaymentCheck": "CHK-72",
+          "detailPaymentDate": "2019-04-03",
+          "detailPaymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R24"
+      ]
+    },
+    {
+      "scenario": "payment_detail_default_present",
+      "description": "Detail, no parameters, now that 61 exists",
+      "precondition": [
+        "live-after-L32.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L35",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/detail.do",
+        "form": {}
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/detail.jsp",
+        "business_fields": {
+          "detailPaymentId": "61",
+          "detailPaymentClaim": "118",
+          "detailPaymentAmount": "1118.00",
+          "detailPaymentCheck": "CHK-61",
+          "detailPaymentDate": "2019-04-03",
+          "detailPaymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R22"
+      ]
+    },
+    {
+      "scenario": "payment_history_many",
+      "description": "History for claim 118 (ordered by payment id)",
+      "precondition": [
+        "live-after-L32.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L36",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/history.do",
+        "form": {
+          "claimId": "118"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/history.jsp",
+        "business_fields": {
+          "checkNumber_61": "CHK-61",
+          "paymentAmount_61": "1118.00",
+          "paymentStatus_61": "ISSUED",
+          "checkNumber_62": "CHK-62",
+          "paymentAmount_62": "1118.00",
+          "paymentStatus_62": "ISSUED",
+          "checkNumber_65": "CHK-65",
+          "paymentAmount_65": "1.00",
+          "paymentStatus_65": "ISSUED",
+          "checkNumber_66": "CHK-66",
+          "paymentAmount_66": "-5.00",
+          "paymentStatus_66": "ISSUED",
+          "checkNumber_67": "CHK-67",
+          "paymentAmount_67": "7.00",
+          "paymentStatus_67": "ISSUED",
+          "checkNumber_68": "CHK-68",
+          "paymentAmount_68": "1000.00",
+          "paymentStatus_68": "ISSUED",
+          "checkNumber_69": "CHK-69",
+          "paymentAmount_69": "1118.00",
+          "paymentStatus_69": "ISSUED",
+          "checkNumber_70": "CHK-70",
+          "paymentAmount_70": "5.00",
+          "paymentStatus_70": "ISSUED",
+          "checkNumber_71": "CHK-71",
+          "paymentAmount_71": "1.00",
+          "paymentStatus_71": "ISSUED",
+          "checkNumber_72": "CHK-72",
+          "paymentAmount_72": "2.00",
+          "paymentStatus_72": "ISSUED",
+          "checkNumber_73": "CHK-73",
+          "paymentAmount_73": "NaN",
+          "paymentStatus_73": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R18",
+        "PAY-R19"
+      ]
+    },
+    {
+      "scenario": "payment_history_default_claim",
+      "description": "History, no parameters, after L16 (claim 119)",
+      "precondition": [
+        "live-after-L32.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L37",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/history.do",
+        "form": {}
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/history.jsp",
+        "business_fields": {
+          "checkNumber_63": "CHK-63",
+          "paymentAmount_63": "12.35",
+          "paymentStatus_63": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R04",
+        "PAY-R18"
+      ]
+    },
+    {
+      "scenario": "payment_history_fallback_claim",
+      "description": "History, claimId=abc after L16",
+      "precondition": [
+        "live-after-L32.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L38",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/history.do",
+        "form": {
+          "claimId": "abc"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/history.jsp",
+        "business_fields": {
+          "checkNumber_63": "CHK-63",
+          "paymentAmount_63": "12.35",
+          "paymentStatus_63": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R18"
+      ]
+    },
+    {
+      "scenario": "payment_remittance_nan_total",
+      "description": "Remittance for claim 118",
+      "precondition": [
+        "live-after-L32.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L39",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/remittance.do",
+        "form": {
+          "claimId": "118"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+        "business_fields": {
+          "remitCheck_61": "CHK-61",
+          "remitDate_61": "2019-04-03",
+          "remitAmount_61": "1118.00",
+          "remitStatus_61": "ISSUED",
+          "remitCheck_62": "CHK-62",
+          "remitDate_62": "2019-04-03",
+          "remitAmount_62": "1118.00",
+          "remitStatus_62": "ISSUED",
+          "remitCheck_65": "CHK-65",
+          "remitDate_65": "2019-04-03",
+          "remitAmount_65": "1.00",
+          "remitStatus_65": "ISSUED",
+          "remitCheck_66": "CHK-66",
+          "remitDate_66": "2019-04-03",
+          "remitAmount_66": "-5.00",
+          "remitStatus_66": "ISSUED",
+          "remitCheck_67": "CHK-67",
+          "remitDate_67": "2019-04-03",
+          "remitAmount_67": "7.00",
+          "remitStatus_67": "ISSUED",
+          "remitCheck_68": "CHK-68",
+          "remitDate_68": "2019-04-03",
+          "remitAmount_68": "1000.00",
+          "remitStatus_68": "ISSUED",
+          "remitCheck_69": "CHK-69",
+          "remitDate_69": "2019-04-03",
+          "remitAmount_69": "1118.00",
+          "remitStatus_69": "ISSUED",
+          "remitCheck_70": "CHK-70",
+          "remitDate_70": "2019-04-03",
+          "remitAmount_70": "5.00",
+          "remitStatus_70": "ISSUED",
+          "remitCheck_71": "CHK-71",
+          "remitDate_71": "2019-04-03",
+          "remitAmount_71": "1.00",
+          "remitStatus_71": "ISSUED",
+          "remitCheck_72": "CHK-72",
+          "remitDate_72": "2019-04-03",
+          "remitAmount_72": "2.00",
+          "remitStatus_72": "ISSUED",
+          "remitCheck_73": "CHK-73",
+          "remitDate_73": "2019-04-03",
+          "remitAmount_73": "NaN",
+          "remitStatus_73": "ISSUED",
+          "remitClaimId": "118",
+          "remitCount": "11",
+          "remitTotal": "NaN"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R08",
+        "PAY-R15",
+        "PAY-R26",
+        "PAY-R27"
+      ]
+    },
+    {
+      "scenario": "payment_remittance_claim_119",
+      "description": "Remittance for claim 119",
+      "precondition": [
+        "live-after-L32.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L40",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/remittance.do",
+        "form": {
+          "claimId": "119"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+        "business_fields": {
+          "remitCheck_63": "CHK-63",
+          "remitDate_63": "2019-04-03",
+          "remitAmount_63": "12.35",
+          "remitStatus_63": "ISSUED",
+          "remitClaimId": "119",
+          "remitCount": "1",
+          "remitTotal": "12.35"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R27"
+      ]
+    },
+    {
+      "scenario": "payment_remittance_claim_120",
+      "description": "Remittance for claim 120 (zero amount payment)",
+      "precondition": [
+        "live-after-L32.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L41",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/remittance.do",
+        "form": {
+          "claimId": "120"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+        "business_fields": {
+          "remitCheck_64": "CHK-64",
+          "remitDate_64": "2019-04-03",
+          "remitAmount_64": "0.00",
+          "remitStatus_64": "ISSUED",
+          "remitClaimId": "120",
+          "remitCount": "1",
+          "remitTotal": "0.00"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R27"
+      ]
+    },
+    {
+      "scenario": "payment_issue_newest_settlement",
+      "description": "Issue for claim 118, no amount, after newer settlement",
+      "precondition": [
+        "live-after-L42.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L43",
+      "request": {
+        "method": "POST",
+        "path": "/claims/payment/issue.do",
+        "form": {
+          "claimId": "118",
+          "payeeName": "Latest Payee",
+          "paymentMethod": "CHECK"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "business_fields": {
+          "paymentAmount": "2750.00",
+          "checkNumber": "CHK-74",
+          "paymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {
+          "payment.74.amount": "2750.00",
+          "payment.count.claim.118": "12"
+        }
+      },
+      "rules": [
+        "PAY-R05",
+        "PAY-R06"
+      ]
+    },
+    {
+      "scenario": "payment_detail_newest_settlement",
+      "description": "Detail of payment 74 (amount from newer settlement)",
+      "precondition": [
+        "live-after-L43.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L44",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/detail.do",
+        "form": {
+          "paymentId": "74"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/detail.jsp",
+        "business_fields": {
+          "detailPaymentId": "74",
+          "detailPaymentClaim": "118",
+          "detailPaymentAmount": "2750.00",
+          "detailPaymentCheck": "CHK-74",
+          "detailPaymentDate": "2019-04-03",
+          "detailPaymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R05"
+      ]
+    },
+    {
+      "scenario": "payment_detail_nan",
+      "description": "Detail of payment 73 (amount NaN)",
+      "precondition": [
+        "live-after-L43.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L45",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/detail.do",
+        "form": {
+          "paymentId": "73"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/detail.jsp",
+        "business_fields": {
+          "detailPaymentId": "73",
+          "detailPaymentClaim": "118",
+          "detailPaymentAmount": "NaN",
+          "detailPaymentCheck": "CHK-73",
+          "detailPaymentDate": "2019-04-03",
+          "detailPaymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R08",
+        "PAY-R24"
+      ]
+    },
+    {
+      "scenario": "payment_detail_empty_payee",
+      "description": "Detail of payment 65 (empty payee)",
+      "precondition": [
+        "live-after-L43.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L46",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/detail.do",
+        "form": {
+          "paymentId": "65"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/detail.jsp",
+        "business_fields": {
+          "detailPaymentId": "65",
+          "detailPaymentClaim": "118",
+          "detailPaymentAmount": "1.00",
+          "detailPaymentCheck": "CHK-65",
+          "detailPaymentDate": "2019-04-03",
+          "detailPaymentStatus": "ISSUED"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R10",
+        "PAY-R24"
+      ]
+    },
+    {
+      "scenario": "payment_remittance_final",
+      "description": "Remittance for claim 118 at end of run",
+      "precondition": [
+        "live-after-L43.sql"
+      ],
+      "observed": "docs/specs/SPEC-PAY-001-live.json step L47",
+      "request": {
+        "method": "GET",
+        "path": "/claims/payment/remittance.do",
+        "form": {
+          "claimId": "118"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+        "business_fields": {
+          "remitCheck_61": "CHK-61",
+          "remitDate_61": "2019-04-03",
+          "remitAmount_61": "1118.00",
+          "remitStatus_61": "ISSUED",
+          "remitCheck_62": "CHK-62",
+          "remitDate_62": "2019-04-03",
+          "remitAmount_62": "1118.00",
+          "remitStatus_62": "ISSUED",
+          "remitCheck_65": "CHK-65",
+          "remitDate_65": "2019-04-03",
+          "remitAmount_65": "1.00",
+          "remitStatus_65": "ISSUED",
+          "remitCheck_66": "CHK-66",
+          "remitDate_66": "2019-04-03",
+          "remitAmount_66": "-5.00",
+          "remitStatus_66": "ISSUED",
+          "remitCheck_67": "CHK-67",
+          "remitDate_67": "2019-04-03",
+          "remitAmount_67": "7.00",
+          "remitStatus_67": "ISSUED",
+          "remitCheck_68": "CHK-68",
+          "remitDate_68": "2019-04-03",
+          "remitAmount_68": "1000.00",
+          "remitStatus_68": "ISSUED",
+          "remitCheck_69": "CHK-69",
+          "remitDate_69": "2019-04-03",
+          "remitAmount_69": "1118.00",
+          "remitStatus_69": "ISSUED",
+          "remitCheck_70": "CHK-70",
+          "remitDate_70": "2019-04-03",
+          "remitAmount_70": "5.00",
+          "remitStatus_70": "ISSUED",
+          "remitCheck_71": "CHK-71",
+          "remitDate_71": "2019-04-03",
+          "remitAmount_71": "1.00",
+          "remitStatus_71": "ISSUED",
+          "remitCheck_72": "CHK-72",
+          "remitDate_72": "2019-04-03",
+          "remitAmount_72": "2.00",
+          "remitStatus_72": "ISSUED",
+          "remitCheck_73": "CHK-73",
+          "remitDate_73": "2019-04-03",
+          "remitAmount_73": "NaN",
+          "remitStatus_73": "ISSUED",
+          "remitCheck_74": "CHK-74",
+          "remitDate_74": "2019-04-03",
+          "remitAmount_74": "2750.00",
+          "remitStatus_74": "ISSUED",
+          "remitClaimId": "118",
+          "remitCount": "12",
+          "remitTotal": "NaN"
+        },
+        "validation_errors": [],
+        "db_state": {}
+      },
+      "rules": [
+        "PAY-R08",
+        "PAY-R27"
+      ]
+    }
+  ],
   "approved_differences": [
     {
       "scenario": "settlement_bad_deductible",
