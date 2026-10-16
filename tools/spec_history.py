@@ -58,9 +58,18 @@ VERSION_LINE = re.compile(r"^Version:\s*(\S+)")
 EVIDENCE_START = re.compile(r"^(Observed|Read|Approved):")
 EVIDENCE_SPLIT = re.compile(r"(?=\b(?:Observed|Read|Approved):)")
 SOURCE_REF = re.compile(r"^([\w./-]+\.\w+)(?::([\d,-]+))?$")
-GITHUB = re.compile(r"github\.com[/:]([^/]+)/([^/\s]+?)(?:\.git)?/?$")
+# Links to commits and files use one fixed repository and branch, not whatever
+# the machine running the script has checked out: the generated files are
+# committed, and CI regenerates them on a detached checkout (of a fork, for a
+# fork PR) and fails if the bytes differ. --repo-url and --ref override them.
+REPO_URL = "https://github.com/COG-GTM/ts-java-struts-claims-management"
+LINK_REF = "migrated-app"
 
 git = traceability.git
+
+
+def rule_sort_key(rule_id):
+    return [int(part) if part.isdigit() else part for part in re.split(r"(\d+)", rule_id)]
 
 
 def rule_key(rule_id, version):
@@ -134,21 +143,29 @@ def parse_evidence(clause):
             entry["path"] = ref.group(1)
             entry["lines"] = ref.group(2)
         elif kind == "Observed":
-            name, _, remark = item.partition(" ")
-            name = name.rstrip(",")
-            if os.path.exists(os.path.join(ROOT, "transcripts", name + ".json")):
-                entry["transcript"] = name
-                entry["remark"] = remark.strip()
+            # "settlement_calculate, settlement_policy_cap" names two
+            # transcripts; "manual run against localhost Jetty, seeded database"
+            # names none and stays one remark.
+            parts = [part for part in split_outside_parentheses(item, ",") if part]
+            if parts and all(is_transcript(part.split(" ", 1)[0]) for part in parts):
+                for part in parts:
+                    name, _, remark = part.partition(" ")
+                    items.append({"text": part, "transcript": name, "remark": remark.strip()})
+                continue
         items.append(entry)
     return {"kind": kind, "items": items}
 
 
-def split_outside_parentheses(text):
-    """Split on ';' but not inside parentheses: a transcript remark such as
-    '(... departs from; recorded as CHANGED ...)' is one item."""
+def is_transcript(name):
+    return os.path.exists(os.path.join(ROOT, "transcripts", name + ".json"))
+
+
+def split_outside_parentheses(text, separator=";"):
+    """Split on the separator but not inside parentheses: a transcript remark
+    such as '(... departs from; recorded as CHANGED ...)' is one item."""
     items, depth, current = [], 0, []
     for char in text:
-        if char == ";" and depth == 0:
+        if char == separator and depth == 0:
             items.append("".join(current))
             current = []
             continue
@@ -280,27 +297,7 @@ def change_records_for(rule_id, version):
 
 # --- assembling the catalogue -----------------------------------------------
 
-def repo_url():
-    try:
-        remote = git("remote", "get-url", "origin").strip()
-    except Exception:  # noqa: BLE001  (no remote: links are omitted)
-        return None
-    match = GITHUB.search(remote)
-    return "https://github.com/%s/%s" % (match.group(1), match.group(2)) if match else None
-
-
-def current_ref():
-    """Branch name for the file links. GitHub Actions checks out a detached
-    commit, so the branch is taken from its environment there to keep the
-    generated files identical to a local run on the same branch."""
-    for var in ("GITHUB_HEAD_REF", "GITHUB_REF_NAME"):
-        if os.environ.get(var):
-            return os.environ[var]
-    ref = git("rev-parse", "--abbrev-ref", "HEAD").strip()
-    return ref if ref != "HEAD" else git("rev-parse", "HEAD").strip()
-
-
-def build(ref):
+def build(ref, repo):
     traceability.require_full_history()
     revs = revisions()
     if not revs:
@@ -321,30 +318,44 @@ def build(ref):
                     {"kind": event["kind"], "commit": rev["commit"],
                      "spec_version": rev["spec_version"]})
 
-    catalogue = []
+    # Every version any revision published, with its last published text: a
+    # version a later commit removed stays on the timeline and in the table.
+    published = {}
+    for rev in revs:
+        for rule in rev["rules"]:
+            published[rule_key(rule["id"], rule["version"])] = rule
+    in_head = {rule_key(rule["id"], rule["version"]) for rule in head["rules"]}
     by_id = {}
-    for rule in head["rules"]:
+    for rule in published.values():
         by_id.setdefault(rule["id"], []).append(rule)
-    for rule in head["rules"]:
-        key = rule_key(rule["id"], rule["version"])
+
+    catalogue = []
+    for key, rule in sorted(published.items(), key=lambda kv: (rule_sort_key(kv[1]["id"]), kv[1]["version"])):
         intro = first_seen.get(key)
         superseded = SUPERSEDED.search(rule["flags"])
         earlier = [other for other in by_id[rule["id"]]
                    if other["version"] == rule["version"] - 1]
         scenarios = traceability.transcripts_for((rule["id"], str(rule["version"])), routes)
+        if key not in in_head:
+            status = "removed"
+        elif superseded:
+            status = "superseded by v%s" % superseded.group(1)
+        else:
+            status = "current"
         catalogue.append({
             "key": key,
             "id": rule["id"],
             "version": rule["version"],
             "section": rule["section"],
-            "status": ("superseded by v%s" % superseded.group(1)) if superseded else "current",
+            "status": status,
             "text": rule["text"],
             "evidence": rule["evidence"],
             "previous": earlier[0] if earlier else None,
             "introduced": {
                 "commit": intro["commit"], "spec_version": intro["spec_version"],
             } if intro else None,
-            "history": head["history"].get(key),
+            "history": head["history"].get(key) or next(
+                (rev["history"][key] for rev in reversed(revs) if key in rev["history"]), None),
             "later": later.get(key, []),
             "tests": tests_for(rule["id"], rule["version"], citations),
             "transcripts": [{"name": name, "verdict": parity.get(name, "not replayed")}
@@ -357,7 +368,7 @@ def build(ref):
         "spec": SPEC,
         "spec_name": SPEC_NAME,
         "spec_version": head["spec_version"],
-        "repo_url": repo_url(),
+        "repo_url": repo,
         "ref": ref,
         "revisions": [{
             "commit": rev["commit"],
@@ -653,6 +664,7 @@ main { padding: 22px 28px 48px; min-width: 0; overflow-wrap: anywhere; }
 .status { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 10px; margin-left: 8px; vertical-align: middle; }
 .status.current { background: var(--added); color: var(--added-ink); }
 .status.superseded { background: var(--removed); color: var(--removed-ink); }
+.status.removed { background: var(--muted); color: #fff; }
 .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0 18px; }
 @media (max-width: 1100px) { .compare { grid-template-columns: 1fr; } }
 .pane { min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
@@ -725,6 +737,7 @@ ins { background: var(--added); color: var(--added-ink); text-decoration: none; 
     return node;
   }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
+  function statusClass(r) { return r.status === 'current' ? 'current' : r.status === 'removed' ? 'removed' : 'superseded'; }
   function commitUrl(c) { return data.repo_url ? data.repo_url + '/commit/' + c.sha : null; }
   function fileUrl(path, lines) {
     if (!data.repo_url) return null;
@@ -799,7 +812,7 @@ ins { background: var(--added); color: var(--added-ink); text-decoration: none; 
     document.querySelectorAll('.chip').forEach(function (c) { c.classList.toggle('active', c.getAttribute('data-rule') === key); });
     var detail = document.getElementById('detail');
     detail.innerHTML = '';
-    var status = el('span', {'class': 'status ' + (r.status === 'current' ? 'current' : 'superseded'), text: r.status});
+    var status = el('span', {'class': 'status ' + statusClass(r), text: r.status});
     detail.appendChild(el('h3', {}, [el('span', {'class': 'mono', text: r.key}), status]));
     var meta = el('div', {'class': 'meta'});
     if (r.introduced) {
@@ -908,7 +921,7 @@ ins { background: var(--added); color: var(--added-ink); text-decoration: none; 
       if (r.introduced) { intro.appendChild(document.createTextNode('spec ' + r.introduced.spec_version + ' · ' + r.introduced.commit.date + ' · ')); intro.appendChild(link(r.introduced.commit.short, commitUrl(r.introduced.commit), true)); }
       else intro.textContent = '-';
       tr.appendChild(intro);
-      tr.appendChild(el('td', {}, [el('span', {'class': 'status ' + (r.status === 'current' ? 'current' : 'superseded'), text: r.status, style: 'margin-left:0'})]));
+      tr.appendChild(el('td', {}, [el('span', {'class': 'status ' + statusClass(r), text: r.status, style: 'margin-left:0'})]));
       tr.appendChild(el('td', {text: r.tests.length ? r.tests.length + ' test' + (r.tests.length === 1 ? '' : 's') : '-'}));
       var tds = el('td');
       r.transcripts.forEach(function (t, i) { if (i) tds.appendChild(document.createTextNode(', ')); tds.appendChild(el('span', {'class': 'mono', text: t.name})); tds.appendChild(el('span', {'class': 'verdict ' + t.verdict.split(' ')[0], text: t.verdict})); });
@@ -930,7 +943,7 @@ ins { background: var(--added); color: var(--added-ink); text-decoration: none; 
   }
 
   document.getElementById('title').textContent = data.spec_name + ' — change history';
-  document.getElementById('subtitle').textContent = 'Spec version ' + data.spec_version + ' · ' + data.rules.length + ' rule versions · ' + data.revisions.length + ' commits on ' + data.ref + ' · generated by tools/spec_history.py from the git history of ' + data.spec;
+  document.getElementById('subtitle').textContent = 'Spec version ' + data.spec_version + ' · ' + data.rules.length + ' rule versions · ' + data.revisions.length + ' commits on this branch · generated by tools/spec_history.py from the git history of ' + data.spec;
   renderTimeline('');
   renderTable('');
   renderChecks();
@@ -949,10 +962,12 @@ ins { background: var(--added); color: var(--added-ink); text-decoration: none; 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--ref", default=None,
-                        help="branch or commit used in links to files (default: current branch)")
+    parser.add_argument("--ref", default=LINK_REF,
+                        help="branch or commit the file links point at (default: %s)" % LINK_REF)
+    parser.add_argument("--repo-url", default=REPO_URL,
+                        help="repository the commit and file links point at; '' for none")
     args = parser.parse_args()
-    data = build(args.ref or current_ref())
+    data = build(args.ref, args.repo_url or None)
     write_markdown(data)
     write_html(data)
     print("wrote %s and %s (%d rule versions, %d commits, %d checks)" % (
