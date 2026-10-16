@@ -89,9 +89,10 @@ details.text pre { max-height: 30em; }
     var spec = m ? specs[m[2]] : undefined;
     if (!spec) return '<code>' + esc(rule) + '</code>';
     // The spec's HTML twin anchors the current text of a rule at #PAY-R07 and a
-    // superseded version at #PAY-R07-v1; a bare .md target ignores the anchor.
-    var anchor = m[1] + (m[3] && spec.html && m[3] !== spec.current[m[1]] ? '-' + m[3] : '');
-    return '<a href="../' + esc(spec.path) + '#' + esc(anchor) + '" title="' + esc(m[1] + (m[3] ? ' ' + m[3] : '') + ' in ' + spec.path) + '"><code>' + esc(rule) + '</code></a>';
+    // superseded version at #PAY-R07-v1; a spec that only has Markdown gets the
+    // document link alone, as before, since its headings carry no such anchors.
+    var anchor = spec.html ? '#' + m[1] + (m[3] && m[3] !== spec.current[m[1]] ? '-' + m[3] : '') : '';
+    return '<a href="../' + esc(spec.path) + esc(anchor) + '" title="' + esc(m[1] + (m[3] ? ' ' + m[3] : '') + ' in ' + spec.path) + '"><code>' + esc(rule) + '</code></a>';
   };
   var summary = document.getElementById('summary');
   var counts = {PASS: 0, CHANGED: 0, FAIL: 0};
