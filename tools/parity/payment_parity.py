@@ -35,6 +35,14 @@ def status_class(status):
     return "%dxx" % (status // 100)
 
 
+def screen_of(result):
+    """The legacy forward (``forward:/WEB-INF/jsp/payment/history.jsp`` or
+    ``.../error.jsp``) as the service's screen name: history, detail,
+    remittance, issue or error (PaymentResponse.screen)."""
+    name = result.rsplit("/", 1)[-1]
+    return name[:-4] if name.endswith(".jsp") else name
+
+
 def send(base, method, path, form=None, headers=None):
     data = urllib.parse.urlencode(form or {}).encode() if method == "POST" else None
     url = base + path
@@ -114,8 +122,16 @@ def run(base, scenario, live_rows, approval):
         "validation_errors": body.get("errors", []),
     }
     diffs = []
-    if status_class(status) != status_class(expected["status"]) and not (
-            expected.get("result", "").endswith("error.jsp") and status >= 500):
+    expected["screen"] = expected.get("screen") or screen_of(expected.get("result", ""))
+    if expected["screen"] != actual["screen"]:
+        diffs.append("screen %r != %r" % (actual["screen"], expected["screen"]))
+    legacy_error_forward = expected["screen"] == "error" and status >= 500
+    if legacy_error_forward:
+        actual["status_parity"] = ("legacy forwards to error.jsp with 200; the service answers "
+                                   "%d, the same error class per ADR-002 (How parity is judged)" % status)
+    elif status_class(status) == status_class(expected["status"]):
+        actual["status_parity"] = "same status class %s" % status_class(status)
+    else:
         diffs.append("status class %s != %s" % (status_class(status), status_class(expected["status"])))
     if "display" in expected:
         actual["display"] = body.get("display", {})

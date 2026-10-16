@@ -70,6 +70,7 @@
         },
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -87,6 +88,7 @@
           "payment.count.claim.119": "1"
         },
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -123,6 +125,7 @@
         "db_state": {},
         "screen": "history",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -136,6 +139,7 @@
         },
         "db_state": {},
         "result": "forward:/WEB-INF/jsp/payment/history.jsp",
+        "screen": "history",
         "status": 200,
         "validation_errors": []
       },
@@ -166,6 +170,7 @@
         "payment_rows": [],
         "screen": "remittance",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -182,6 +187,7 @@
         "payment_rows": [],
         "payment_rows_through": 60,
         "result": "forward:/WEB-INF/jsp/payment/remittance.jsp",
+        "screen": "remittance",
         "status": 200,
         "validation_errors": []
       },
@@ -226,6 +232,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -254,6 +261,7 @@
         ],
         "payment_rows_through": 61,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -314,6 +322,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -353,6 +362,7 @@
         ],
         "payment_rows_through": 62,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -425,6 +435,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -475,6 +486,7 @@
         ],
         "payment_rows_through": 63,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -555,6 +567,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -616,6 +629,7 @@
         ],
         "payment_rows_through": 64,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -707,6 +721,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -779,6 +794,7 @@
         ],
         "payment_rows_through": 65,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -881,6 +897,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -964,6 +981,7 @@
         ],
         "payment_rows_through": 66,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -1077,6 +1095,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -1171,6 +1190,7 @@
         ],
         "payment_rows_through": 67,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -1295,6 +1315,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -1400,6 +1421,7 @@
         ],
         "payment_rows_through": 68,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -1535,6 +1557,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -1651,6 +1674,7 @@
         ],
         "payment_rows_through": 69,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -1798,6 +1822,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -1925,6 +1950,7 @@
         ],
         "payment_rows_through": 70,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -2067,6 +2093,7 @@
         ],
         "screen": "error",
         "status": 500,
+        "status_parity": "legacy forwards to error.jsp with 200; the service answers 500, the same error class per ADR-002 (How parity is judged)",
         "validation_errors": []
       },
       "change": null,
@@ -2190,6 +2217,7 @@
         ],
         "payment_rows_through": 70,
         "result": "forward:/WEB-INF/jsp/error.jsp",
+        "screen": "error",
         "status": 200,
         "validation_errors": []
       },
@@ -2332,6 +2360,7 @@
         ],
         "screen": "error",
         "status": 500,
+        "status_parity": "legacy forwards to error.jsp with 200; the service answers 500, the same error class per ADR-002 (How parity is judged)",
         "validation_errors": []
       },
       "change": null,
@@ -2455,6 +2484,7 @@
         ],
         "payment_rows_through": 70,
         "result": "forward:/WEB-INF/jsp/error.jsp",
+        "screen": "error",
         "status": 200,
         "validation_errors": []
       },
@@ -2596,6 +2626,7 @@
         ],
         "screen": "error",
         "status": 500,
+        "status_parity": "legacy forwards to error.jsp with 200; the service answers 500, the same error class per ADR-002 (How parity is judged)",
         "validation_errors": []
       },
       "change": null,
@@ -2719,6 +2750,7 @@
         ],
         "payment_rows_through": 70,
         "result": "forward:/WEB-INF/jsp/error.jsp",
+        "screen": "error",
         "status": 200,
         "validation_errors": []
       },
@@ -2861,6 +2893,7 @@
         ],
         "screen": "error",
         "status": 500,
+        "status_parity": "legacy forwards to error.jsp with 200; the service answers 500, the same error class per ADR-002 (How parity is judged)",
         "validation_errors": []
       },
       "change": null,
@@ -2984,6 +3017,7 @@
         ],
         "payment_rows_through": 70,
         "result": "forward:/WEB-INF/jsp/error.jsp",
+        "screen": "error",
         "status": 200,
         "validation_errors": []
       },
@@ -3142,6 +3176,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -3280,6 +3315,7 @@
         ],
         "payment_rows_through": 71,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -3448,6 +3484,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -3597,6 +3634,7 @@
         ],
         "payment_rows_through": 72,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -3776,6 +3814,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -3936,6 +3975,7 @@
         ],
         "payment_rows_through": 73,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -4127,6 +4167,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -4298,6 +4339,7 @@
         ],
         "payment_rows_through": 74,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -4500,6 +4542,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -4682,6 +4725,7 @@
         ],
         "payment_rows_through": 75,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -4921,6 +4965,7 @@
         ],
         "screen": "history",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -5141,6 +5186,7 @@
         ],
         "payment_rows_through": 75,
         "result": "forward:/WEB-INF/jsp/payment/history.jsp",
+        "screen": "history",
         "status": 200,
         "validation_errors": []
       },
@@ -5346,6 +5392,7 @@
         ],
         "screen": "history",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -5536,6 +5583,7 @@
         ],
         "payment_rows_through": 75,
         "result": "forward:/WEB-INF/jsp/payment/history.jsp",
+        "screen": "history",
         "status": 200,
         "validation_errors": []
       },
@@ -5736,6 +5784,7 @@
         ],
         "screen": "history",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -5919,6 +5968,7 @@
         ],
         "payment_rows_through": 75,
         "result": "forward:/WEB-INF/jsp/payment/history.jsp",
+        "screen": "history",
         "status": 200,
         "validation_errors": []
       },
@@ -6124,6 +6174,7 @@
         ],
         "screen": "detail",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -6312,6 +6363,7 @@
         ],
         "payment_rows_through": 75,
         "result": "forward:/WEB-INF/jsp/payment/detail.jsp",
+        "screen": "detail",
         "status": 200,
         "validation_errors": []
       },
@@ -6517,6 +6569,7 @@
         ],
         "screen": "detail",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -6705,6 +6758,7 @@
         ],
         "payment_rows_through": 75,
         "result": "forward:/WEB-INF/jsp/payment/detail.jsp",
+        "screen": "detail",
         "status": 200,
         "validation_errors": []
       },
@@ -6897,6 +6951,7 @@
         ],
         "screen": "error",
         "status": 500,
+        "status_parity": "legacy forwards to error.jsp with 200; the service answers 500, the same error class per ADR-002 (How parity is judged)",
         "validation_errors": []
       },
       "change": null,
@@ -7075,6 +7130,7 @@
         ],
         "payment_rows_through": 75,
         "result": "forward:/WEB-INF/jsp/error.jsp",
+        "screen": "error",
         "status": 200,
         "validation_errors": []
       },
@@ -7279,6 +7335,7 @@
         ],
         "screen": "detail",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -7467,6 +7524,7 @@
         ],
         "payment_rows_through": 75,
         "result": "forward:/WEB-INF/jsp/payment/detail.jsp",
+        "screen": "detail",
         "status": 200,
         "validation_errors": []
       },
@@ -7671,6 +7729,7 @@
         ],
         "screen": "detail",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -7859,6 +7918,7 @@
         ],
         "payment_rows_through": 75,
         "result": "forward:/WEB-INF/jsp/payment/detail.jsp",
+        "screen": "detail",
         "status": 200,
         "validation_errors": []
       },
@@ -8118,6 +8178,7 @@
         ],
         "screen": "remittance",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -8361,6 +8422,7 @@
         ],
         "payment_rows_through": 75,
         "result": "forward:/WEB-INF/jsp/payment/remittance.jsp",
+        "screen": "remittance",
         "status": 200,
         "validation_errors": []
       },
@@ -8569,6 +8631,7 @@
         ],
         "screen": "remittance",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -8762,6 +8825,7 @@
         ],
         "payment_rows_through": 75,
         "result": "forward:/WEB-INF/jsp/payment/remittance.jsp",
+        "screen": "remittance",
         "status": 200,
         "validation_errors": []
       },
@@ -8961,6 +9025,7 @@
         ],
         "screen": "remittance",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -9143,6 +9208,7 @@
         ],
         "payment_rows_through": 75,
         "result": "forward:/WEB-INF/jsp/payment/remittance.jsp",
+        "screen": "remittance",
         "status": 200,
         "validation_errors": []
       },
@@ -9352,6 +9418,7 @@
         ],
         "screen": "issue",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -9545,6 +9612,7 @@
         ],
         "payment_rows_through": 76,
         "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "screen": "issue",
         "status": 200,
         "validation_errors": []
       },
@@ -9773,6 +9841,7 @@
         ],
         "screen": "remittance",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -9982,6 +10051,7 @@
         ],
         "payment_rows_through": 76,
         "result": "forward:/WEB-INF/jsp/payment/remittance.jsp",
+        "screen": "remittance",
         "status": 200,
         "validation_errors": []
       },
@@ -10198,6 +10268,7 @@
         ],
         "screen": "detail",
         "status": 200,
+        "status_parity": "same status class 2xx",
         "validation_errors": []
       },
       "change": null,
@@ -10397,6 +10468,7 @@
         ],
         "payment_rows_through": 76,
         "result": "forward:/WEB-INF/jsp/payment/detail.jsp",
+        "screen": "detail",
         "status": 200,
         "validation_errors": []
       },
