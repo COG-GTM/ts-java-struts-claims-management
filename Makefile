@@ -1,4 +1,4 @@
-.PHONY: build run seed test capture clean service-build service-test service-run payment-build payment-test payment-run payment-run-parity payment-scenarios payment-parity parity traceability payment-spec-proof payment-spec-check payment-spec-html
+.PHONY: build run seed test capture clean service-build service-test service-run payment-build payment-test payment-run payment-run-parity payment-scenarios payment-parity parity traceability payment-spec-proof payment-spec-check payment-spec-html change-html
 
 # Settlement service (ADR-001): Spring Boot 3.5 on Java 21, port 8083.
 SERVICE_DIR = services/settlement-service
@@ -81,6 +81,11 @@ payment-spec-check:
 # the live proof, the transcripts and the cited legacy source lines.
 payment-spec-html:
 	python3 tools/spec/build_spec_html.py
+
+# Writes the self-contained docs/changes/CHG-nnn-*.html twin of every change
+# record, with the legacy lines it cites and the parity verdicts it approves.
+change-html:
+	python3 tools/changes/build_change_html.py
 
 clean:
 	mvn -q clean

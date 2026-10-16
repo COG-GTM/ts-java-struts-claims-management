@@ -22,7 +22,10 @@ import java.util.Map;
  * </ul>
  * No Struts validation runs on the payment actions ({@code validate="false"},
  * src/main/webapp/WEB-INF/struts-config.xml:223-231), so {@code errors} is
- * always empty. Per ADR-002 the Struts forward path becomes the response shape.
+ * empty on every legacy path. The one exception is the approved change CHG-002
+ * (PAY-R05 (v2)): {@link #rejected} answers the issue screen with no fields and
+ * the single key {@code payment.amount.aboveSettlement}. Per ADR-002 the Struts
+ * forward path becomes the response shape.
  */
 public record PaymentResponse(String screen, Map<String, String> fields,
         Map<String, String> display, List<String> links, List<String> errors) {
@@ -33,6 +36,11 @@ public record PaymentResponse(String screen, Map<String, String> fields,
     public static PaymentResponse of(String screen, Map<String, String> fields,
             Map<String, String> display, List<String> links) {
         return new PaymentResponse(screen, fields, display, links, List.of());
+    }
+
+    /** A validation rejection: the screen the request came from, no fields, the keys. */
+    public static PaymentResponse rejected(String screen, List<String> errors) {
+        return new PaymentResponse(screen, Map.of(), Map.of(), List.of(), errors);
     }
 
     public static PaymentResponse error() {

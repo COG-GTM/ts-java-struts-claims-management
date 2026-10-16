@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Change record</title>
+<style>
+:root { --fg:#1b1b1b; --bg:#ffffff; --muted:#5a5a5a; --line:#d9d9d9; --chg:#8a2be2; --chg-bg:#f1e6fb; --pass:#1f7a3f; --pass-bg:#e3f4e8; --fail:#b3261e; --fail-bg:#fbe4e2; --ro:#1f5fa8; }
+html { font-size:19px; } body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--fg); background:var(--bg); line-height:1.5; }
+main { max-width:1180px; margin:0 auto; padding:24px 28px 80px; }
+h1 { font-size:1.7rem; margin:0 0 4px; } h2 { font-size:1.25rem; margin:36px 0 10px; border-bottom:2px solid var(--line); padding-bottom:4px; } h3 { font-size:1.05rem; margin:22px 0 6px; }
+.sub { color:var(--muted); margin-bottom:18px; }
+.pill { display:inline-block; padding:2px 10px; border-radius:999px; font-weight:600; font-size:0.9rem; } .pill.CHANGED, .pill.Approved { background:var(--chg-bg); color:var(--chg); } .pill.PASS { background:var(--pass-bg); color:var(--pass); } .pill.FAIL, .pill.not { background:var(--fail-bg); color:var(--fail); }
+code { background:#f3f3f3; padding:1px 5px; border-radius:4px; font-size:0.92em; }
+a.cite, a.rule, a.scn { color:var(--ro); text-decoration:underline dotted; } a.cite:hover, a.rule:hover, a.scn:hover { text-decoration:underline; }
+table { border-collapse:collapse; width:100%; margin:8px 0; } th, td { border:1px solid var(--line); padding:6px 10px; text-align:left; vertical-align:top; } th { background:#f6f6f6; }
+details { border:1px solid var(--line); border-left:5px solid var(--ro); border-radius:6px; margin:10px 0; background:#fcfcfc; } details.chg { border-left-color:var(--chg); } details.FAIL { border-left-color:var(--fail); }
+summary { cursor:pointer; padding:10px 14px; font-weight:600; } summary code { font-weight:400; }
+.body { padding:0 14px 14px; }
+pre { background:#f3f3f3; padding:10px 12px; border-radius:6px; overflow:auto; font-size:0.85rem; line-height:1.4; margin:6px 0; }
+pre .ln { color:var(--muted); display:inline-block; width:3.2em; text-align:right; margin-right:12px; user-select:none; }
+.cols { display:grid; grid-template-columns:1fr 1fr; gap:14px; } .muted { color:var(--muted); font-size:0.9rem; }
+:target { outline:3px solid var(--chg); outline-offset:3px; }
+.legend { display:flex; gap:22px; flex-wrap:wrap; margin:10px 0 24px; font-size:0.95rem; }
+</style>
+</head>
+<body>
+<main>
+<h1 id="title"></h1>
+<div class="sub" id="sub"></div>
+<div class="legend"><div><span class="pill Approved">Approved</span> a change record under <code>docs/changes</code>; the monolith keeps the superseded behaviour.</div><div><span class="pill CHANGED">CHANGED</span> a parity scenario that differs from legacy by this record.</div><div><span class="pill PASS">PASS</span> matches legacy.</div></div>
+<div id="content"></div>
+<h2>Parity scenarios approved by this record</h2>
+<p class="muted">From <code>parity/routes.json</code> (approved_differences) and <code>parity/report.json</code>; the full report is <a id="report" href="#">parity/report.html</a>. Click a scenario to open its precondition, request, the legacy answer and the service answer.</p>
+<div id="parity"></div>
+<h2>Cited legacy lines</h2>
+<p class="muted">Every <code>path:lines</code> in the record above links here; the lines are copied from the repository when this view is generated.</p>
+<div id="sources"></div>
+</main>
+<script>
+"use strict";
+var D = {"parity": [{"actual": null, "expected": {"business_fields": {}, "db_state": {}, "screen": "calculate", "status": 200, "validation_errors": ["settlement.deductible.invalid"]}, "legacy": null, "precondition": null, "request": null, "rules": ["SETTLE-R06 (v2)"], "scenario": "settlement_bad_deductible", "summary": "A non-blank, unparseable deductible is a validation error instead of the error screen", "verdict": "CHANGED (CHG-001)"}], "record": "docs/changes/CHG-001-invalid-deductible.md", "report": "../../parity/report.html", "sections": [{"heading": "Record", "html": "<p>Status: Approved Date: 2026-09-23 Applies to: <code>services/settlement-service<\/code> only. The Struts monolith under <code>src/main<\/code> is not changed. Rules affected: SETTLE-R06 (v1 superseded by v2), SETTLE-R26 (unchanged), SETTLE-R09 (no longer holds for the service on this path)<\/p>"}, {"heading": "Why", "html": "<p>A <code>deductible<\/code> that is not blank and does not parse as a number reaches <code>Double.parseDouble<\/code> unguarded in the legacy calculator (<a class=\"cite\" href=\"#src-src-main-java-com-northstar-claims-service-SettlementCalculator-java-28\">src/main/java/com/northstar/claims/service/SettlementCalculator.java:28<\/a>), and the resulting <code>NumberFormatException<\/code> is caught by the global exception mapping and forwarded to <code>error.jsp<\/code> (<a class=\"cite\" href=\"#src-src-main-webapp-WEB-INF-struts-config-xml-59-60\">src/main/webapp/WEB-INF/struts-config.xml:59-60<\/a>). The operator sees a system error screen for what is an input mistake: the screen carries no business fields and no validation errors (transcript <code>settlement_bad_deductible<\/code>), so nothing on it says which field was wrong or that retyping it would help.<\/p><p>The extracted service is required to treat this as input validation instead.<\/p>"}, {"heading": "Before (legacy, and the service up to this change)", "html": "<p><code>POST /settlement/calculate<\/code> with <code>claimId=119<\/code>, <code>coveredAmount=5000.00<\/code>, <code>deductible=abc<\/code>, <code>depreciation=0.00<\/code>:<\/p><ul><li>legacy: status 200, <code>forward:/WEB-INF/jsp/error.jsp<\/code>, no business fields, no validation errors (transcript <code>settlement_bad_deductible<\/code>);<\/li><li>service: status 500, screen <code>error<\/code>, no business fields, no validation errors \u2014 parity on the status class per ADR-001 (&quot;How parity is judged&quot;).<\/li><\/ul><p><code>POST /settlement/save<\/code> with the same deductible threw out of the calculator before the insert, so nothing was written (<a class=\"cite\" href=\"#src-src-main-java-com-northstar-claims-web-SettlementSaveAction-java-34-39\">src/main/java/com/northstar/claims/web/SettlementSaveAction.java:34-39<\/a>).<\/p>"}, {"heading": "After (service only)", "html": "<p>Both endpoints check the deductible before calculating or writing:<\/p><ul><li>the value is blank (null, empty, or whitespace only) \u2014 unchanged, it counts as 0.00 and the calculation proceeds (SETTLE-R05);<\/li><li>the value is non-blank and <code>Double.parseDouble<\/code> rejects it \u2014 the response is status 200, screen <code>calculate<\/code>, <code>fields<\/code> empty, and <code>errors<\/code> exactly <code>[&quot;settlement.deductible.invalid&quot;]<\/code>;<\/li><li>any other value \u2014 unchanged.<\/li><\/ul><p>On <code>POST /settlement/save<\/code> the check runs before the claim lookup and before the insert, so a save with an invalid deductible writes no SETTLEMENT row and returns the same status 200 / <code>calculate<\/code> screen / single validation error. The save answer is the calculate screen rather than the save screen because no settlement was produced to show, matching the calculate response exactly.<\/p><p>Unchanged by this record: the arithmetic and its order, the rounding (<code>Math.round(amount * 100.0) / 100.0<\/code>), the parameter fallbacks (claimId 119, coveredAmount 5000, depreciation 0, blank deductible 0, missing claim or policy limit 10000 on calculate), and the save-path failure for a missing claim, which keeps reaching the error screen (SETTLE-R26).<\/p>"}, {"heading": "Rules affected", "html": "<table><thead><tr><th>Rule<\/th><th>Effect<\/th><\/tr><\/thead><tbody><tr><td>SETTLE-R06 (v1)<\/td><td>Legacy text kept, marked superseded for the service<\/td><\/tr><tr><td>SETTLE-R06 (v2)<\/td><td>New text: status 200, calculate screen, no business fields, one validation error <code>settlement.deductible.invalid<\/code>, on calculate and on save, with no row written<\/td><\/tr><tr><td>SETTLE-R05 (v1)<\/td><td>Unchanged \u2014 blank still means 0.00<\/td><\/tr><tr><td>SETTLE-R09 (v1)<\/td><td>Still describes the legacy (<code>validate=&quot;false&quot;<\/code>, always empty errors); the service now emits one validation key on this one path<\/td><\/tr><tr><td>SETTLE-R26 (v1)<\/td><td>Unchanged \u2014 a missing claim on save still fails the request<\/td><\/tr><\/tbody><\/table>"}, {"heading": "Tests", "html": "<ul><li><code>SettlementCalculateEndpointTest.nonNumericDeductibleIsAValidationError<\/code> (CHG-001) \u2014 <code>deductible=abc<\/code> on calculate gives 200, screen <code>calculate<\/code>, empty <code>fields<\/code>, <code>errors<\/code> = <code>[&quot;settlement.deductible.invalid&quot;]<\/code>.<\/li><li><code>SettlementCalculateEndpointTest.blankDeductibleForClaim120<\/code> \u2014 unchanged, proves blank still means 0.00 (SETTLE-R05, transcript <code>settlement_blank_deductible<\/code>).<\/li><li><code>SettlementSaveEndpointTest.nonNumericDeductibleIsAValidationErrorAndWritesNothing<\/code> (CHG-001) \u2014 <code>deductible=abc<\/code> on save gives the same response and the SETTLEMENT row count is unchanged.<\/li><li><code>SettlementSaveEndpointTest.saveAgainstAMissingClaimFails<\/code> \u2014 unchanged, proves SETTLE-R26 still reaches the error screen.<\/li><li><code>SettlementCalculatorTest<\/code> \u2014 unchanged; the calculator itself still throws on a non-numeric deductible, the check sits in front of it.<\/li><\/ul>"}, {"heading": "Parity effect", "html": "<p><code>transcripts/settlement_bad_deductible<\/code> no longer matches the service: the transcript records the error screen with no validation errors, the service answers the calculate screen with one. The difference is registered in <code>parity/routes.json<\/code> against this record, so <code>make parity<\/code> reports that scenario as <code>CHANGED (CHG-001)<\/code> instead of <code>PASS<\/code>, and still fails if the service answers anything other than the approved response above. Every other settlement scenario stays <code>PASS<\/code>.<\/p><p>The transcripts themselves are untouched: they are written only by <code>make capture<\/code> against the unchanged monolith, and <code>make capture<\/code> followed by <code>git diff --exit-code transcripts/<\/code> is clean.<\/p>"}], "sources": [{"anchor": "src-main-java-com-northstar-claims-service-SettlementCalculator-java-28", "code": [[28, "            deductibleValue = Double.parseDouble(deductible);"]], "lines": "28", "path": "src/main/java/com/northstar/claims/service/SettlementCalculator.java"}, {"anchor": "src-main-webapp-WEB-INF-struts-config-xml-59-60", "code": [[59, "<global-exceptions><exception key=\"errors.system\" type=\"java.lang.Exception\""], [60, "                path=\"/WEB-INF/jsp/error.jsp\"/><\/global-exceptions>"]], "lines": "59-60", "path": "src/main/webapp/WEB-INF/struts-config.xml"}, {"anchor": "src-main-java-com-northstar-claims-web-SettlementSaveAction-java-34-39", "code": [[34, "        value.setSettlementId(nextId(\"SETTLEMENT\"));"], [35, "        value.setClaimId(claimId);"], [36, "        value.setCalculatedBy(String.valueOf("], [37, "                request.getSession().getAttribute(\"user\")));"], [38, "        value.setCalculatedDate(\"2019-04-01\");"], [39, "        new SettlementDAO().save(value);"]], "lines": "34-39", "path": "src/main/java/com/northstar/claims/web/SettlementSaveAction.java"}], "title": "CHG-001 \u2014 An invalid deductible is a validation error, not the error screen"};
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]; }); }
+function pretty(v) { return v === undefined ? "—" : JSON.stringify(v, null, 2); }
+document.title = D.title;
+document.getElementById("title").textContent = D.title;
+document.getElementById("sub").innerHTML = "Source <code>" + esc(D.record) + "</code> · " + D.sources.length + " cited source ranges · " + D.parity.length + " parity scenarios · generated by <code>make change-html</code>";
+document.getElementById("report").setAttribute("href", D.report);
+var content = document.getElementById("content");
+D.sections.forEach(function (s, i) {
+  if (i > 0) { var h = document.createElement("h2"); h.textContent = s.heading; content.appendChild(h); }
+  var div = document.createElement("div");
+  div.innerHTML = i === 0 ? s.html.replace(/Status: Approved/, 'Status: <span class="pill Approved">Approved</span>') : s.html;
+  content.appendChild(div);
+});
+var parity = document.getElementById("parity");
+if (!D.parity.length) { parity.innerHTML = '<p class="muted">None registered.</p>'; }
+D.parity.forEach(function (p) {
+  var cls = p.verdict.indexOf("CHANGED") === 0 ? "CHANGED" : (p.verdict === "PASS" ? "PASS" : "FAIL");
+  var det = document.createElement("details");
+  det.className = (cls === "CHANGED" ? "chg" : cls); det.id = "scn-" + p.scenario;
+  var legacy = p.legacy ? '<h3>Legacy answer (observed, not in a transcript)</h3><p class="muted">' + esc(p.legacy.observed) + '</p><pre>' + esc(pretty(Object.fromEntries(Object.entries(p.legacy).filter(function (e) { return e[0] !== "observed"; })))) + '</pre>' : '<p class="muted">The legacy answer is the live request named by the scenario in docs/specs/SPEC-PAY-001-live.json (see the parity report).</p>';
+  det.innerHTML = '<summary><code>' + esc(p.scenario) + '</code> <span class="pill ' + cls + '">' + esc(p.verdict) + '</span></summary><div class="body">' +
+    '<p>' + esc(p.summary) + '</p><p>Rules: ' + p.rules.map(function (r) { return "<code>" + esc(r) + "</code>"; }).join(" ") + (p.precondition ? ' · Precondition <code>parity/preconditions/payment/' + esc(p.precondition) + '.sql</code>' : '') + '</p>' +
+    (p.request ? '<h3>Request</h3><pre>' + esc(p.request.method + " " + p.request.path + "\n" + pretty(p.request.form)) + '</pre>' : '') + legacy +
+    '<div class="cols"><div><h3>Approved service answer (expected)</h3><pre>' + esc(pretty(p.expected)) + '</pre></div><div><h3>Service answer in the last parity run (actual)</h3><pre>' + esc(pretty(p.actual)) + '</pre></div></div></div>';
+  parity.appendChild(det);
+});
+var sources = document.getElementById("sources");
+D.sources.forEach(function (s) {
+  var det = document.createElement("details");
+  det.id = "src-" + s.anchor;
+  det.innerHTML = '<summary><code>' + esc(s.path) + ':' + esc(s.lines) + '</code></summary><div class="body"><pre>' + s.code.map(function (c) { return '<span class="ln">' + c[0] + '</span>' + esc(c[1]); }).join("\n") + '</pre></div>';
+  sources.appendChild(det);
+});
+if (location.hash) { var t = document.querySelector(location.hash); if (t && t.tagName === "DETAILS") { t.open = true; } }
+window.addEventListener("hashchange", function () { var t = document.querySelector(location.hash); if (t && t.tagName === "DETAILS") { t.open = true; } });
+</script>
+</body>
+</html>

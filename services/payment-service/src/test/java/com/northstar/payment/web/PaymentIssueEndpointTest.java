@@ -89,26 +89,90 @@ class PaymentIssueEndpointTest {
     }
 
     /**
-     * Rule: PAY-R05. -250.00, 1.005, 5000.00, NaN and 1e3 are all accepted;
-     * the row keeps the parsed double and the screen prints %.2f
-     * (live L08 -250.00, L09 1.01, L10 5000.00, L11 NaN, L12 1000.00;
-     * db_after.payment_rows_after_seed amount 1.005E0 for payment 65).
+     * Rules: PAY-R05 (v2) keeps every case of PAY-R05 (v1) that is not above
+     * the settlement: -250.00, 1.005, NaN and 1e3 are accepted against
+     * settlement 121 at 1000.00, the row keeps the parsed double and the screen
+     * prints %.2f (live L08 -250.00, L09 1.01, L11 NaN, L12 1000.00;
+     * db_after.payment_rows_after_seed amount 1.005E0 for payment 65). An
+     * amount equal to the settlement (1000.00) is accepted as well (CHG-002).
      */
     @Test
-    void anyParseableDoubleIsAccepted() throws Exception {
-        String[][] cases = {{"-250.00", "-250.00"}, {"1.005", "1.01"}, {"5000.00", "5000.00"},
-                {"NaN", "NaN"}, {"1e3", "1000.00"}};
+    void amountsNotAboveTheSettlementAreAcceptedAsLegacyDoes() throws Exception {
+        String[][] cases = {{"-250.00", "-250.00"}, {"1.005", "1.01"}, {"NaN", "NaN"},
+                {"1e3", "1000.00"}, {"1000.00", "1000.00"}};
         for (String[] c : cases) {
             mvc.perform(post("/payment/issue").param("claimId", "119")
                             .param("payeeName", "Reserved Claimant").param("amount", c[0])
                             .param("paymentMethod", "CHECK"))
                     .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.screen").value("issue"))
+                    .andExpect(jsonPath("$.errors.length()").value(0))
                     .andExpect(jsonPath("$.fields.paymentAmount").value(c[1]));
         }
         assertThat(jdbc.queryForObject("select amount from PAYMENT where payment_id = 62",
                 Double.class)).isEqualTo(1.005);
-        assertThat(jdbc.queryForObject("select amount from PAYMENT where payment_id = 64",
+        assertThat(jdbc.queryForObject("select amount from PAYMENT where payment_id = 63",
                 Double.class)).isNaN();
+        assertThat(count()).isEqualTo(65);
+    }
+
+    /**
+     * Rule: PAY-R05 (v2), CHG-002 (docs/changes/CHG-002-payment-above-settlement.md).
+     * amount=5000.00 against settlement 121 at 1000.00, which the legacy app
+     * issues as CHK-66 (live L10), is a validation error here: status 200, the
+     * issue screen, no business fields, errors exactly
+     * ["payment.amount.aboveSettlement"], no row written, and the next accepted
+     * request still takes id 61 (PaymentIssueAction.java:28-31 has no check).
+     */
+    @Test
+    void amountAboveTheSettlementIsRejectedAndWritesNothing() throws Exception {
+        mvc.perform(post("/payment/issue").param("claimId", "119")
+                        .param("payeeName", "Reserved Claimant").param("amount", "5000.00")
+                        .param("paymentMethod", "CHECK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.screen").value("issue"))
+                .andExpect(jsonPath("$.fields.length()").value(0))
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0]").value("payment.amount.aboveSettlement"));
+        assertThat(count()).isEqualTo(60);
+        mvc.perform(post("/payment/issue").param("claimId", "119")
+                        .param("payeeName", "Reserved Claimant").param("amount", "1000.01")
+                        .param("paymentMethod", "CHECK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors[0]").value("payment.amount.aboveSettlement"));
+        assertThat(count()).isEqualTo(60);
+        mvc.perform(post("/payment/issue").param("claimId", "119")
+                        .param("payeeName", "Reserved Claimant").param("amount", "10.00")
+                        .param("paymentMethod", "CHECK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fields.checkNumber").value("CHK-61"));
+    }
+
+    /**
+     * Rule: PAY-R05 (v2), CHG-002. A claim whose latest settlement is 0 (claim
+     * 120, settlement 120) rejects every positive amount: 1.00, which the legacy
+     * app issues as CHK-75 (live L23), is the same validation error over POST
+     * and over GET (PAY-R12 still maps both), and the fallback amount 0.00 of
+     * PAY-R04 is still issued.
+     */
+    @Test
+    void zeroSettlementRejectsPositiveAmountsButIssuesTheFallback() throws Exception {
+        mvc.perform(post("/payment/issue").param("claimId", "120")
+                        .param("payeeName", "Reserved Claimant").param("amount", "1.00")
+                        .param("paymentMethod", "CHECK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors[0]").value("payment.amount.aboveSettlement"));
+        mvc.perform(get("/payment/issue").param("claimId", "120")
+                        .param("payeeName", "Reserved Claimant").param("amount", "2.00")
+                        .param("paymentMethod", "CHECK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors[0]").value("payment.amount.aboveSettlement"));
+        assertThat(count()).isEqualTo(60);
+        mvc.perform(post("/payment/issue").param("claimId", "120")
+                        .param("payeeName", "Reserved Claimant").param("paymentMethod", "CHECK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fields.paymentAmount").value("0.00"))
+                .andExpect(jsonPath("$.fields.checkNumber").value("CHK-61"));
     }
 
     /**
@@ -172,7 +236,8 @@ class PaymentIssueEndpointTest {
     /**
      * Rule: PAY-R12. Issue is accepted over GET (live L21) and for the CLOSED
      * claim 120 whose newest settlement is 120 at 0 (live L22, L36;
-     * src/main/webapp/WEB-INF/struts-config.xml:223-231).
+     * src/main/webapp/WEB-INF/struts-config.xml:223-231). The claim 120 amount
+     * is 0.00 here because PAY-R05 (v2) rejects the 20.00 of live L22.
      */
     @Test
     void getIssuesAndClosedClaimIsNotChecked() throws Exception {
@@ -182,7 +247,7 @@ class PaymentIssueEndpointTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fields.paymentAmount").value("11.00"));
         mvc.perform(post("/payment/issue").param("claimId", "120")
-                        .param("payeeName", "Reserved Claimant").param("amount", "12.00")
+                        .param("payeeName", "Reserved Claimant").param("amount", "0.00")
                         .param("paymentMethod", "CHECK"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fields.checkNumber").value("CHK-62"));

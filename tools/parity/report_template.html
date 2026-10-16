@@ -150,7 +150,9 @@ function detail(r) {
     (r.record ? `<p>Approved change: <code>${esc(r.change)}</code>, <code>${esc(r.record)}</code>. ${esc(r.difference)}</p>` : "") +
     `<h3>Rules covered</h3><div>${rules}</div>` +
     `<h3>Precondition</h3>${precondition}` +
-    `<h3>Request</h3>${request}` + compare;
+    `<h3>Request</h3>${request}` +
+    (r.legacy ? `<h3>Legacy observation (not in a transcript)</h3><p>${esc(r.legacy.observed)}</p><pre>${esc(pretty(Object.fromEntries(Object.entries(r.legacy).filter(([k]) => k !== "observed"))))}</pre>` : "") +
+    compare;
 }
 
 summary();

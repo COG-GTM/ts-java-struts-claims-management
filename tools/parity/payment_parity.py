@@ -8,7 +8,9 @@ not depend on the order the scenarios run in. Parity is judged as ADR-002
 set, display texts and links, validation keys, and the PAYMENT rows from 61 up
 (or the transcript's db_state keys). A difference is a FAIL unless
 ``approved_differences`` names the scenario with a CHG-nnn record, in which
-case it is CHANGED. Verdicts go to parity/report.{json,md,html} through
+case it is CHANGED. An approved difference that no live request covers defines
+its own ``request``, ``precondition`` and ``legacy`` observation there and is
+replayed like any other scenario. Verdicts go to parity/report.{json,md,html} through
 tools/parity/report.py, next to the settlement rows.
 """
 import argparse
@@ -156,9 +158,22 @@ def main():
     approvals = {entry["scenario"]: entry for entry in routes.get("approved_differences", [])}
     live_rows = load(LIVE)["db_after"]["payment_rows_after_seed"]["rows"]
 
+    scenarios = list(routes["payment_scenarios"])
+    generated = {scenario["scenario"] for scenario in scenarios}
+    for name, entry in approvals.items():
+        if name in generated or not any(rule.startswith("PAY-") for rule in entry["rules"]):
+            continue
+        if "request" not in entry or "precondition" not in entry:
+            raise SystemExit("approved difference %s is neither a generated scenario nor "
+                             "defines its own request and precondition" % name)
+        scenarios.append({"scenario": name, "source": entry["record"],
+                          "description": entry["description"], "precondition": entry["precondition"],
+                          "rules": entry["rules"], "request": entry["request"],
+                          "expected": entry["expected"]})
+
     rows = []
     failed = False
-    for scenario in routes["payment_scenarios"]:
+    for scenario in scenarios:
         name = scenario["scenario"]
         approval = approvals.get(name)
         diffs, expected, actual = run(args.base, scenario, live_rows, approval)
@@ -183,6 +198,7 @@ def main():
             "change": approval["change"] if approval else None,
             "record": approval["record"] if approval else None,
             "difference": note,
+            "legacy": approval.get("legacy") if approval else None,
         })
         print("%-28s %-22s %s %s" % (name, scenario["precondition"], verdict, "; ".join(diffs)))
 

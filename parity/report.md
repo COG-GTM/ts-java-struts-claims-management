@@ -48,7 +48,7 @@ the PAYMENT rows from 61 up.
 | `payment_live_L07` | `payments-to-62` | Unparseable amount: falls back to the newest settlement | PAY-R04 | PASS | - |
 | `payment_live_L08` | `payments-to-63` | Negative amount is accepted | PAY-R05 | PASS | - |
 | `payment_live_L09` | `payments-to-64` | Half-cent amount is stored unrounded and displayed with %.2f | PAY-R05 | PASS | - |
-| `payment_live_L10` | `payments-to-65` | Amount above the settlement is accepted | PAY-R05 | PASS | - |
+| `payment_live_L10` | `payments-to-65` | Amount above the settlement is accepted | PAY-R05 | CHANGED (CHG-002) | amount=5000.00 is above the claim's latest settlement (1000.00); the legacy app issues CHK-66, the service answers one validation error and writes no row |
 | `payment_live_L11` | `payments-to-66` | NaN parses as a double and is accepted | PAY-R05 | PASS | - |
 | `payment_live_L12` | `payments-to-67` | Exponent notation parses | PAY-R05 | PASS | - |
 | `payment_live_L13` | `payments-to-68` | checkNumber request parameter is ignored | PAY-R07 | PASS | - |
@@ -59,9 +59,9 @@ the PAYMENT rows from 61 up.
 | `payment_live_L18` | `payments-to-70` | Claim with no settlement row: null settlement | PAY-R06, PAY-R11 | PASS | - |
 | `payment_live_L19` | `payments-to-70` | claimId omitted: 119 | PAY-R02, PAY-R06 | PASS | - |
 | `payment_live_L20` | `payments-to-71` | claimId unparseable: 119 | PAY-R02 | PASS | - |
-| `payment_live_L21` | `payments-to-72` | A GET also issues a payment | PAY-R03, PAY-R12 | PASS | - |
-| `payment_live_L22` | `payments-to-73` | Claim 120 (status CLOSED) is paid; settlement 120 is linked | PAY-R03, PAY-R12 | PASS | - |
-| `payment_live_L23` | `payments-to-74` | Payee text with markup is stored as sent | PAY-R09 | PASS | - |
+| `payment_live_L21` | `payments-to-72` | A GET also issues a payment | PAY-R03, PAY-R05, PAY-R12 | CHANGED (CHG-002) | amount=5 is above the claim's latest settlement (0.00); the legacy app issues CHK-73, the service answers one validation error and writes no row |
+| `payment_live_L22` | `payments-to-73` | Claim 120 (status CLOSED) is paid; settlement 120 is linked | PAY-R03, PAY-R05, PAY-R12 | CHANGED (CHG-002) | amount=20.00 is above the claim's latest settlement (0.00); the legacy app issues CHK-74, the service answers one validation error and writes no row |
+| `payment_live_L23` | `payments-to-74` | Payee text with markup is stored as sent | PAY-R05, PAY-R09 | CHANGED (CHG-002) | amount=1.00 is above the claim's latest settlement (0.00); the legacy app issues CHK-75, the service answers one validation error and writes no row |
 | `payment_live_L24` | `payments-to-75` | History with no claimId: claim 119, issue order, fixed detail link | PAY-R14, PAY-R15 | PASS | - |
 | `payment_live_L25` | `payments-to-75` | History for claim 1: seeded and new payments | PAY-R14, PAY-R15 | PASS | - |
 | `payment_live_L26` | `payments-to-75` | History for a claim with no payments | PAY-R14, PAY-R15 | PASS | - |
@@ -73,9 +73,10 @@ the PAYMENT rows from 61 up.
 | `payment_live_L32` | `payments-to-75` | Remittance with no claimId: claim 119 (total includes NaN) | PAY-R19, PAY-R20 | PASS | - |
 | `payment_live_L33` | `payments-to-75` | Remittance total is the sum of stored amounts | PAY-R19, PAY-R20 | PASS | - |
 | `payment_live_L34` | `payments-to-75` | Remittance for a claim with no payments | PAY-R20 | PASS | - |
-| `payment_live_L36` | `payments-to-75` | An adjuster can issue a payment | PAY-R12 | PASS | - |
+| `payment_live_L36` | `payments-to-75` | An adjuster can issue a payment | PAY-R05, PAY-R12 | CHANGED (CHG-002) | amount=2.00 is above the claim's latest settlement (0.00); the legacy app issues CHK-76, the service answers one validation error and writes no row |
 | `payment_live_L37` | `payments-to-76` | Remittance for claim 120 after the adjuster's payment | PAY-R19, PAY-R20 | PASS | - |
 | `payment_live_L41` | `payments-to-76` | Detail with an unparseable paymentId: payment 61 | PAY-R16 | PASS | - |
+| `payment_above_settlement_rejected` | `chg-002-settlement-1000` | An amount above the claim's latest saved settlement is rejected by the service and accepted by the legacy app | PAY-R05 (v2) | CHANGED (CHG-002) | CHG-002 scenario with its own precondition: settlement 121 (1000.00) on claim 119 and no payment above 60; amount=5000.00 is rejected with one validation error and no row, where the legacy app issues CHK-61 |
 
 Live L01, L38, L39 and L40 (PAY-R13, the unauthenticated redirects) and the
 sign-in and settlement set-up steps L02, L05 and L35 are not scenarios: the

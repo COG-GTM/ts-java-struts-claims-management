@@ -22,7 +22,7 @@ LIVE = "docs/specs/SPEC-PAY-001-live.json"
 QUESTIONS = "docs/specs/OPEN-QUESTIONS.md"
 OUTPUT = "docs/specs/SPEC-PAY-001.html"
 
-HEADING = re.compile(r"^\*\*(PAY-R\d+) \(v(\d+)\)\*\* — (.*)$")
+HEADING = re.compile(r"^\*\*(PAY-R\d+) \(v(\d+)(?:, superseded by v\d+)?\)\*\* — (.*)$")
 SECTION = re.compile(r"^## (.*)$")
 LIVE_REF = re.compile(r"\bL(\d{2})\b")
 DB_REF = re.compile(r"db_after\.(\w+)")
@@ -70,7 +70,7 @@ def parse_rules():
         if rule:
             current = {"id": rule.group(1), "version": rule.group(2),
                        "section": section, "text": rule.group(3),
-                       "status": "", "observed": "", "read": ""}
+                       "status": "", "observed": "", "read": "", "approved": ""}
             rules.append(current)
             field = "text"
             continue
@@ -80,7 +80,7 @@ def parse_rules():
             current = None
             continue
         for key, prefix in (("status", "Status:"), ("observed", "Observed:"),
-                            ("read", "Read:")):
+                            ("read", "Read:"), ("approved", "Approved:")):
             if line.startswith(prefix):
                 field = key
                 line = line[len(prefix):]
@@ -122,8 +122,10 @@ def main():
     rules = parse_rules()
     for rule in rules:
         rule["evidence"] = evidence(rule, live, transcripts)
-        if rule["status"].rstrip(".") not in ("Observed", "Read-only"):
-            raise SystemExit("%s has no Observed/Read-only status" % rule["id"])
+        if rule["status"].rstrip(".") not in ("Observed", "Read-only", "Changed"):
+            raise SystemExit("%s has no Observed/Read-only/Changed status" % rule["id"])
+        if rule["status"].startswith("Changed") and not rule["approved"]:
+            raise SystemExit("%s is Changed without an Approved: record" % rule["id"])
         rule["status"] = rule["status"].rstrip(".")
     version = re.search(r"^Version: (.*)$", read(SPEC), re.M).group(1)
     data = {

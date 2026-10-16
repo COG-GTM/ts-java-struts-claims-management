@@ -124,10 +124,14 @@ paths and the message bundle are presentation and are not reproduced.
 Legacy behaviour is reproduced as-is, including behaviour that looks wrong. A
 difference is only allowed when a record under `docs/changes/CHG-nnn` approves
 it, and `make parity` then reports the scenario as CHANGED against that record
-instead of PASS. No payment scenario is CHANGED: there is no approved change
-for this slice, so every one of the twenty rules is reproduced literally,
-including PAY-R05 (NaN, negative and above-settlement amounts), PAY-R12
-(payments on DENIED and CLOSED claims) and PAY-R15 (the fixed detail link).
+instead of PASS. One change is approved for this slice:
+`docs/changes/CHG-002-payment-above-settlement.md` (PAY-R05 v2) makes an
+amount above the claim's latest settlement a validation error in the service
+while the monolith keeps accepting it; the live requests it affects and the
+scenario `payment_above_settlement_rejected` are CHANGED (CHG-002). Every
+other rule is reproduced literally, including the rest of PAY-R05 (NaN and
+negative amounts), PAY-R12 (payments on DENIED and CLOSED claims) and PAY-R15
+(the fixed detail link).
 A deliberately kept oddity is listed in `docs/KNOWN_LEGACY_QUIRKS.md` when one
 is first discussed; this decision keeps them without discussion.
 
