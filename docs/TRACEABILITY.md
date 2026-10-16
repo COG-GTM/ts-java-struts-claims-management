@@ -5,12 +5,14 @@ every cell is read out of the spec, the git history, the tests,
 `parity/routes.json` and `parity/report.json`, and the file is rewritten
 byte for byte on every run.
 
-One row per rule version of `docs/specs/SPEC-SETTLE-001.md`. *Spec version*
-is the version of the spec that last changed the rule, from its Rule
-history row. *Last commit* is the last commit whose changed lines mention
-that rule version. *Tests* are the tests whose javadoc cites it, *Transcripts*
-the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in
-`parity/report.json`.
+One row per rule version of `docs/specs/SPEC-SETTLE-001.md` (SETTLE-Rnn) and
+`docs/specs/SPEC-PAY-001.md` (PAY-Rnn). *Spec version* is the version of
+the rule's spec that last changed it, from its Rule history row. *Last
+commit* is the last commit whose changed lines mention that rule version.
+*Tests* are the tests whose javadoc cites it, *Transcripts* the parity
+scenarios `parity/routes.json` maps to it (transcripts, and for the payment
+slice the live-run scenarios of `payment_scenarios`), and *Parity* their
+verdicts in `parity/report.json`.
 
 | Rule | Spec version | Last commit | Tests | Transcripts | Parity | Change record |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -47,6 +49,36 @@ the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in
 | SETTLE-R29 (v1) | 0.1 | `46337e5` Generate the traceability matrix from the repository, and report parity as JSON | `SettlementSaveEndpointTest#saveRecomputesAndInsertsOneRowForClaim119` | `settlement_save` | settlement_save: PASS | - |
 | SETTLE-R30 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `SettlementDetailEndpointTest#detailForAClaimWithNoSettlementIsEmpty`, `SettlementDetailEndpointTest#detailShowsTheSeededSettlementForClaim119`, `SettlementDetailEndpointTest#detailTakesTheHighestSettlementIdForTheClaim`, `SettlementDetailEndpointTest#detailWithoutAClaimIdDefaultsTo119` | - | - | - |
 | SETTLE-R31 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `LegacyParametersTest#fieldFormattingMatchesTheFieldTag`, `SettlementDetailEndpointTest#detailShowsTheSeededSettlementForClaim119` | - | - | - |
+| PAY-R01 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | - | - | - | - |
+| PAY-R02 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#issueWritesPayment61` | `payment_issue`, `payment_issue_amount_omitted` | payment_issue: PASS, payment_issue_amount_omitted: PASS | - |
+| PAY-R03 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#getIssuesAPaymentToo` | `payment_issue_get` | payment_issue_get: PASS | - |
+| PAY-R04 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#unparseableClaimIdIs119AndAmountIsStoredUnrounded`, `PaymentParametersTest#claimIdFallsBackTo119` | `payment_issue_claim_fallback_unrounded`, `payment_history_default_claim` | payment_issue_claim_fallback_unrounded: PASS, payment_history_default_claim: PASS | - |
+| PAY-R05 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#paymentFollowsTheNewestSettlementAndFailsWithoutOne` | `payment_issue_no_settlement`, `payment_issue_newest_settlement`, `payment_detail_newest_settlement` | payment_issue_no_settlement: PASS, payment_issue_newest_settlement: PASS, payment_detail_newest_settlement: PASS | - |
+| PAY-R06 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#missingOrUnparseableAmountFallsBackToTheSettlementAmount`, `PaymentParametersTest#amountFallsBackToTheSettlementAmountAndAcceptsAnyDouble` | `payment_issue_amount_omitted`, `payment_issue_amount_unparseable`, `payment_issue_zero_settlement`, `payment_issue_comma_amount`, `payment_issue_newest_settlement` | payment_issue_amount_omitted: PASS, payment_issue_amount_unparseable: PASS, payment_issue_zero_settlement: PASS, payment_issue_comma_amount: PASS, payment_issue_newest_settlement: PASS | - |
+| PAY-R07 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#anyParseableDoubleIsAccepted`, `PaymentParametersTest#amountFallsBackToTheSettlementAmountAndAcceptsAnyDouble` | `payment_issue_negative`, `payment_issue_scientific`, `payment_issue_spaced_amount` | payment_issue_negative: PASS, payment_issue_scientific: PASS, payment_issue_spaced_amount: PASS | - |
+| PAY-R08 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#anyParseableDoubleIsAccepted`, `PaymentParametersTest#amountFallsBackToTheSettlementAmountAndAcceptsAnyDouble` | `payment_issue_nan`, `payment_remittance_nan_total`, `payment_detail_nan`, `payment_remittance_final` | payment_issue_nan: PASS, payment_remittance_nan_total: PASS, payment_detail_nan: PASS, payment_remittance_final: PASS | - |
+| PAY-R09 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#unparseableClaimIdIs119AndAmountIsStoredUnrounded` | `payment_issue_claim_fallback_unrounded` | payment_issue_claim_fallback_unrounded: PASS | - |
+| PAY-R10 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#payeeAndMethodAreStoredVerbatimAndCheckNumberIsIgnored` | `payment_issue_amount_omitted`, `payment_issue_empty_payee`, `payment_issue_verbatim_payee`, `payment_detail_empty_payee` | payment_issue_amount_omitted: PASS, payment_issue_empty_payee: PASS, payment_issue_verbatim_payee: PASS, payment_detail_empty_payee: PASS | - |
+| PAY-R11 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#payeeAndMethodAreStoredVerbatimAndCheckNumberIsIgnored` | `payment_issue_check_number_ignored` | payment_issue_check_number_ignored: PASS | - |
+| PAY-R12 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#schemaConstraintsAreTheOnlyInputCheckAndFailuresConsumeNoId` | `payment_issue_missing_payee`, `payment_issue_missing_method`, `payment_issue_payee_too_long`, `payment_issue_method_too_long`, `payment_issue_check_number_ignored` | payment_issue_missing_payee: PASS, payment_issue_missing_method: PASS, payment_issue_payee_too_long: PASS, payment_issue_method_too_long: PASS, payment_issue_check_number_ignored: PASS | - |
+| PAY-R13 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#paymentFollowsTheNewestSettlementAndFailsWithoutOne`, `PaymentIssueEndpointTest#schemaConstraintsAreTheOnlyInputCheckAndFailuresConsumeNoId` | `payment_issue_no_settlement`, `payment_issue_missing_payee`, `payment_issue_missing_method`, `payment_issue_payee_too_long`, `payment_issue_method_too_long`, `payment_issue_empty_payee`, `payment_remittance_after_failures` | payment_issue_no_settlement: PASS, payment_issue_missing_payee: PASS, payment_issue_missing_method: PASS, payment_issue_payee_too_long: PASS, payment_issue_method_too_long: PASS, payment_issue_empty_payee: PASS, payment_remittance_after_failures: PASS | - |
+| PAY-R14 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#issueWritesPayment61`, `PaymentParametersTest#checkNumberIsNotZeroPadded` | `payment_issue`, `payment_issue_amount_omitted` | payment_issue: PASS, payment_issue_amount_omitted: PASS | - |
+| PAY-R15 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#issueWritesPayment61` | `payment_issue`, `payment_detail_issued`, `payment_remittance_nan_total` | payment_issue: PASS, payment_detail_issued: PASS, payment_remittance_nan_total: PASS | - |
+| PAY-R16 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#issueWritesPayment61` | `payment_issue` | payment_issue: PASS | - |
+| PAY-R17 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentIssueEndpointTest#issueWritesPayment61` | `payment_issue`, `payment_issue_amount_omitted` | payment_issue: PASS, payment_issue_amount_omitted: PASS | - |
+| PAY-R18 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentHistoryEndpointTest#historyListsPayment61AfterIssue`, `PaymentHistoryEndpointTest#historyOfClaimWithoutPaymentsIsEmpty`, `PaymentParametersTest#claimIdFallsBackTo119` | `payment_history`, `payment_history_seeded_claim`, `payment_history_claim_fallback`, `payment_history_many`, `payment_history_default_claim`, `payment_history_fallback_claim` | payment_history: PASS, payment_history_seeded_claim: PASS, payment_history_claim_fallback: PASS, payment_history_many: PASS, payment_history_default_claim: PASS, payment_history_fallback_claim: PASS | - |
+| PAY-R19 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentHistoryEndpointTest#historyListsPayment61AfterIssue`, `PaymentHistoryEndpointTest#historyListsSeededPayment`, `PaymentHistoryEndpointTest#historyOfClaimWithoutPaymentsIsEmpty` | `payment_history`, `payment_history_seeded_claim`, `payment_history_many` | payment_history: PASS, payment_history_seeded_claim: PASS, payment_history_many: PASS | - |
+| PAY-R20 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | - | - | - | - |
+| PAY-R21 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentHistoryEndpointTest#historyListsPayment61AfterIssue` | `payment_history_claim_fallback` | payment_history_claim_fallback: PASS | - |
+| PAY-R22 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentDetailEndpointTest#detailDefaultsToPayment61`, `PaymentDetailEndpointTest#detailShowsSeededPayment`, `PaymentParametersTest#paymentIdFallsBackTo61` | `payment_detail_default_absent`, `payment_detail_seeded`, `payment_detail_fallback_absent`, `payment_detail_issued`, `payment_detail_default_present` | payment_detail_default_absent: PASS, payment_detail_seeded: PASS, payment_detail_fallback_absent: PASS, payment_detail_issued: PASS, payment_detail_default_present: PASS | - |
+| PAY-R23 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentDetailEndpointTest#detailDefaultsToPayment61`, `PaymentDetailEndpointTest#detailOfUnknownPaymentIsAnErrorScreen` | `payment_detail_default_absent`, `payment_detail_unknown`, `payment_detail_fallback_absent` | payment_detail_default_absent: PASS, payment_detail_unknown: PASS, payment_detail_fallback_absent: PASS | - |
+| PAY-R24 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentDetailEndpointTest#detailShowsSeededPayment` | `payment_detail_seeded`, `payment_detail_issued`, `payment_detail_verbatim_payee`, `payment_detail_nan`, `payment_detail_empty_payee` | payment_detail_seeded: PASS, payment_detail_issued: PASS, payment_detail_verbatim_payee: PASS, payment_detail_nan: PASS, payment_detail_empty_payee: PASS | - |
+| PAY-R25 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentParametersTest#claimIdFallsBackTo119`, `PaymentRemittanceEndpointTest#remittanceOfClaimWithoutPaymentsIsZero` | `payment_remittance_default`, `payment_remittance_claim_fallback` | payment_remittance_default: PASS, payment_remittance_claim_fallback: PASS | - |
+| PAY-R26 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentRemittanceEndpointTest#remittanceListsAndTotalsTheIssuedPayments`, `PaymentRemittanceEndpointTest#remittanceListsSeededPayment` | `payment_remittance_seeded_claim`, `payment_remittance_after_failures`, `payment_remittance_nan_total` | payment_remittance_seeded_claim: PASS, payment_remittance_after_failures: PASS, payment_remittance_nan_total: PASS | - |
+| PAY-R27 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentRemittanceEndpointTest#remittanceListsAndTotalsTheIssuedPayments`, `PaymentRemittanceEndpointTest#remittanceListsSeededPayment`, `PaymentRemittanceEndpointTest#remittanceOfClaimWithoutPaymentsIsZero` | `payment_remittance_default`, `payment_remittance_seeded_claim`, `payment_remittance_claim_fallback`, `payment_remittance_after_failures`, `payment_remittance_nan_total`, `payment_remittance_claim_119`, `payment_remittance_claim_120`, `payment_remittance_final` | payment_remittance_default: PASS, payment_remittance_seeded_claim: PASS, payment_remittance_claim_fallback: PASS, payment_remittance_after_failures: PASS, payment_remittance_nan_total: PASS, payment_remittance_claim_119: PASS, payment_remittance_claim_120: PASS, payment_remittance_final: PASS | - |
+| PAY-R28 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentDetailEndpointTest#detailShowsSeededPayment`, `PaymentParametersTest#fieldsFormatAsTheTagWould` | `payment_detail_seeded`, `payment_remittance_seeded_claim`, `payment_detail_issued` | payment_detail_seeded: PASS, payment_remittance_seeded_claim: PASS, payment_detail_issued: PASS | - |
+| PAY-R29 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | `PaymentDetailEndpointTest#detailOfUnknownPaymentIsAnErrorScreen`, `PaymentIssueEndpointTest#paymentFollowsTheNewestSettlementAndFailsWithoutOne`, `PaymentIssueEndpointTest#schemaConstraintsAreTheOnlyInputCheckAndFailuresConsumeNoId` | `payment_detail_default_absent`, `payment_detail_unknown`, `payment_issue_no_settlement`, `payment_issue_missing_payee`, `payment_issue_missing_method`, `payment_issue_payee_too_long`, `payment_issue_method_too_long` | payment_detail_default_absent: PASS, payment_detail_unknown: PASS, payment_issue_no_settlement: PASS, payment_issue_missing_payee: PASS, payment_issue_missing_method: PASS, payment_issue_payee_too_long: PASS, payment_issue_method_too_long: PASS | - |
+| PAY-R30 (v1) | 0.1 | `27e5b8b` ADR-002: extract the payment slice into services/payment-service (PAY-R02..PAY-R19, PAY-R21..PAY-R29) | - | - | - | - |
 
 ## Rule history
 
@@ -85,3 +117,33 @@ the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in
 | SETTLE-R29 (v1) | Initial rule, version 0.1 |
 | SETTLE-R30 (v1) | Initial rule, version 0.1 |
 | SETTLE-R31 (v1) | Initial rule, version 0.1 |
+| PAY-R01 (v1) | Initial rule, version 0.1 |
+| PAY-R02 (v1) | Initial rule, version 0.1 |
+| PAY-R03 (v1) | Initial rule, version 0.1 |
+| PAY-R04 (v1) | Initial rule, version 0.1 |
+| PAY-R05 (v1) | Initial rule, version 0.1 |
+| PAY-R06 (v1) | Initial rule, version 0.1 |
+| PAY-R07 (v1) | Initial rule, version 0.1 |
+| PAY-R08 (v1) | Initial rule, version 0.1 |
+| PAY-R09 (v1) | Initial rule, version 0.1 |
+| PAY-R10 (v1) | Initial rule, version 0.1 |
+| PAY-R11 (v1) | Initial rule, version 0.1 |
+| PAY-R12 (v1) | Initial rule, version 0.1 |
+| PAY-R13 (v1) | Initial rule, version 0.1 |
+| PAY-R14 (v1) | Initial rule, version 0.1 |
+| PAY-R15 (v1) | Initial rule, version 0.1 |
+| PAY-R16 (v1) | Initial rule, version 0.1 |
+| PAY-R17 (v1) | Initial rule, version 0.1 |
+| PAY-R18 (v1) | Initial rule, version 0.1 |
+| PAY-R19 (v1) | Initial rule, version 0.1 |
+| PAY-R20 (v1) | Initial rule, version 0.1 |
+| PAY-R21 (v1) | Initial rule, version 0.1 |
+| PAY-R22 (v1) | Initial rule, version 0.1 |
+| PAY-R23 (v1) | Initial rule, version 0.1 |
+| PAY-R24 (v1) | Initial rule, version 0.1 |
+| PAY-R25 (v1) | Initial rule, version 0.1 |
+| PAY-R26 (v1) | Initial rule, version 0.1 |
+| PAY-R27 (v1) | Initial rule, version 0.1 |
+| PAY-R28 (v1) | Initial rule, version 0.1 |
+| PAY-R29 (v1) | Initial rule, version 0.1 |
+| PAY-R30 (v1) | Initial rule, version 0.1 |
