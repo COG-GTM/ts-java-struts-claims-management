@@ -162,7 +162,7 @@ ins { background: var(--added); color: var(--added-ink); text-decoration: none; 
     // A rewrite shares only filler words with its predecessor; marking those
     // word by word hides the change, so the texts are shown plain instead. An
     // extension keeps most of the old words, and is marked.
-    if (common / shorter < 0.6) return {left: esc(a), right: esc(b), rewritten: true};
+    if (common / shorter < 0.75) return {left: esc(a), right: esc(b), rewritten: true};
     return {left: left, right: right, rewritten: false};
   }
 
