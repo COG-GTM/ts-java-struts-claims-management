@@ -12,7 +12,7 @@
     "settlement_policy_cap": ["SETTLE-R13"],
     "settlement_save": ["SETTLE-R25", "SETTLE-R27", "SETTLE-R28", "SETTLE-R29"]
   },
-  "payment_scenarios_comment": "Payment slice (ADR-002, SPEC-PAY-001): transcript_rules above also maps the two payment transcripts to their PAY rules, from the spec's transcript_rules block. The payment parity scenarios tools/parity/payment_parity.py replays against the payment service (ADR-002, 'How parity is judged'). Each scenario states its database precondition explicitly: the scripts under parity/preconditions/payment applied, in order, on top of the legacy seed by POST /parity/reset before the request, so scenarios do not depend on the order they run in. A scenario with a 'transcript' is judged against that transcripts/<name>.json. A scenario with its own 'request' and 'expected' has no transcript: both are copied verbatim from the legacy run recorded in docs/specs/SPEC-PAY-001-live.json ('observed' names the step), and 'expected.db_state' is read back through the service as for transcripts (payment.<id>.amount / payment.<id>.status via /payment/detail, payment.count.claim.<id> via /payment/remittance). 'rules' are the SPEC-PAY-001 rules the scenario is evidence for, from the rule's Observed: line.",
+  "payment_scenarios_comment": "Payment slice (ADR-002, SPEC-PAY-001): transcript_rules above also maps the two payment transcripts to their PAY rules, from the spec's transcript_rules block. The payment parity scenarios tools/parity/payment_parity.py replays against the payment service (ADR-002, 'How parity is judged'). Each scenario states its database precondition explicitly: the scripts under parity/preconditions/payment applied, in order, on top of the legacy seed by POST /parity/reset before the request, so scenarios do not depend on the order they run in. A scenario with a 'transcript' is judged against that transcripts/<name>.json. A scenario with its own 'request' and 'expected' has no transcript: both are copied verbatim from the legacy run recorded in docs/specs/SPEC-PAY-001-live.json ('observed' names the step), and 'expected.db_state' is read back through the service as for transcripts (payment.<id>.amount / payment.<id>.status via /payment/detail, payment.count.claim.<id> via /payment/remittance), plus payment.<id>.stored_amount / payment.<id>.settlement_id read raw from the parity profile's GET /parity/payment/<id> with the values of the live run's JDBC probe (12.345 unrounded, NaN, settlement 121). 'rules' are the SPEC-PAY-001 rules the scenario is evidence for, from the rule's Observed: line.",
   "payment_scenarios": [
     {
       "scenario": "payment_issue",
@@ -308,7 +308,9 @@
         "db_state": {
           "payment.61.amount": "1118.00",
           "payment.61.status": "ISSUED",
-          "payment.count.claim.118": "1"
+          "payment.count.claim.118": "1",
+          "payment.61.settlement_id": "118",
+          "payment.61.stored_amount": "1118.0"
         }
       },
       "rules": [
@@ -382,7 +384,9 @@
         "validation_errors": [],
         "db_state": {
           "payment.63.amount": "12.35",
-          "payment.count.claim.119": "1"
+          "payment.count.claim.119": "1",
+          "payment.63.settlement_id": "119",
+          "payment.63.stored_amount": "12.345"
         }
       },
       "rules": [
@@ -930,7 +934,8 @@
         },
         "validation_errors": [],
         "db_state": {
-          "payment.73.amount": "NaN"
+          "payment.73.amount": "NaN",
+          "payment.73.stored_amount": "NaN"
         }
       },
       "rules": [
@@ -1320,7 +1325,9 @@
         "validation_errors": [],
         "db_state": {
           "payment.74.amount": "2750.00",
-          "payment.count.claim.118": "12"
+          "payment.count.claim.118": "12",
+          "payment.74.settlement_id": "121",
+          "payment.74.stored_amount": "2750.0"
         }
       },
       "rules": [

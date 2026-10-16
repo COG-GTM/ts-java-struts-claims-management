@@ -83,12 +83,14 @@ by file path, exactly as the settlement service does. The seeded rows the
 rules depend on (payments 1-60 so the next id is 61, settlements 118, 119 and
 120 with amounts 1118, 0 and 0) are therefore identical to the legacy fixture.
 
-The `parity` Spring profile (`make payment-run-parity`) adds one endpoint that
-is not part of the slice, `POST /parity/reset`, which re-executes the two
+The `parity` Spring profile (`make payment-run-parity`) adds two endpoints that
+are not part of the slice: `POST /parity/reset`, which re-executes the two
 legacy scripts and then the precondition scripts named in the request from
-`parity/preconditions/payment`. It exists only so that every parity scenario
-can state its database precondition explicitly; `make payment-run` and the
-service tests do not have it.
+`parity/preconditions/payment`, and `GET /parity/payment/<id>`, the stored row
+unformatted. They exist only so that every parity scenario can state its
+database precondition explicitly and check what the screens round away; the
+profile listens on 127.0.0.1 only, and `make payment-run` and the service
+tests do not have it.
 
 ### Out of scope
 
@@ -118,7 +120,11 @@ A payment response is at parity with the legacy one when these match:
 3. validation keys, where any are produced (none are, on this slice),
 4. resulting database state in `PAYMENT`, read back through the service's own
    `/payment/detail` (`payment.<id>.amount`, `payment.<id>.status`) and
-   `/payment/remittance` (`payment.count.claim.<id>` from `remitCount`).
+   `/payment/remittance` (`payment.count.claim.<id>` from `remitCount`), and,
+   for the unrounded stored amount (PAY-R09) and the settlement the payment is
+   tied to (PAY-R05), raw from the parity profile's `GET /parity/payment/<id>`
+   (`payment.<id>.stored_amount`, `payment.<id>.settlement_id`), compared with
+   the live run's JDBC probe.
 
 HTML is explicitly not part of parity. The scenarios are the
 `payment_scenarios` of `parity/routes.json`: the two transcripts, replayed

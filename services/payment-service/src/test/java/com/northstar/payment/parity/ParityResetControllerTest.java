@@ -60,4 +60,18 @@ class ParityResetControllerTest {
         mvc.perform(post("/parity/reset").param("precondition", "no-such-file.sql"))
                 .andExpect(status().isBadRequest());
     }
+
+    /** The raw row keeps what the screens round: 12.345 stays 12.345, NaN is "NaN", and settlement_id is readable. */
+    @Test
+    void storedPaymentIsReadUnformatted() throws Exception {
+        mvc.perform(post("/parity/reset").param("precondition", "live-after-L43.sql")).andExpect(status().isOk());
+        mvc.perform(get("/parity/payment/63"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.amount").value("12.345"))
+                .andExpect(jsonPath("$.settlement_id").value("119"))
+                .andExpect(jsonPath("$.payee_name").value("Third Payee"));
+        mvc.perform(get("/parity/payment/73")).andExpect(jsonPath("$.amount").value("NaN"));
+        mvc.perform(get("/parity/payment/74")).andExpect(jsonPath("$.settlement_id").value("121"));
+        mvc.perform(get("/parity/payment/9999")).andExpect(status().isNotFound());
+    }
 }

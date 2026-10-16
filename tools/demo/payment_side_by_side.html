@@ -21,7 +21,7 @@ p.note { margin: 6px 20px; color: #555; font-size: 15px; }
 <h1>Same payment request to the legacy app (left) and the payment service (right)</h1>
 <p class="note">The legacy app has no payment input form (issue.jsp is a confirmation page), so these forms POST/GET the real
 <code>/claims/payment/*.do</code> endpoints on 8080 and the equivalent <code>/payment/*</code> endpoints on 8084. Sign in once first; the
-legacy frames share the browser session. Run with <code>make run</code> (legacy, Java 11) and <code>make payment-run</code> (service, Java 21).</p>
+legacy frames share the browser session. Run with <code>make run</code> (legacy, Java 11) and <code>make payment-run</code> (service, Java 21), and serve this page over http (<code>python3 -m http.server 8090 --directory tools/demo</code>) so the legacy session cookie is accepted inside the frame.</p>
 <div id="steps"></div>
 </header>
 <main>

@@ -12,7 +12,9 @@ is sent. Scenarios therefore do not depend on the order they run in.
 
 The comparison is the one ADR-002 ("How parity is judged") defines: status
 class, business field values, validation keys, and the database state read
-back through the service's own read endpoints. A scenario listed under
+back through the service's own read endpoints (and, for stored amounts and
+settlement ids, the parity profile's raw row read). The legacy forward name is
+compared with the response's ``screen``. A scenario listed under
 ``approved_differences`` in parity/routes.json is judged against the response
 its ``docs/changes/CHG-nnn`` record approves and reported as ``CHANGED``
 (ADR-002, "Behaviour freeze"); any other difference is a FAIL.
@@ -118,8 +120,25 @@ def fetch_fields(base, path):
         return json.loads(error.read().decode()).get("fields", {})
 
 
+def fetch_json(base, path):
+    try:
+        with urllib.request.urlopen(base + path) as response:
+            return json.loads(response.read().decode())
+    except urllib.error.HTTPError as error:
+        return {}
+
+
+def expected_screen(result):
+    """The forward name of a legacy result: ``forward:/WEB-INF/jsp/payment/issue.jsp``
+    (transcript) or ``forward /WEB-INF/jsp/payment/issue.jsp`` (live run) is
+    ``issue``; any ``error.jsp`` result is ``error`` (PAY-R29)."""
+    if "error.jsp" in result:
+        return "error"
+    return result.rsplit("/", 1)[-1].replace(".jsp", "")
+
+
 def db_state(base, expected):
-    """Read the db_state keys out of the service database through its own screens.
+    """Read the db_state keys out of the service database.
 
     ``payment.<id>.amount`` and ``payment.<id>.status`` are ``detailPaymentAmount``
     and ``detailPaymentStatus`` of ``GET /payment/detail?paymentId=<id>``
@@ -128,11 +147,21 @@ def db_state(base, expected):
     ``GET /payment/remittance?claimId=<id>`` (PAY-R27;
     src/main/java/com/northstar/claims/dao/PaymentDAO.java:100-119). A missing
     payment reads as None.
+
+    ``payment.<id>.stored_amount`` and ``payment.<id>.settlement_id`` are the raw
+    PAYMENT columns from the parity profile's ``GET /parity/payment/<id>``
+    (``amount`` as Double.toString), so PAY-R09 (12.345 stored unrounded) and
+    PAY-R05 (the newest settlement's id) are checked against the live run's
+    JDBC probe rather than through the rounding screens.
     """
     actual = {}
     for key in expected:
         parts = key.split(".")
-        if parts[:3] == ["payment", "count", "claim"]:
+        if parts[0] == "payment" and parts[2] == "stored_amount":
+            actual[key] = fetch_json(base, "/parity/payment/" + parts[1]).get("amount")
+        elif parts[0] == "payment" and parts[2] == "settlement_id":
+            actual[key] = fetch_json(base, "/parity/payment/" + parts[1]).get("settlement_id")
+        elif parts[:3] == ["payment", "count", "claim"]:
             actual[key] = fetch_fields(base, "/payment/remittance?claimId=" + parts[3]).get("remitCount")
         elif parts[0] == "payment" and parts[2] == "amount":
             actual[key] = fetch_fields(base, "/payment/detail?paymentId=" + parts[1]).get("detailPaymentAmount")
@@ -148,6 +177,8 @@ def compare(expected, status, body, actual_db):
     if status_class(status) != status_class(expected["status"]) and not (
             "error.jsp" in expected["result"] and status >= 500):
         diffs.append("status class %s != %s" % (status_class(status), status_class(expected["status"])))
+    if body.get("screen") != expected_screen(expected["result"]):
+        diffs.append("screen %r != %r" % (body.get("screen"), expected_screen(expected["result"])))
     fields = body.get("fields", {})
     if fields != expected["business_fields"]:
         for key, value in expected["business_fields"].items():

@@ -1048,7 +1048,9 @@
       "actual": {
         "db_state": {
           "payment.61.amount": "1118.00",
+          "payment.61.settlement_id": "118",
           "payment.61.status": "ISSUED",
+          "payment.61.stored_amount": "1118.0",
           "payment.count.claim.118": "1"
         },
         "errors": [],
@@ -1072,7 +1074,9 @@
         },
         "db_state": {
           "payment.61.amount": "1118.00",
+          "payment.61.settlement_id": "118",
           "payment.61.status": "ISSUED",
+          "payment.61.stored_amount": "1118.0",
           "payment.count.claim.118": "1"
         },
         "result": "forward /WEB-INF/jsp/payment/issue.jsp",
@@ -1184,6 +1188,8 @@
       "actual": {
         "db_state": {
           "payment.63.amount": "12.35",
+          "payment.63.settlement_id": "119",
+          "payment.63.stored_amount": "12.345",
           "payment.count.claim.119": "1"
         },
         "errors": [],
@@ -1207,6 +1213,8 @@
         },
         "db_state": {
           "payment.63.amount": "12.35",
+          "payment.63.settlement_id": "119",
+          "payment.63.stored_amount": "12.345",
           "payment.count.claim.119": "1"
         },
         "result": "forward /WEB-INF/jsp/payment/issue.jsp",
@@ -2218,7 +2226,8 @@
     {
       "actual": {
         "db_state": {
-          "payment.73.amount": "NaN"
+          "payment.73.amount": "NaN",
+          "payment.73.stored_amount": "NaN"
         },
         "errors": [],
         "fields": {
@@ -2240,7 +2249,8 @@
           "paymentStatus": "ISSUED"
         },
         "db_state": {
-          "payment.73.amount": "NaN"
+          "payment.73.amount": "NaN",
+          "payment.73.stored_amount": "NaN"
         },
         "result": "forward /WEB-INF/jsp/payment/issue.jsp",
         "status": 200,
@@ -2961,6 +2971,8 @@
       "actual": {
         "db_state": {
           "payment.74.amount": "2750.00",
+          "payment.74.settlement_id": "121",
+          "payment.74.stored_amount": "2750.0",
           "payment.count.claim.118": "12"
         },
         "errors": [],
@@ -2984,6 +2996,8 @@
         },
         "db_state": {
           "payment.74.amount": "2750.00",
+          "payment.74.settlement_id": "121",
+          "payment.74.stored_amount": "2750.0",
           "payment.count.claim.118": "12"
         },
         "result": "forward /WEB-INF/jsp/payment/issue.jsp",
