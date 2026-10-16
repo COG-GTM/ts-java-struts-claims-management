@@ -119,9 +119,11 @@ def rules_and_history():
     return rules, history
 
 
-# Spec twins and live-proof captures are generated from the spec: a refresh of
-# them is not a change to any rule.
-GENERATED_GLOBS = ["docs/specs/*.html", "docs/specs/*-live.json"]
+# Spec twins and live-proof captures are generated from the spec, and the
+# parity evidence and HTML report from the replays: a refresh of them is not a
+# change to any rule.
+GENERATED_GLOBS = ["docs/specs/*.html", "docs/specs/*-live.json",
+                   "parity/*.html", "parity/evidence/*.json"]
 
 
 def searched_paths():

@@ -1,0 +1,6632 @@
+{
+  "scenarios": [
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-61",
+            "paymentAmount": "1000.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "db_state": {
+          "payment.61.amount": "1000.00",
+          "payment.61.status": "ISSUED",
+          "payment.count.claim.119": "1"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-61",
+          "expected": "CHK-61",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "db payment.61.amount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "db payment.61.status",
+          "ok": true
+        },
+        {
+          "actual": "1",
+          "expected": "1",
+          "name": "db payment.count.claim.119",
+          "ok": true
+        }
+      ],
+      "description": "Issue a settlement payment",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-61",
+          "paymentAmount": "1000.00",
+          "paymentStatus": "ISSUED"
+        },
+        "db_state": {
+          "payment.61.amount": "1000.00",
+          "payment.61.status": "ISSUED",
+          "payment.count.claim.119": "1"
+        },
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "1000.00",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R01",
+        "PAY-R06",
+        "PAY-R07",
+        "PAY-R08"
+      ],
+      "scenario": "payment_issue",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "1000.00"
+          ],
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "transcripts/payment_issue.json",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber_61": "CHK-61",
+            "paymentAmount_61": "1000.00",
+            "paymentStatus_61": "ISSUED"
+          },
+          "links": [
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=119",
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=119"
+          ],
+          "screen": "history"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-61",
+          "expected": "CHK-61",
+          "name": "field checkNumber_61",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field paymentAmount_61",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_61",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Review payment history",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber_61": "CHK-61",
+          "paymentAmount_61": "1000.00",
+          "paymentStatus_61": "ISSUED"
+        },
+        "db_state": {},
+        "result": "forward:/WEB-INF/jsp/payment/history.jsp",
+        "status": 200,
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/history.do"
+      },
+      "rules": [
+        "PAY-R14"
+      ],
+      "scenario": "payment_history",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/history"
+      },
+      "slice": "payment",
+      "source": "transcripts/payment_history.json",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {},
+        "location": "/claims/login.do",
+        "status": 302
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": 302,
+          "expected": 302,
+          "name": "status",
+          "ok": true
+        },
+        {
+          "actual": "/claims/login.do",
+          "expected": "/claims/login.do",
+          "name": "location",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "No session: the filter redirects to login",
+      "difference": "-",
+      "expected": {
+        "business_fields": {},
+        "links": [],
+        "location": "/claims/login.do",
+        "result": "redirect:/claims/login.do",
+        "status": 302,
+        "text": [],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "anonymous",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/history.do"
+      },
+      "rules": [
+        "PAY-R13"
+      ],
+      "scenario": "payment_live_L01",
+      "service_request": {
+        "method": "GET",
+        "params": [],
+        "path": "/payment/history"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L01",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "remitClaimId": "119",
+            "remitCount": "0",
+            "remitTotal": "0.00"
+          },
+          "links": [],
+          "screen": "remittance"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "119",
+          "expected": "119",
+          "name": "field remitClaimId",
+          "ok": true
+        },
+        {
+          "actual": "0",
+          "expected": "0",
+          "name": "field remitCount",
+          "ok": true
+        },
+        {
+          "actual": "0.00",
+          "expected": "0.00",
+          "name": "field remitTotal",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Seed state: claim 119 has no payments",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "remitClaimId": "119",
+          "remitCount": "0",
+          "remitTotal": "0.00"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/remittance.jsp",
+        "status": 200,
+        "text": [
+          "Payment remittance",
+          "Check",
+          "Payee",
+          "Issued date",
+          "Amount",
+          "Status",
+          "Claim 119",
+          "Payment count 0",
+          "Total issued 0.00"
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/remittance.do?claimId=119"
+      },
+      "rules": [
+        "PAY-R20"
+      ],
+      "scenario": "payment_live_L03",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/remittance"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L03",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-61",
+            "paymentAmount": "0.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-61",
+          "expected": "CHK-61",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "0.00",
+          "expected": "0.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Amount omitted on the seed: falls back to settlement 119 (0)",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-61",
+          "paymentAmount": "0.00",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount 0.00",
+          "Check Number CHK-61",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R03",
+        "PAY-R04",
+        "PAY-R06",
+        "PAY-R12"
+      ],
+      "scenario": "payment_live_L04",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L04",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-62",
+            "paymentAmount": "1000.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-62",
+          "expected": "CHK-62",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Amount omitted: falls back to the newest settlement (1000.00)",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-62",
+          "paymentAmount": "1000.00",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount 1000.00",
+          "Check Number CHK-62",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R01",
+        "PAY-R03",
+        "PAY-R04",
+        "PAY-R06",
+        "PAY-R08"
+      ],
+      "scenario": "payment_live_L06",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L06",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-63",
+            "paymentAmount": "1000.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-63",
+          "expected": "CHK-63",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Unparseable amount: falls back to the newest settlement",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-63",
+          "paymentAmount": "1000.00",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount 1000.00",
+          "Check Number CHK-63",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "abc",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R04"
+      ],
+      "scenario": "payment_live_L07",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "abc"
+          ],
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L07",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-64",
+            "paymentAmount": "-250.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-64",
+          "expected": "CHK-64",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "-250.00",
+          "expected": "-250.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Negative amount is accepted",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-64",
+          "paymentAmount": "-250.00",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount -250.00",
+          "Check Number CHK-64",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "-250.00",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R05"
+      ],
+      "scenario": "payment_live_L08",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "-250.00"
+          ],
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L08",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-65",
+            "paymentAmount": "1.01",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-65",
+          "expected": "CHK-65",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "1.01",
+          "expected": "1.01",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Half-cent amount is stored unrounded and displayed with %.2f",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-65",
+          "paymentAmount": "1.01",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount 1.01",
+          "Check Number CHK-65",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "1.005",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R05"
+      ],
+      "scenario": "payment_live_L09",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "1.005"
+          ],
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L09",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-66",
+            "paymentAmount": "5000.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-66",
+          "expected": "CHK-66",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "5000.00",
+          "expected": "5000.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Amount above the settlement is accepted",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-66",
+          "paymentAmount": "5000.00",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount 5000.00",
+          "Check Number CHK-66",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "5000.00",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R05"
+      ],
+      "scenario": "payment_live_L10",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "5000.00"
+          ],
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L10",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-67",
+            "paymentAmount": "NaN",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-67",
+          "expected": "CHK-67",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "NaN",
+          "expected": "NaN",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "NaN parses as a double and is accepted",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-67",
+          "paymentAmount": "NaN",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount NaN",
+          "Check Number CHK-67",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "NaN",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R05"
+      ],
+      "scenario": "payment_live_L11",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "NaN"
+          ],
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L11",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-68",
+            "paymentAmount": "1000.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-68",
+          "expected": "CHK-68",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Exponent notation parses",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-68",
+          "paymentAmount": "1000.00",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount 1000.00",
+          "Check Number CHK-68",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "1e3",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R05"
+      ],
+      "scenario": "payment_live_L12",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "1e3"
+          ],
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L12",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-69",
+            "paymentAmount": "10.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-69",
+          "expected": "CHK-69",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "10.00",
+          "expected": "10.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "checkNumber request parameter is ignored",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-69",
+          "paymentAmount": "10.00",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount 10.00",
+          "Check Number CHK-69",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "10.00",
+          "checkNumber": "MY-CHECK-1",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R07"
+      ],
+      "scenario": "payment_live_L13",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "10.00"
+          ],
+          [
+            "checkNumber",
+            "MY-CHECK-1"
+          ],
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L13",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-70",
+            "paymentAmount": "10.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-70",
+          "expected": "CHK-70",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "10.00",
+          "expected": "10.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "paymentMethod is stored as sent (not upper-cased)",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-70",
+          "paymentAmount": "10.00",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount 10.00",
+          "Check Number CHK-70",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "10.00",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "check"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R09"
+      ],
+      "scenario": "payment_live_L14",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "10.00"
+          ],
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "check"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L14",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {},
+          "links": [],
+          "screen": "error"
+        },
+        "location": null,
+        "status": 500
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "500 screen error",
+          "expected": "200 forward to error.jsp (5xx in the service)",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "paymentMethod omitted: NOT NULL insert failure",
+      "difference": "-",
+      "expected": {
+        "business_fields": {},
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/error.jsp",
+        "status": 200,
+        "text": [
+          "Claims System Error",
+          "The claims system could not complete the request.",
+          "Reference status: null",
+          "Return to login",
+          "Contact the claims support desk if the problem continues.",
+          "Return to the previous screen and try the operation again.",
+          "Reference status",
+          "Record the displayed status code.",
+          "Sign in again if the session has expired."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "10.00",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R06",
+        "PAY-R10"
+      ],
+      "scenario": "payment_live_L15",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "10.00"
+          ],
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L15",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {},
+          "links": [],
+          "screen": "error"
+        },
+        "location": null,
+        "status": 500
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "500 screen error",
+          "expected": "200 forward to error.jsp (5xx in the service)",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "payeeName omitted: NOT NULL insert failure",
+      "difference": "-",
+      "expected": {
+        "business_fields": {},
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/error.jsp",
+        "status": 200,
+        "text": [
+          "Claims System Error",
+          "The claims system could not complete the request.",
+          "Reference status: null",
+          "Return to login",
+          "Contact the claims support desk if the problem continues.",
+          "Return to the previous screen and try the operation again.",
+          "Reference status",
+          "Record the displayed status code.",
+          "Sign in again if the session has expired."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "10.00",
+          "claimId": "119",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R10"
+      ],
+      "scenario": "payment_live_L16",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "10.00"
+          ],
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L16",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {},
+          "links": [],
+          "screen": "error"
+        },
+        "location": null,
+        "status": 500
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "500 screen error",
+          "expected": "200 forward to error.jsp (5xx in the service)",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "paymentMethod longer than VARCHAR(20): insert failure",
+      "difference": "-",
+      "expected": {
+        "business_fields": {},
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/error.jsp",
+        "status": 200,
+        "text": [
+          "Claims System Error",
+          "The claims system could not complete the request.",
+          "Reference status: null",
+          "Return to login",
+          "Contact the claims support desk if the problem continues.",
+          "Return to the previous screen and try the operation again.",
+          "Reference status",
+          "Record the displayed status code.",
+          "Sign in again if the session has expired."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "10.00",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "ELECTRONIC-FUNDS-XFER"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R10"
+      ],
+      "scenario": "payment_live_L17",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "10.00"
+          ],
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "ELECTRONIC-FUNDS-XFER"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L17",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {},
+          "links": [],
+          "screen": "error"
+        },
+        "location": null,
+        "status": 500
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "500 screen error",
+          "expected": "200 forward to error.jsp (5xx in the service)",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Claim with no settlement row: null settlement",
+      "difference": "-",
+      "expected": {
+        "business_fields": {},
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/error.jsp",
+        "status": 200,
+        "text": [
+          "Claims System Error",
+          "The claims system could not complete the request.",
+          "Reference status: null",
+          "Return to login",
+          "Contact the claims support desk if the problem continues.",
+          "Return to the previous screen and try the operation again.",
+          "Reference status",
+          "Record the displayed status code.",
+          "Sign in again if the session has expired."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "10.00",
+          "claimId": "9999",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R06",
+        "PAY-R11"
+      ],
+      "scenario": "payment_live_L18",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "10.00"
+          ],
+          [
+            "claimId",
+            "9999"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L18",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-71",
+            "paymentAmount": "11.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-71",
+          "expected": "CHK-71",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "11.00",
+          "expected": "11.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "claimId omitted: 119",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-71",
+          "paymentAmount": "11.00",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount 11.00",
+          "Check Number CHK-71",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "11.00",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R02",
+        "PAY-R06"
+      ],
+      "scenario": "payment_live_L19",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "11.00"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L19",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-72",
+            "paymentAmount": "12.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-72",
+          "expected": "CHK-72",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "12.00",
+          "expected": "12.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "claimId unparseable: 119",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-72",
+          "paymentAmount": "12.00",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount 12.00",
+          "Check Number CHK-72",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "12.00",
+          "claimId": "abc",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R02"
+      ],
+      "scenario": "payment_live_L20",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "12.00"
+          ],
+          [
+            "claimId",
+            "abc"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L20",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-73",
+            "paymentAmount": "5.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-73",
+          "expected": "CHK-73",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "5.00",
+          "expected": "5.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "A GET also issues a payment",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-73",
+          "paymentAmount": "5.00",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount 5.00",
+          "Check Number CHK-73",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/issue.do?claimId=1&payeeName=Get+Payee&amount=5&paymentMethod=CHECK"
+      },
+      "rules": [
+        "PAY-R03",
+        "PAY-R12"
+      ],
+      "scenario": "payment_live_L21",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "claimId",
+            "1"
+          ],
+          [
+            "payeeName",
+            "Get Payee"
+          ],
+          [
+            "amount",
+            "5"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L21",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-74",
+            "paymentAmount": "20.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-74",
+          "expected": "CHK-74",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "20.00",
+          "expected": "20.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Claim 120 (status CLOSED) is paid; settlement 120 is linked",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-74",
+          "paymentAmount": "20.00",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount 20.00",
+          "Check Number CHK-74",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "20.00",
+          "claimId": "120",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R03",
+        "PAY-R12"
+      ],
+      "scenario": "payment_live_L22",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "20.00"
+          ],
+          [
+            "claimId",
+            "120"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L22",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-75",
+            "paymentAmount": "1.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-75",
+          "expected": "CHK-75",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "1.00",
+          "expected": "1.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Payee text with markup is stored as sent",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-75",
+          "paymentAmount": "1.00",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount 1.00",
+          "Check Number CHK-75",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "amount": "1.00",
+          "claimId": "120",
+          "payeeName": "<b>A&B</b>",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R09"
+      ],
+      "scenario": "payment_live_L23",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "1.00"
+          ],
+          [
+            "claimId",
+            "120"
+          ],
+          [
+            "payeeName",
+            "<b>A&B</b>"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L23",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber_61": "CHK-61",
+            "checkNumber_62": "CHK-62",
+            "checkNumber_63": "CHK-63",
+            "checkNumber_64": "CHK-64",
+            "checkNumber_65": "CHK-65",
+            "checkNumber_66": "CHK-66",
+            "checkNumber_67": "CHK-67",
+            "checkNumber_68": "CHK-68",
+            "checkNumber_69": "CHK-69",
+            "checkNumber_70": "CHK-70",
+            "checkNumber_71": "CHK-71",
+            "checkNumber_72": "CHK-72",
+            "paymentAmount_61": "0.00",
+            "paymentAmount_62": "1000.00",
+            "paymentAmount_63": "1000.00",
+            "paymentAmount_64": "-250.00",
+            "paymentAmount_65": "1.01",
+            "paymentAmount_66": "5000.00",
+            "paymentAmount_67": "NaN",
+            "paymentAmount_68": "1000.00",
+            "paymentAmount_69": "10.00",
+            "paymentAmount_70": "10.00",
+            "paymentAmount_71": "11.00",
+            "paymentAmount_72": "12.00",
+            "paymentStatus_61": "ISSUED",
+            "paymentStatus_62": "ISSUED",
+            "paymentStatus_63": "ISSUED",
+            "paymentStatus_64": "ISSUED",
+            "paymentStatus_65": "ISSUED",
+            "paymentStatus_66": "ISSUED",
+            "paymentStatus_67": "ISSUED",
+            "paymentStatus_68": "ISSUED",
+            "paymentStatus_69": "ISSUED",
+            "paymentStatus_70": "ISSUED",
+            "paymentStatus_71": "ISSUED",
+            "paymentStatus_72": "ISSUED"
+          },
+          "links": [
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=119",
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=119"
+          ],
+          "screen": "history"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-61",
+          "expected": "CHK-61",
+          "name": "field checkNumber_61",
+          "ok": true
+        },
+        {
+          "actual": "CHK-62",
+          "expected": "CHK-62",
+          "name": "field checkNumber_62",
+          "ok": true
+        },
+        {
+          "actual": "CHK-63",
+          "expected": "CHK-63",
+          "name": "field checkNumber_63",
+          "ok": true
+        },
+        {
+          "actual": "CHK-64",
+          "expected": "CHK-64",
+          "name": "field checkNumber_64",
+          "ok": true
+        },
+        {
+          "actual": "CHK-65",
+          "expected": "CHK-65",
+          "name": "field checkNumber_65",
+          "ok": true
+        },
+        {
+          "actual": "CHK-66",
+          "expected": "CHK-66",
+          "name": "field checkNumber_66",
+          "ok": true
+        },
+        {
+          "actual": "CHK-67",
+          "expected": "CHK-67",
+          "name": "field checkNumber_67",
+          "ok": true
+        },
+        {
+          "actual": "CHK-68",
+          "expected": "CHK-68",
+          "name": "field checkNumber_68",
+          "ok": true
+        },
+        {
+          "actual": "CHK-69",
+          "expected": "CHK-69",
+          "name": "field checkNumber_69",
+          "ok": true
+        },
+        {
+          "actual": "CHK-70",
+          "expected": "CHK-70",
+          "name": "field checkNumber_70",
+          "ok": true
+        },
+        {
+          "actual": "CHK-71",
+          "expected": "CHK-71",
+          "name": "field checkNumber_71",
+          "ok": true
+        },
+        {
+          "actual": "CHK-72",
+          "expected": "CHK-72",
+          "name": "field checkNumber_72",
+          "ok": true
+        },
+        {
+          "actual": "0.00",
+          "expected": "0.00",
+          "name": "field paymentAmount_61",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field paymentAmount_62",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field paymentAmount_63",
+          "ok": true
+        },
+        {
+          "actual": "-250.00",
+          "expected": "-250.00",
+          "name": "field paymentAmount_64",
+          "ok": true
+        },
+        {
+          "actual": "1.01",
+          "expected": "1.01",
+          "name": "field paymentAmount_65",
+          "ok": true
+        },
+        {
+          "actual": "5000.00",
+          "expected": "5000.00",
+          "name": "field paymentAmount_66",
+          "ok": true
+        },
+        {
+          "actual": "NaN",
+          "expected": "NaN",
+          "name": "field paymentAmount_67",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field paymentAmount_68",
+          "ok": true
+        },
+        {
+          "actual": "10.00",
+          "expected": "10.00",
+          "name": "field paymentAmount_69",
+          "ok": true
+        },
+        {
+          "actual": "10.00",
+          "expected": "10.00",
+          "name": "field paymentAmount_70",
+          "ok": true
+        },
+        {
+          "actual": "11.00",
+          "expected": "11.00",
+          "name": "field paymentAmount_71",
+          "ok": true
+        },
+        {
+          "actual": "12.00",
+          "expected": "12.00",
+          "name": "field paymentAmount_72",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_61",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_62",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_63",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_64",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_65",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_66",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_67",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_68",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_69",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_70",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_71",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_72",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        },
+        {
+          "actual": [
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=119",
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=119"
+          ],
+          "expected": [
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=119",
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=119"
+          ],
+          "name": "links",
+          "ok": true
+        }
+      ],
+      "description": "History with no claimId: claim 119, issue order, fixed detail link",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber_61": "CHK-61",
+          "checkNumber_62": "CHK-62",
+          "checkNumber_63": "CHK-63",
+          "checkNumber_64": "CHK-64",
+          "checkNumber_65": "CHK-65",
+          "checkNumber_66": "CHK-66",
+          "checkNumber_67": "CHK-67",
+          "checkNumber_68": "CHK-68",
+          "checkNumber_69": "CHK-69",
+          "checkNumber_70": "CHK-70",
+          "checkNumber_71": "CHK-71",
+          "checkNumber_72": "CHK-72",
+          "paymentAmount_61": "0.00",
+          "paymentAmount_62": "1000.00",
+          "paymentAmount_63": "1000.00",
+          "paymentAmount_64": "-250.00",
+          "paymentAmount_65": "1.01",
+          "paymentAmount_66": "5000.00",
+          "paymentAmount_67": "NaN",
+          "paymentAmount_68": "1000.00",
+          "paymentAmount_69": "10.00",
+          "paymentAmount_70": "10.00",
+          "paymentAmount_71": "11.00",
+          "paymentAmount_72": "12.00",
+          "paymentStatus_61": "ISSUED",
+          "paymentStatus_62": "ISSUED",
+          "paymentStatus_63": "ISSUED",
+          "paymentStatus_64": "ISSUED",
+          "paymentStatus_65": "ISSUED",
+          "paymentStatus_66": "ISSUED",
+          "paymentStatus_67": "ISSUED",
+          "paymentStatus_68": "ISSUED",
+          "paymentStatus_69": "ISSUED",
+          "paymentStatus_70": "ISSUED",
+          "paymentStatus_71": "ISSUED",
+          "paymentStatus_72": "ISSUED"
+        },
+        "links": [
+          "detail.do?paymentId=61",
+          "remittance.do?claimId=119",
+          "detail.do?paymentId=61",
+          "remittance.do?claimId=119"
+        ],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/history.jsp",
+        "status": 200,
+        "text": [
+          "Payment History",
+          "Check Number",
+          "Payment Amount",
+          "Payment Status",
+          "CHK-61",
+          "0.00",
+          "ISSUED",
+          "CHK-62",
+          "1000.00",
+          "ISSUED",
+          "CHK-63",
+          "1000.00",
+          "ISSUED",
+          "CHK-64",
+          "-250.00",
+          "ISSUED",
+          "CHK-65",
+          "1.01",
+          "ISSUED",
+          "CHK-66",
+          "5000.00",
+          "ISSUED",
+          "CHK-67",
+          "NaN",
+          "ISSUED",
+          "CHK-68",
+          "1000.00",
+          "ISSUED",
+          "CHK-69",
+          "10.00",
+          "ISSUED",
+          "CHK-70",
+          "10.00",
+          "ISSUED",
+          "CHK-71",
+          "11.00",
+          "ISSUED",
+          "CHK-72",
+          "12.00",
+          "ISSUED",
+          "Payment history is displayed in issue order."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/history.do"
+      },
+      "rules": [
+        "PAY-R14",
+        "PAY-R15"
+      ],
+      "scenario": "payment_live_L24",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/history"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L24",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber_1": "CHK-00001",
+            "checkNumber_73": "CHK-73",
+            "paymentAmount_1": "500.00",
+            "paymentAmount_73": "5.00",
+            "paymentStatus_1": "ISSUED",
+            "paymentStatus_73": "ISSUED"
+          },
+          "links": [
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=1",
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=1"
+          ],
+          "screen": "history"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-00001",
+          "expected": "CHK-00001",
+          "name": "field checkNumber_1",
+          "ok": true
+        },
+        {
+          "actual": "CHK-73",
+          "expected": "CHK-73",
+          "name": "field checkNumber_73",
+          "ok": true
+        },
+        {
+          "actual": "500.00",
+          "expected": "500.00",
+          "name": "field paymentAmount_1",
+          "ok": true
+        },
+        {
+          "actual": "5.00",
+          "expected": "5.00",
+          "name": "field paymentAmount_73",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_1",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus_73",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        },
+        {
+          "actual": [
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=1",
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=1"
+          ],
+          "expected": [
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=1",
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=1"
+          ],
+          "name": "links",
+          "ok": true
+        }
+      ],
+      "description": "History for claim 1: seeded and new payments",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber_1": "CHK-00001",
+          "checkNumber_73": "CHK-73",
+          "paymentAmount_1": "500.00",
+          "paymentAmount_73": "5.00",
+          "paymentStatus_1": "ISSUED",
+          "paymentStatus_73": "ISSUED"
+        },
+        "links": [
+          "detail.do?paymentId=61",
+          "remittance.do?claimId=1",
+          "detail.do?paymentId=61",
+          "remittance.do?claimId=1"
+        ],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/history.jsp",
+        "status": 200,
+        "text": [
+          "Payment History",
+          "Check Number",
+          "Payment Amount",
+          "Payment Status",
+          "CHK-00001",
+          "500.00",
+          "ISSUED",
+          "CHK-73",
+          "5.00",
+          "ISSUED",
+          "Payment history is displayed in issue order."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/history.do?claimId=1"
+      },
+      "rules": [
+        "PAY-R14",
+        "PAY-R15"
+      ],
+      "scenario": "payment_live_L25",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "claimId",
+            "1"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/history"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L25",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {},
+          "links": [
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=9999",
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=9999"
+          ],
+          "screen": "history"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        },
+        {
+          "actual": [
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=9999",
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=9999"
+          ],
+          "expected": [
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=9999",
+            "detail.do?paymentId=61",
+            "remittance.do?claimId=9999"
+          ],
+          "name": "links",
+          "ok": true
+        }
+      ],
+      "description": "History for a claim with no payments",
+      "difference": "-",
+      "expected": {
+        "business_fields": {},
+        "links": [
+          "detail.do?paymentId=61",
+          "remittance.do?claimId=9999",
+          "detail.do?paymentId=61",
+          "remittance.do?claimId=9999"
+        ],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/history.jsp",
+        "status": 200,
+        "text": [
+          "Payment History",
+          "Check Number",
+          "Payment Amount",
+          "Payment Status",
+          "Payment history is displayed in issue order."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/history.do?claimId=9999"
+      },
+      "rules": [
+        "PAY-R14",
+        "PAY-R15"
+      ],
+      "scenario": "payment_live_L26",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "claimId",
+            "9999"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/history"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L26",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {
+            "payeeName": "Reserved Claimant",
+            "paymentMethod": "CHECK"
+          },
+          "errors": [],
+          "fields": {
+            "detailPaymentAmount": "5000.00",
+            "detailPaymentCheck": "CHK-66",
+            "detailPaymentClaim": "119",
+            "detailPaymentDate": "2019-04-03",
+            "detailPaymentId": "66",
+            "detailPaymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "detail"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "5000.00",
+          "expected": "5000.00",
+          "name": "field detailPaymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "CHK-66",
+          "expected": "CHK-66",
+          "name": "field detailPaymentCheck",
+          "ok": true
+        },
+        {
+          "actual": "119",
+          "expected": "119",
+          "name": "field detailPaymentClaim",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field detailPaymentDate",
+          "ok": true
+        },
+        {
+          "actual": "66",
+          "expected": "66",
+          "name": "field detailPaymentId",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field detailPaymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName",
+          "ok": true
+        },
+        {
+          "actual": "CHECK",
+          "expected": "shown on the legacy page",
+          "name": "display paymentMethod",
+          "ok": true
+        }
+      ],
+      "description": "Detail of one payment",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "detailPaymentAmount": "5000.00",
+          "detailPaymentCheck": "CHK-66",
+          "detailPaymentClaim": "119",
+          "detailPaymentDate": "2019-04-03",
+          "detailPaymentId": "66",
+          "detailPaymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/detail.jsp",
+        "status": 200,
+        "text": [
+          "Payment detail",
+          "Payment number 66",
+          "Claim number 119",
+          "Payee Reserved Claimant",
+          "Amount 5000.00",
+          "Method CHECK",
+          "Check number CHK-66",
+          "Issued date 2019-04-03",
+          "Status ISSUED"
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/detail.do?paymentId=66"
+      },
+      "rules": [
+        "PAY-R08",
+        "PAY-R16"
+      ],
+      "scenario": "payment_live_L27",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "paymentId",
+            "66"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/detail"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L27",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {
+            "payeeName": "Reserved Claimant",
+            "paymentMethod": "CHECK"
+          },
+          "errors": [],
+          "fields": {
+            "detailPaymentAmount": "0.00",
+            "detailPaymentCheck": "CHK-61",
+            "detailPaymentClaim": "119",
+            "detailPaymentDate": "2019-04-03",
+            "detailPaymentId": "61",
+            "detailPaymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "detail"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "0.00",
+          "expected": "0.00",
+          "name": "field detailPaymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "CHK-61",
+          "expected": "CHK-61",
+          "name": "field detailPaymentCheck",
+          "ok": true
+        },
+        {
+          "actual": "119",
+          "expected": "119",
+          "name": "field detailPaymentClaim",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field detailPaymentDate",
+          "ok": true
+        },
+        {
+          "actual": "61",
+          "expected": "61",
+          "name": "field detailPaymentId",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field detailPaymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName",
+          "ok": true
+        },
+        {
+          "actual": "CHECK",
+          "expected": "shown on the legacy page",
+          "name": "display paymentMethod",
+          "ok": true
+        }
+      ],
+      "description": "Detail with no paymentId: payment 61",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "detailPaymentAmount": "0.00",
+          "detailPaymentCheck": "CHK-61",
+          "detailPaymentClaim": "119",
+          "detailPaymentDate": "2019-04-03",
+          "detailPaymentId": "61",
+          "detailPaymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/detail.jsp",
+        "status": 200,
+        "text": [
+          "Payment detail",
+          "Payment number 61",
+          "Claim number 119",
+          "Payee Reserved Claimant",
+          "Amount 0.00",
+          "Method CHECK",
+          "Check number CHK-61",
+          "Issued date 2019-04-03",
+          "Status ISSUED"
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/detail.do"
+      },
+      "rules": [
+        "PAY-R16"
+      ],
+      "scenario": "payment_live_L28",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/detail"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L28",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {},
+          "links": [],
+          "screen": "error"
+        },
+        "location": null,
+        "status": 500
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "500 screen error",
+          "expected": "200 forward to error.jsp (5xx in the service)",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Detail of a payment that does not exist",
+      "difference": "-",
+      "expected": {
+        "business_fields": {},
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/error.jsp",
+        "status": 200,
+        "text": [
+          "Claims System Error",
+          "The claims system could not complete the request.",
+          "Reference status: null",
+          "Return to login",
+          "Contact the claims support desk if the problem continues.",
+          "Return to the previous screen and try the operation again.",
+          "Reference status",
+          "Record the displayed status code.",
+          "Sign in again if the session has expired."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/detail.do?paymentId=9999"
+      },
+      "rules": [
+        "PAY-R17"
+      ],
+      "scenario": "payment_live_L29",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "paymentId",
+            "9999"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/detail"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L29",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {
+            "payeeName": "<b>A&B</b>",
+            "paymentMethod": "CHECK"
+          },
+          "errors": [],
+          "fields": {
+            "detailPaymentAmount": "1.00",
+            "detailPaymentCheck": "CHK-75",
+            "detailPaymentClaim": "120",
+            "detailPaymentDate": "2019-04-03",
+            "detailPaymentId": "75",
+            "detailPaymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "detail"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "1.00",
+          "expected": "1.00",
+          "name": "field detailPaymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "CHK-75",
+          "expected": "CHK-75",
+          "name": "field detailPaymentCheck",
+          "ok": true
+        },
+        {
+          "actual": "120",
+          "expected": "120",
+          "name": "field detailPaymentClaim",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field detailPaymentDate",
+          "ok": true
+        },
+        {
+          "actual": "75",
+          "expected": "75",
+          "name": "field detailPaymentId",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field detailPaymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        },
+        {
+          "actual": "<b>A&B</b>",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName",
+          "ok": true
+        },
+        {
+          "actual": "CHECK",
+          "expected": "shown on the legacy page",
+          "name": "display paymentMethod",
+          "ok": true
+        }
+      ],
+      "description": "Detail shows payee markup escaped",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "detailPaymentAmount": "1.00",
+          "detailPaymentCheck": "CHK-75",
+          "detailPaymentClaim": "120",
+          "detailPaymentDate": "2019-04-03",
+          "detailPaymentId": "75",
+          "detailPaymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "payee_markup": "<td>&lt;b&gt;A&amp;B&lt;/b&gt;</td></tr>\n<tr>\n<th>Amount</th><td><span id=\"f_detailPaymentAmount\">1.00</span></td></tr>\n",
+        "result": "forward:/WEB-INF/jsp/payment/detail.jsp",
+        "status": 200,
+        "text": [
+          "Payment detail",
+          "Payment number 75",
+          "Claim number 120",
+          "Payee <b>A&B</b>",
+          "Amount 1.00",
+          "Method CHECK",
+          "Check number CHK-75",
+          "Issued date 2019-04-03",
+          "Status ISSUED"
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/detail.do?paymentId=75"
+      },
+      "rules": [
+        "PAY-R18"
+      ],
+      "scenario": "payment_live_L30",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "paymentId",
+            "75"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/detail"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L30",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {
+            "payeeName": "Reserved Claimant",
+            "paymentMethod": "check"
+          },
+          "errors": [],
+          "fields": {
+            "detailPaymentAmount": "10.00",
+            "detailPaymentCheck": "CHK-70",
+            "detailPaymentClaim": "119",
+            "detailPaymentDate": "2019-04-03",
+            "detailPaymentId": "70",
+            "detailPaymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "detail"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "10.00",
+          "expected": "10.00",
+          "name": "field detailPaymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "CHK-70",
+          "expected": "CHK-70",
+          "name": "field detailPaymentCheck",
+          "ok": true
+        },
+        {
+          "actual": "119",
+          "expected": "119",
+          "name": "field detailPaymentClaim",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field detailPaymentDate",
+          "ok": true
+        },
+        {
+          "actual": "70",
+          "expected": "70",
+          "name": "field detailPaymentId",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field detailPaymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName",
+          "ok": true
+        },
+        {
+          "actual": "check",
+          "expected": "shown on the legacy page",
+          "name": "display paymentMethod",
+          "ok": true
+        }
+      ],
+      "description": "Detail shows the lower-case method",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "detailPaymentAmount": "10.00",
+          "detailPaymentCheck": "CHK-70",
+          "detailPaymentClaim": "119",
+          "detailPaymentDate": "2019-04-03",
+          "detailPaymentId": "70",
+          "detailPaymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/detail.jsp",
+        "status": 200,
+        "text": [
+          "Payment detail",
+          "Payment number 70",
+          "Claim number 119",
+          "Payee Reserved Claimant",
+          "Amount 10.00",
+          "Method check",
+          "Check number CHK-70",
+          "Issued date 2019-04-03",
+          "Status ISSUED"
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/detail.do?paymentId=70"
+      },
+      "rules": [
+        "PAY-R18"
+      ],
+      "scenario": "payment_live_L31",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "paymentId",
+            "70"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/detail"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L31",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {
+            "payeeName_61": "Reserved Claimant",
+            "payeeName_62": "Reserved Claimant",
+            "payeeName_63": "Reserved Claimant",
+            "payeeName_64": "Reserved Claimant",
+            "payeeName_65": "Reserved Claimant",
+            "payeeName_66": "Reserved Claimant",
+            "payeeName_67": "Reserved Claimant",
+            "payeeName_68": "Reserved Claimant",
+            "payeeName_69": "Reserved Claimant",
+            "payeeName_70": "Reserved Claimant",
+            "payeeName_71": "Reserved Claimant",
+            "payeeName_72": "Reserved Claimant"
+          },
+          "errors": [],
+          "fields": {
+            "remitAmount_61": "0.00",
+            "remitAmount_62": "1000.00",
+            "remitAmount_63": "1000.00",
+            "remitAmount_64": "-250.00",
+            "remitAmount_65": "1.01",
+            "remitAmount_66": "5000.00",
+            "remitAmount_67": "NaN",
+            "remitAmount_68": "1000.00",
+            "remitAmount_69": "10.00",
+            "remitAmount_70": "10.00",
+            "remitAmount_71": "11.00",
+            "remitAmount_72": "12.00",
+            "remitCheck_61": "CHK-61",
+            "remitCheck_62": "CHK-62",
+            "remitCheck_63": "CHK-63",
+            "remitCheck_64": "CHK-64",
+            "remitCheck_65": "CHK-65",
+            "remitCheck_66": "CHK-66",
+            "remitCheck_67": "CHK-67",
+            "remitCheck_68": "CHK-68",
+            "remitCheck_69": "CHK-69",
+            "remitCheck_70": "CHK-70",
+            "remitCheck_71": "CHK-71",
+            "remitCheck_72": "CHK-72",
+            "remitClaimId": "119",
+            "remitCount": "12",
+            "remitDate_61": "2019-04-03",
+            "remitDate_62": "2019-04-03",
+            "remitDate_63": "2019-04-03",
+            "remitDate_64": "2019-04-03",
+            "remitDate_65": "2019-04-03",
+            "remitDate_66": "2019-04-03",
+            "remitDate_67": "2019-04-03",
+            "remitDate_68": "2019-04-03",
+            "remitDate_69": "2019-04-03",
+            "remitDate_70": "2019-04-03",
+            "remitDate_71": "2019-04-03",
+            "remitDate_72": "2019-04-03",
+            "remitStatus_61": "ISSUED",
+            "remitStatus_62": "ISSUED",
+            "remitStatus_63": "ISSUED",
+            "remitStatus_64": "ISSUED",
+            "remitStatus_65": "ISSUED",
+            "remitStatus_66": "ISSUED",
+            "remitStatus_67": "ISSUED",
+            "remitStatus_68": "ISSUED",
+            "remitStatus_69": "ISSUED",
+            "remitStatus_70": "ISSUED",
+            "remitStatus_71": "ISSUED",
+            "remitStatus_72": "ISSUED",
+            "remitTotal": "NaN"
+          },
+          "links": [],
+          "screen": "remittance"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "0.00",
+          "expected": "0.00",
+          "name": "field remitAmount_61",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field remitAmount_62",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field remitAmount_63",
+          "ok": true
+        },
+        {
+          "actual": "-250.00",
+          "expected": "-250.00",
+          "name": "field remitAmount_64",
+          "ok": true
+        },
+        {
+          "actual": "1.01",
+          "expected": "1.01",
+          "name": "field remitAmount_65",
+          "ok": true
+        },
+        {
+          "actual": "5000.00",
+          "expected": "5000.00",
+          "name": "field remitAmount_66",
+          "ok": true
+        },
+        {
+          "actual": "NaN",
+          "expected": "NaN",
+          "name": "field remitAmount_67",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field remitAmount_68",
+          "ok": true
+        },
+        {
+          "actual": "10.00",
+          "expected": "10.00",
+          "name": "field remitAmount_69",
+          "ok": true
+        },
+        {
+          "actual": "10.00",
+          "expected": "10.00",
+          "name": "field remitAmount_70",
+          "ok": true
+        },
+        {
+          "actual": "11.00",
+          "expected": "11.00",
+          "name": "field remitAmount_71",
+          "ok": true
+        },
+        {
+          "actual": "12.00",
+          "expected": "12.00",
+          "name": "field remitAmount_72",
+          "ok": true
+        },
+        {
+          "actual": "CHK-61",
+          "expected": "CHK-61",
+          "name": "field remitCheck_61",
+          "ok": true
+        },
+        {
+          "actual": "CHK-62",
+          "expected": "CHK-62",
+          "name": "field remitCheck_62",
+          "ok": true
+        },
+        {
+          "actual": "CHK-63",
+          "expected": "CHK-63",
+          "name": "field remitCheck_63",
+          "ok": true
+        },
+        {
+          "actual": "CHK-64",
+          "expected": "CHK-64",
+          "name": "field remitCheck_64",
+          "ok": true
+        },
+        {
+          "actual": "CHK-65",
+          "expected": "CHK-65",
+          "name": "field remitCheck_65",
+          "ok": true
+        },
+        {
+          "actual": "CHK-66",
+          "expected": "CHK-66",
+          "name": "field remitCheck_66",
+          "ok": true
+        },
+        {
+          "actual": "CHK-67",
+          "expected": "CHK-67",
+          "name": "field remitCheck_67",
+          "ok": true
+        },
+        {
+          "actual": "CHK-68",
+          "expected": "CHK-68",
+          "name": "field remitCheck_68",
+          "ok": true
+        },
+        {
+          "actual": "CHK-69",
+          "expected": "CHK-69",
+          "name": "field remitCheck_69",
+          "ok": true
+        },
+        {
+          "actual": "CHK-70",
+          "expected": "CHK-70",
+          "name": "field remitCheck_70",
+          "ok": true
+        },
+        {
+          "actual": "CHK-71",
+          "expected": "CHK-71",
+          "name": "field remitCheck_71",
+          "ok": true
+        },
+        {
+          "actual": "CHK-72",
+          "expected": "CHK-72",
+          "name": "field remitCheck_72",
+          "ok": true
+        },
+        {
+          "actual": "119",
+          "expected": "119",
+          "name": "field remitClaimId",
+          "ok": true
+        },
+        {
+          "actual": "12",
+          "expected": "12",
+          "name": "field remitCount",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_61",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_62",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_63",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_64",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_65",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_66",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_67",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_68",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_69",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_70",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_71",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_72",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_61",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_62",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_63",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_64",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_65",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_66",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_67",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_68",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_69",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_70",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_71",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_72",
+          "ok": true
+        },
+        {
+          "actual": "NaN",
+          "expected": "NaN",
+          "name": "field remitTotal",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_61",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_62",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_63",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_64",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_65",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_66",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_67",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_68",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_69",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_70",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_71",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_72",
+          "ok": true
+        }
+      ],
+      "description": "Remittance with no claimId: claim 119 (total includes NaN)",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "remitAmount_61": "0.00",
+          "remitAmount_62": "1000.00",
+          "remitAmount_63": "1000.00",
+          "remitAmount_64": "-250.00",
+          "remitAmount_65": "1.01",
+          "remitAmount_66": "5000.00",
+          "remitAmount_67": "NaN",
+          "remitAmount_68": "1000.00",
+          "remitAmount_69": "10.00",
+          "remitAmount_70": "10.00",
+          "remitAmount_71": "11.00",
+          "remitAmount_72": "12.00",
+          "remitCheck_61": "CHK-61",
+          "remitCheck_62": "CHK-62",
+          "remitCheck_63": "CHK-63",
+          "remitCheck_64": "CHK-64",
+          "remitCheck_65": "CHK-65",
+          "remitCheck_66": "CHK-66",
+          "remitCheck_67": "CHK-67",
+          "remitCheck_68": "CHK-68",
+          "remitCheck_69": "CHK-69",
+          "remitCheck_70": "CHK-70",
+          "remitCheck_71": "CHK-71",
+          "remitCheck_72": "CHK-72",
+          "remitClaimId": "119",
+          "remitCount": "12",
+          "remitDate_61": "2019-04-03",
+          "remitDate_62": "2019-04-03",
+          "remitDate_63": "2019-04-03",
+          "remitDate_64": "2019-04-03",
+          "remitDate_65": "2019-04-03",
+          "remitDate_66": "2019-04-03",
+          "remitDate_67": "2019-04-03",
+          "remitDate_68": "2019-04-03",
+          "remitDate_69": "2019-04-03",
+          "remitDate_70": "2019-04-03",
+          "remitDate_71": "2019-04-03",
+          "remitDate_72": "2019-04-03",
+          "remitStatus_61": "ISSUED",
+          "remitStatus_62": "ISSUED",
+          "remitStatus_63": "ISSUED",
+          "remitStatus_64": "ISSUED",
+          "remitStatus_65": "ISSUED",
+          "remitStatus_66": "ISSUED",
+          "remitStatus_67": "ISSUED",
+          "remitStatus_68": "ISSUED",
+          "remitStatus_69": "ISSUED",
+          "remitStatus_70": "ISSUED",
+          "remitStatus_71": "ISSUED",
+          "remitStatus_72": "ISSUED",
+          "remitTotal": "NaN"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/remittance.jsp",
+        "status": 200,
+        "text": [
+          "Payment remittance",
+          "Check",
+          "Payee",
+          "Issued date",
+          "Amount",
+          "Status",
+          "CHK-61",
+          "Reserved Claimant",
+          "2019-04-03",
+          "0.00",
+          "ISSUED",
+          "CHK-62",
+          "Reserved Claimant",
+          "2019-04-03",
+          "1000.00",
+          "ISSUED",
+          "CHK-63",
+          "Reserved Claimant",
+          "2019-04-03",
+          "1000.00",
+          "ISSUED",
+          "CHK-64",
+          "Reserved Claimant",
+          "2019-04-03",
+          "-250.00",
+          "ISSUED",
+          "CHK-65",
+          "Reserved Claimant",
+          "2019-04-03",
+          "1.01",
+          "ISSUED",
+          "CHK-66",
+          "Reserved Claimant",
+          "2019-04-03",
+          "5000.00",
+          "ISSUED",
+          "CHK-67",
+          "Reserved Claimant",
+          "2019-04-03",
+          "NaN",
+          "ISSUED",
+          "CHK-68",
+          "Reserved Claimant",
+          "2019-04-03",
+          "1000.00",
+          "ISSUED",
+          "CHK-69",
+          "Reserved Claimant",
+          "2019-04-03",
+          "10.00",
+          "ISSUED",
+          "CHK-70",
+          "Reserved Claimant",
+          "2019-04-03",
+          "10.00",
+          "ISSUED",
+          "CHK-71",
+          "Reserved Claimant",
+          "2019-04-03",
+          "11.00",
+          "ISSUED",
+          "CHK-72",
+          "Reserved Claimant",
+          "2019-04-03",
+          "12.00",
+          "ISSUED",
+          "Claim 119",
+          "Payment count 12",
+          "Total issued NaN"
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/remittance.do"
+      },
+      "rules": [
+        "PAY-R19",
+        "PAY-R20"
+      ],
+      "scenario": "payment_live_L32",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/remittance"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L32",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {
+            "payeeName_1": "Claimant 1",
+            "payeeName_73": "Get Payee"
+          },
+          "errors": [],
+          "fields": {
+            "remitAmount_1": "500.00",
+            "remitAmount_73": "5.00",
+            "remitCheck_1": "CHK-00001",
+            "remitCheck_73": "CHK-73",
+            "remitClaimId": "1",
+            "remitCount": "2",
+            "remitDate_1": "2019-03-15",
+            "remitDate_73": "2019-04-03",
+            "remitStatus_1": "ISSUED",
+            "remitStatus_73": "ISSUED",
+            "remitTotal": "505.00"
+          },
+          "links": [],
+          "screen": "remittance"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "500.00",
+          "expected": "500.00",
+          "name": "field remitAmount_1",
+          "ok": true
+        },
+        {
+          "actual": "5.00",
+          "expected": "5.00",
+          "name": "field remitAmount_73",
+          "ok": true
+        },
+        {
+          "actual": "CHK-00001",
+          "expected": "CHK-00001",
+          "name": "field remitCheck_1",
+          "ok": true
+        },
+        {
+          "actual": "CHK-73",
+          "expected": "CHK-73",
+          "name": "field remitCheck_73",
+          "ok": true
+        },
+        {
+          "actual": "1",
+          "expected": "1",
+          "name": "field remitClaimId",
+          "ok": true
+        },
+        {
+          "actual": "2",
+          "expected": "2",
+          "name": "field remitCount",
+          "ok": true
+        },
+        {
+          "actual": "2019-03-15",
+          "expected": "2019-03-15",
+          "name": "field remitDate_1",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_73",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_1",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_73",
+          "ok": true
+        },
+        {
+          "actual": "505.00",
+          "expected": "505.00",
+          "name": "field remitTotal",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        },
+        {
+          "actual": "Claimant 1",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_1",
+          "ok": true
+        },
+        {
+          "actual": "Get Payee",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_73",
+          "ok": true
+        }
+      ],
+      "description": "Remittance total is the sum of stored amounts",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "remitAmount_1": "500.00",
+          "remitAmount_73": "5.00",
+          "remitCheck_1": "CHK-00001",
+          "remitCheck_73": "CHK-73",
+          "remitClaimId": "1",
+          "remitCount": "2",
+          "remitDate_1": "2019-03-15",
+          "remitDate_73": "2019-04-03",
+          "remitStatus_1": "ISSUED",
+          "remitStatus_73": "ISSUED",
+          "remitTotal": "505.00"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/remittance.jsp",
+        "status": 200,
+        "text": [
+          "Payment remittance",
+          "Check",
+          "Payee",
+          "Issued date",
+          "Amount",
+          "Status",
+          "CHK-00001",
+          "Claimant 1",
+          "2019-03-15",
+          "500.00",
+          "ISSUED",
+          "CHK-73",
+          "Get Payee",
+          "2019-04-03",
+          "5.00",
+          "ISSUED",
+          "Claim 1",
+          "Payment count 2",
+          "Total issued 505.00"
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/remittance.do?claimId=1"
+      },
+      "rules": [
+        "PAY-R19",
+        "PAY-R20"
+      ],
+      "scenario": "payment_live_L33",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "claimId",
+            "1"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/remittance"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L33",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "remitClaimId": "9999",
+            "remitCount": "0",
+            "remitTotal": "0.00"
+          },
+          "links": [],
+          "screen": "remittance"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "9999",
+          "expected": "9999",
+          "name": "field remitClaimId",
+          "ok": true
+        },
+        {
+          "actual": "0",
+          "expected": "0",
+          "name": "field remitCount",
+          "ok": true
+        },
+        {
+          "actual": "0.00",
+          "expected": "0.00",
+          "name": "field remitTotal",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Remittance for a claim with no payments",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "remitClaimId": "9999",
+          "remitCount": "0",
+          "remitTotal": "0.00"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/remittance.jsp",
+        "status": 200,
+        "text": [
+          "Payment remittance",
+          "Check",
+          "Payee",
+          "Issued date",
+          "Amount",
+          "Status",
+          "Claim 9999",
+          "Payment count 0",
+          "Total issued 0.00"
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/remittance.do?claimId=9999"
+      },
+      "rules": [
+        "PAY-R20"
+      ],
+      "scenario": "payment_live_L34",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "claimId",
+            "9999"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/remittance"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L34",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {},
+          "errors": [],
+          "fields": {
+            "checkNumber": "CHK-76",
+            "paymentAmount": "2.00",
+            "paymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "issue"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "CHK-76",
+          "expected": "CHK-76",
+          "name": "field checkNumber",
+          "ok": true
+        },
+        {
+          "actual": "2.00",
+          "expected": "2.00",
+          "name": "field paymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field paymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "An adjuster can issue a payment",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-76",
+          "paymentAmount": "2.00",
+          "paymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "text": [
+          "Issue Payment",
+          "Payment Amount 2.00",
+          "Check Number CHK-76",
+          "Payment Status ISSUED",
+          "The check is ready for issue control review."
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "adjuster7",
+        "form": {
+          "amount": "2.00",
+          "claimId": "120",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R12"
+      ],
+      "scenario": "payment_live_L36",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "2.00"
+          ],
+          [
+            "claimId",
+            "120"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ],
+          [
+            "user",
+            "adjuster7"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L36",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {
+            "payeeName_74": "Reserved Claimant",
+            "payeeName_75": "<b>A&B</b>",
+            "payeeName_76": "Reserved Claimant"
+          },
+          "errors": [],
+          "fields": {
+            "remitAmount_74": "20.00",
+            "remitAmount_75": "1.00",
+            "remitAmount_76": "2.00",
+            "remitCheck_74": "CHK-74",
+            "remitCheck_75": "CHK-75",
+            "remitCheck_76": "CHK-76",
+            "remitClaimId": "120",
+            "remitCount": "3",
+            "remitDate_74": "2019-04-03",
+            "remitDate_75": "2019-04-03",
+            "remitDate_76": "2019-04-03",
+            "remitStatus_74": "ISSUED",
+            "remitStatus_75": "ISSUED",
+            "remitStatus_76": "ISSUED",
+            "remitTotal": "23.00"
+          },
+          "links": [],
+          "screen": "remittance"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "20.00",
+          "expected": "20.00",
+          "name": "field remitAmount_74",
+          "ok": true
+        },
+        {
+          "actual": "1.00",
+          "expected": "1.00",
+          "name": "field remitAmount_75",
+          "ok": true
+        },
+        {
+          "actual": "2.00",
+          "expected": "2.00",
+          "name": "field remitAmount_76",
+          "ok": true
+        },
+        {
+          "actual": "CHK-74",
+          "expected": "CHK-74",
+          "name": "field remitCheck_74",
+          "ok": true
+        },
+        {
+          "actual": "CHK-75",
+          "expected": "CHK-75",
+          "name": "field remitCheck_75",
+          "ok": true
+        },
+        {
+          "actual": "CHK-76",
+          "expected": "CHK-76",
+          "name": "field remitCheck_76",
+          "ok": true
+        },
+        {
+          "actual": "120",
+          "expected": "120",
+          "name": "field remitClaimId",
+          "ok": true
+        },
+        {
+          "actual": "3",
+          "expected": "3",
+          "name": "field remitCount",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_74",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_75",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field remitDate_76",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_74",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_75",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field remitStatus_76",
+          "ok": true
+        },
+        {
+          "actual": "23.00",
+          "expected": "23.00",
+          "name": "field remitTotal",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_74",
+          "ok": true
+        },
+        {
+          "actual": "<b>A&B</b>",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_75",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName_76",
+          "ok": true
+        }
+      ],
+      "description": "Remittance for claim 120 after the adjuster's payment",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "remitAmount_74": "20.00",
+          "remitAmount_75": "1.00",
+          "remitAmount_76": "2.00",
+          "remitCheck_74": "CHK-74",
+          "remitCheck_75": "CHK-75",
+          "remitCheck_76": "CHK-76",
+          "remitClaimId": "120",
+          "remitCount": "3",
+          "remitDate_74": "2019-04-03",
+          "remitDate_75": "2019-04-03",
+          "remitDate_76": "2019-04-03",
+          "remitStatus_74": "ISSUED",
+          "remitStatus_75": "ISSUED",
+          "remitStatus_76": "ISSUED",
+          "remitTotal": "23.00"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/remittance.jsp",
+        "status": 200,
+        "text": [
+          "Payment remittance",
+          "Check",
+          "Payee",
+          "Issued date",
+          "Amount",
+          "Status",
+          "CHK-74",
+          "Reserved Claimant",
+          "2019-04-03",
+          "20.00",
+          "ISSUED",
+          "CHK-75",
+          "<b>A&B</b>",
+          "2019-04-03",
+          "1.00",
+          "ISSUED",
+          "CHK-76",
+          "Reserved Claimant",
+          "2019-04-03",
+          "2.00",
+          "ISSUED",
+          "Claim 120",
+          "Payment count 3",
+          "Total issued 23.00"
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "adjuster7",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/remittance.do?claimId=120"
+      },
+      "rules": [
+        "PAY-R19",
+        "PAY-R20"
+      ],
+      "scenario": "payment_live_L37",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "claimId",
+            "120"
+          ],
+          [
+            "user",
+            "adjuster7"
+          ]
+        ],
+        "path": "/payment/remittance"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L37",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {},
+        "location": "/claims/login.do",
+        "status": 302
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": 302,
+          "expected": 302,
+          "name": "status",
+          "ok": true
+        },
+        {
+          "actual": "/claims/login.do",
+          "expected": "/claims/login.do",
+          "name": "location",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "No session: issue redirects to login and inserts nothing",
+      "difference": "-",
+      "expected": {
+        "business_fields": {},
+        "links": [],
+        "location": "/claims/login.do",
+        "result": "redirect:/claims/login.do",
+        "status": 302,
+        "text": [],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "anonymous",
+        "form": {
+          "amount": "3.00",
+          "claimId": "120",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R13"
+      ],
+      "scenario": "payment_live_L38",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "amount",
+            "3.00"
+          ],
+          [
+            "claimId",
+            "120"
+          ],
+          [
+            "payeeName",
+            "Reserved Claimant"
+          ],
+          [
+            "paymentMethod",
+            "CHECK"
+          ]
+        ],
+        "path": "/payment/issue"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L38",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {},
+        "location": "/claims/login.do",
+        "status": 302
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": 302,
+          "expected": 302,
+          "name": "status",
+          "ok": true
+        },
+        {
+          "actual": "/claims/login.do",
+          "expected": "/claims/login.do",
+          "name": "location",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "No session: detail redirects to login",
+      "difference": "-",
+      "expected": {
+        "business_fields": {},
+        "links": [],
+        "location": "/claims/login.do",
+        "result": "redirect:/claims/login.do",
+        "status": 302,
+        "text": [],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "anonymous",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/detail.do?paymentId=61"
+      },
+      "rules": [
+        "PAY-R13"
+      ],
+      "scenario": "payment_live_L39",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "paymentId",
+            "61"
+          ]
+        ],
+        "path": "/payment/detail"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L39",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {},
+        "location": "/claims/login.do",
+        "status": 302
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": 302,
+          "expected": 302,
+          "name": "status",
+          "ok": true
+        },
+        {
+          "actual": "/claims/login.do",
+          "expected": "/claims/login.do",
+          "name": "location",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "No session: remittance redirects to login",
+      "difference": "-",
+      "expected": {
+        "business_fields": {},
+        "links": [],
+        "location": "/claims/login.do",
+        "result": "redirect:/claims/login.do",
+        "status": 302,
+        "text": [],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "anonymous",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/remittance.do?claimId=119"
+      },
+      "rules": [
+        "PAY-R13"
+      ],
+      "scenario": "payment_live_L40",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "claimId",
+            "119"
+          ]
+        ],
+        "path": "/payment/remittance"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L40",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "display": {
+            "payeeName": "Reserved Claimant",
+            "paymentMethod": "CHECK"
+          },
+          "errors": [],
+          "fields": {
+            "detailPaymentAmount": "0.00",
+            "detailPaymentCheck": "CHK-61",
+            "detailPaymentClaim": "119",
+            "detailPaymentDate": "2019-04-03",
+            "detailPaymentId": "61",
+            "detailPaymentStatus": "ISSUED"
+          },
+          "links": [],
+          "screen": "detail"
+        },
+        "location": null,
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "0.00",
+          "expected": "0.00",
+          "name": "field detailPaymentAmount",
+          "ok": true
+        },
+        {
+          "actual": "CHK-61",
+          "expected": "CHK-61",
+          "name": "field detailPaymentCheck",
+          "ok": true
+        },
+        {
+          "actual": "119",
+          "expected": "119",
+          "name": "field detailPaymentClaim",
+          "ok": true
+        },
+        {
+          "actual": "2019-04-03",
+          "expected": "2019-04-03",
+          "name": "field detailPaymentDate",
+          "ok": true
+        },
+        {
+          "actual": "61",
+          "expected": "61",
+          "name": "field detailPaymentId",
+          "ok": true
+        },
+        {
+          "actual": "ISSUED",
+          "expected": "ISSUED",
+          "name": "field detailPaymentStatus",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        },
+        {
+          "actual": "Reserved Claimant",
+          "expected": "shown on the legacy page",
+          "name": "display payeeName",
+          "ok": true
+        },
+        {
+          "actual": "CHECK",
+          "expected": "shown on the legacy page",
+          "name": "display paymentMethod",
+          "ok": true
+        }
+      ],
+      "description": "Detail with an unparseable paymentId: payment 61",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "detailPaymentAmount": "0.00",
+          "detailPaymentCheck": "CHK-61",
+          "detailPaymentClaim": "119",
+          "detailPaymentDate": "2019-04-03",
+          "detailPaymentId": "61",
+          "detailPaymentStatus": "ISSUED"
+        },
+        "links": [],
+        "location": null,
+        "result": "forward:/WEB-INF/jsp/payment/detail.jsp",
+        "status": 200,
+        "text": [
+          "Payment detail",
+          "Payment number 61",
+          "Claim number 119",
+          "Payee Reserved Claimant",
+          "Amount 0.00",
+          "Method CHECK",
+          "Check number CHK-61",
+          "Issued date 2019-04-03",
+          "Status ISSUED"
+        ],
+        "validation_errors": []
+      },
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {},
+        "method": "GET",
+        "path": "/claims/payment/detail.do?paymentId=abc"
+      },
+      "rules": [
+        "PAY-R16"
+      ],
+      "scenario": "payment_live_L41",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "paymentId",
+            "abc"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/payment/detail"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json L41",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "payment_column_types": {
+          "rows": [
+            {
+              "column_name": "PAYMENT_ID",
+              "column_size": "32",
+              "is_nullable": "NO",
+              "type_name": "INTEGER"
+            },
+            {
+              "column_name": "CLAIM_ID",
+              "column_size": "32",
+              "is_nullable": "NO",
+              "type_name": "INTEGER"
+            },
+            {
+              "column_name": "SETTLEMENT_ID",
+              "column_size": "32",
+              "is_nullable": "NO",
+              "type_name": "INTEGER"
+            },
+            {
+              "column_name": "PAYEE_NAME",
+              "column_size": "100",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            },
+            {
+              "column_name": "AMOUNT",
+              "column_size": "64",
+              "is_nullable": "NO",
+              "type_name": "DOUBLE"
+            },
+            {
+              "column_name": "PAYMENT_METHOD",
+              "column_size": "20",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            },
+            {
+              "column_name": "CHECK_NUMBER",
+              "column_size": "30",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            },
+            {
+              "column_name": "ISSUED_DATE",
+              "column_size": "10",
+              "is_nullable": "NO",
+              "type_name": "DATE"
+            },
+            {
+              "column_name": "STATUS",
+              "column_size": "20",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            }
+          ],
+          "sql": "select column_name, type_name, column_size, is_nullable from information_schema.system_columns where table_name = 'PAYMENT' order by ordinal_position"
+        },
+        "payment_rows_after_seed": {
+          "rows": [
+            {
+              "amount": "500.0E0",
+              "check_number": "CHK-00001",
+              "claim_id": "1",
+              "issued_date": "2019-03-15",
+              "payee_name": "Claimant 1",
+              "payment_id": "1",
+              "payment_method": "CHECK",
+              "settlement_id": "1",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "0.0E0",
+              "check_number": "CHK-61",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "61",
+              "payment_method": "CHECK",
+              "settlement_id": "119",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1000.0E0",
+              "check_number": "CHK-62",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "62",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1000.0E0",
+              "check_number": "CHK-63",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "63",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "-250.0E0",
+              "check_number": "CHK-64",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "64",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1.005E0",
+              "check_number": "CHK-65",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "65",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "5000.0E0",
+              "check_number": "CHK-66",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "66",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "0E0/0E0",
+              "check_number": "CHK-67",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "67",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1000.0E0",
+              "check_number": "CHK-68",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "68",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "10.0E0",
+              "check_number": "CHK-69",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "69",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "10.0E0",
+              "check_number": "CHK-70",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "70",
+              "payment_method": "check",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "11.0E0",
+              "check_number": "CHK-71",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "71",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "12.0E0",
+              "check_number": "CHK-72",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "72",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "5.0E0",
+              "check_number": "CHK-73",
+              "claim_id": "1",
+              "issued_date": "2019-04-03",
+              "payee_name": "Get Payee",
+              "payment_id": "73",
+              "payment_method": "CHECK",
+              "settlement_id": "1",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "20.0E0",
+              "check_number": "CHK-74",
+              "claim_id": "120",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "74",
+              "payment_method": "CHECK",
+              "settlement_id": "120",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1.0E0",
+              "check_number": "CHK-75",
+              "claim_id": "120",
+              "issued_date": "2019-04-03",
+              "payee_name": "<b>A&B</b>",
+              "payment_id": "75",
+              "payment_method": "CHECK",
+              "settlement_id": "120",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "2.0E0",
+              "check_number": "CHK-76",
+              "claim_id": "120",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "76",
+              "payment_method": "CHECK",
+              "settlement_id": "120",
+              "status": "ISSUED"
+            }
+          ],
+          "sql": "select * from PAYMENT where payment_id > 60 or claim_id = 1 order by payment_id"
+        },
+        "payment_totals": {
+          "rows": [
+            {
+              "max_payment_id": "76",
+              "payment_count": "76"
+            }
+          ],
+          "sql": "select count(*) as payment_count, max(payment_id) as max_payment_id from PAYMENT"
+        },
+        "settlements_used": {
+          "rows": [
+            {
+              "claim_id": "1",
+              "settlement_amount": "0.0E0",
+              "settlement_id": "1"
+            },
+            {
+              "claim_id": "119",
+              "settlement_amount": "0.0E0",
+              "settlement_id": "119"
+            },
+            {
+              "claim_id": "120",
+              "settlement_amount": "0.0E0",
+              "settlement_id": "120"
+            },
+            {
+              "claim_id": "119",
+              "settlement_amount": "1000.0E0",
+              "settlement_id": "121"
+            }
+          ],
+          "sql": "select settlement_id, claim_id, settlement_amount from SETTLEMENT where claim_id in (1, 119, 120) order by settlement_id"
+        }
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": [
+            {
+              "column_name": "PAYMENT_ID",
+              "column_size": "32",
+              "is_nullable": "NO",
+              "type_name": "INTEGER"
+            },
+            {
+              "column_name": "CLAIM_ID",
+              "column_size": "32",
+              "is_nullable": "NO",
+              "type_name": "INTEGER"
+            },
+            {
+              "column_name": "SETTLEMENT_ID",
+              "column_size": "32",
+              "is_nullable": "NO",
+              "type_name": "INTEGER"
+            },
+            {
+              "column_name": "PAYEE_NAME",
+              "column_size": "100",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            },
+            {
+              "column_name": "AMOUNT",
+              "column_size": "64",
+              "is_nullable": "NO",
+              "type_name": "DOUBLE"
+            },
+            {
+              "column_name": "PAYMENT_METHOD",
+              "column_size": "20",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            },
+            {
+              "column_name": "CHECK_NUMBER",
+              "column_size": "30",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            },
+            {
+              "column_name": "ISSUED_DATE",
+              "column_size": "10",
+              "is_nullable": "NO",
+              "type_name": "DATE"
+            },
+            {
+              "column_name": "STATUS",
+              "column_size": "20",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            }
+          ],
+          "expected": [
+            {
+              "column_name": "PAYMENT_ID",
+              "column_size": "32",
+              "is_nullable": "NO",
+              "type_name": "INTEGER"
+            },
+            {
+              "column_name": "CLAIM_ID",
+              "column_size": "32",
+              "is_nullable": "NO",
+              "type_name": "INTEGER"
+            },
+            {
+              "column_name": "SETTLEMENT_ID",
+              "column_size": "32",
+              "is_nullable": "NO",
+              "type_name": "INTEGER"
+            },
+            {
+              "column_name": "PAYEE_NAME",
+              "column_size": "100",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            },
+            {
+              "column_name": "AMOUNT",
+              "column_size": "64",
+              "is_nullable": "NO",
+              "type_name": "DOUBLE"
+            },
+            {
+              "column_name": "PAYMENT_METHOD",
+              "column_size": "20",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            },
+            {
+              "column_name": "CHECK_NUMBER",
+              "column_size": "30",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            },
+            {
+              "column_name": "ISSUED_DATE",
+              "column_size": "10",
+              "is_nullable": "NO",
+              "type_name": "DATE"
+            },
+            {
+              "column_name": "STATUS",
+              "column_size": "20",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            }
+          ],
+          "name": "db_after payment_column_types",
+          "ok": true
+        },
+        {
+          "actual": [
+            {
+              "amount": "500.0E0",
+              "check_number": "CHK-00001",
+              "claim_id": "1",
+              "issued_date": "2019-03-15",
+              "payee_name": "Claimant 1",
+              "payment_id": "1",
+              "payment_method": "CHECK",
+              "settlement_id": "1",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "0.0E0",
+              "check_number": "CHK-61",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "61",
+              "payment_method": "CHECK",
+              "settlement_id": "119",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1000.0E0",
+              "check_number": "CHK-62",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "62",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1000.0E0",
+              "check_number": "CHK-63",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "63",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "-250.0E0",
+              "check_number": "CHK-64",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "64",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1.005E0",
+              "check_number": "CHK-65",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "65",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "5000.0E0",
+              "check_number": "CHK-66",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "66",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "0E0/0E0",
+              "check_number": "CHK-67",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "67",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1000.0E0",
+              "check_number": "CHK-68",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "68",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "10.0E0",
+              "check_number": "CHK-69",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "69",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "10.0E0",
+              "check_number": "CHK-70",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "70",
+              "payment_method": "check",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "11.0E0",
+              "check_number": "CHK-71",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "71",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "12.0E0",
+              "check_number": "CHK-72",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "72",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "5.0E0",
+              "check_number": "CHK-73",
+              "claim_id": "1",
+              "issued_date": "2019-04-03",
+              "payee_name": "Get Payee",
+              "payment_id": "73",
+              "payment_method": "CHECK",
+              "settlement_id": "1",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "20.0E0",
+              "check_number": "CHK-74",
+              "claim_id": "120",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "74",
+              "payment_method": "CHECK",
+              "settlement_id": "120",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1.0E0",
+              "check_number": "CHK-75",
+              "claim_id": "120",
+              "issued_date": "2019-04-03",
+              "payee_name": "<b>A&B</b>",
+              "payment_id": "75",
+              "payment_method": "CHECK",
+              "settlement_id": "120",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "2.0E0",
+              "check_number": "CHK-76",
+              "claim_id": "120",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "76",
+              "payment_method": "CHECK",
+              "settlement_id": "120",
+              "status": "ISSUED"
+            }
+          ],
+          "expected": [
+            {
+              "amount": "500.0E0",
+              "check_number": "CHK-00001",
+              "claim_id": "1",
+              "issued_date": "2019-03-15",
+              "payee_name": "Claimant 1",
+              "payment_id": "1",
+              "payment_method": "CHECK",
+              "settlement_id": "1",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "0.0E0",
+              "check_number": "CHK-61",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "61",
+              "payment_method": "CHECK",
+              "settlement_id": "119",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1000.0E0",
+              "check_number": "CHK-62",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "62",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1000.0E0",
+              "check_number": "CHK-63",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "63",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "-250.0E0",
+              "check_number": "CHK-64",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "64",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1.005E0",
+              "check_number": "CHK-65",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "65",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "5000.0E0",
+              "check_number": "CHK-66",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "66",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "0E0/0E0",
+              "check_number": "CHK-67",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "67",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1000.0E0",
+              "check_number": "CHK-68",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "68",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "10.0E0",
+              "check_number": "CHK-69",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "69",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "10.0E0",
+              "check_number": "CHK-70",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "70",
+              "payment_method": "check",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "11.0E0",
+              "check_number": "CHK-71",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "71",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "12.0E0",
+              "check_number": "CHK-72",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "72",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "5.0E0",
+              "check_number": "CHK-73",
+              "claim_id": "1",
+              "issued_date": "2019-04-03",
+              "payee_name": "Get Payee",
+              "payment_id": "73",
+              "payment_method": "CHECK",
+              "settlement_id": "1",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "20.0E0",
+              "check_number": "CHK-74",
+              "claim_id": "120",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "74",
+              "payment_method": "CHECK",
+              "settlement_id": "120",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1.0E0",
+              "check_number": "CHK-75",
+              "claim_id": "120",
+              "issued_date": "2019-04-03",
+              "payee_name": "<b>A&B</b>",
+              "payment_id": "75",
+              "payment_method": "CHECK",
+              "settlement_id": "120",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "2.0E0",
+              "check_number": "CHK-76",
+              "claim_id": "120",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "76",
+              "payment_method": "CHECK",
+              "settlement_id": "120",
+              "status": "ISSUED"
+            }
+          ],
+          "name": "db_after payment_rows_after_seed",
+          "ok": true
+        },
+        {
+          "actual": [
+            {
+              "max_payment_id": "76",
+              "payment_count": "76"
+            }
+          ],
+          "expected": [
+            {
+              "max_payment_id": "76",
+              "payment_count": "76"
+            }
+          ],
+          "name": "db_after payment_totals",
+          "ok": true
+        },
+        {
+          "actual": [
+            {
+              "claim_id": "1",
+              "settlement_amount": "0.0E0",
+              "settlement_id": "1"
+            },
+            {
+              "claim_id": "119",
+              "settlement_amount": "0.0E0",
+              "settlement_id": "119"
+            },
+            {
+              "claim_id": "120",
+              "settlement_amount": "0.0E0",
+              "settlement_id": "120"
+            },
+            {
+              "claim_id": "119",
+              "settlement_amount": "1000.0E0",
+              "settlement_id": "121"
+            }
+          ],
+          "expected": [
+            {
+              "claim_id": "1",
+              "settlement_amount": "0.0E0",
+              "settlement_id": "1"
+            },
+            {
+              "claim_id": "119",
+              "settlement_amount": "0.0E0",
+              "settlement_id": "119"
+            },
+            {
+              "claim_id": "120",
+              "settlement_amount": "0.0E0",
+              "settlement_id": "120"
+            },
+            {
+              "claim_id": "119",
+              "settlement_amount": "1000.0E0",
+              "settlement_id": "121"
+            }
+          ],
+          "name": "db_after settlements_used",
+          "ok": true
+        }
+      ],
+      "description": "PAYMENT and SETTLEMENT rows after the live replay",
+      "difference": "-",
+      "expected": {
+        "payment_column_types": {
+          "rows": [
+            {
+              "column_name": "PAYMENT_ID",
+              "column_size": "32",
+              "is_nullable": "NO",
+              "type_name": "INTEGER"
+            },
+            {
+              "column_name": "CLAIM_ID",
+              "column_size": "32",
+              "is_nullable": "NO",
+              "type_name": "INTEGER"
+            },
+            {
+              "column_name": "SETTLEMENT_ID",
+              "column_size": "32",
+              "is_nullable": "NO",
+              "type_name": "INTEGER"
+            },
+            {
+              "column_name": "PAYEE_NAME",
+              "column_size": "100",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            },
+            {
+              "column_name": "AMOUNT",
+              "column_size": "64",
+              "is_nullable": "NO",
+              "type_name": "DOUBLE"
+            },
+            {
+              "column_name": "PAYMENT_METHOD",
+              "column_size": "20",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            },
+            {
+              "column_name": "CHECK_NUMBER",
+              "column_size": "30",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            },
+            {
+              "column_name": "ISSUED_DATE",
+              "column_size": "10",
+              "is_nullable": "NO",
+              "type_name": "DATE"
+            },
+            {
+              "column_name": "STATUS",
+              "column_size": "20",
+              "is_nullable": "NO",
+              "type_name": "VARCHAR"
+            }
+          ],
+          "sql": "select column_name, type_name, column_size, is_nullable from information_schema.system_columns where table_name = 'PAYMENT' order by ordinal_position"
+        },
+        "payment_rows_after_seed": {
+          "rows": [
+            {
+              "amount": "500.0E0",
+              "check_number": "CHK-00001",
+              "claim_id": "1",
+              "issued_date": "2019-03-15",
+              "payee_name": "Claimant 1",
+              "payment_id": "1",
+              "payment_method": "CHECK",
+              "settlement_id": "1",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "0.0E0",
+              "check_number": "CHK-61",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "61",
+              "payment_method": "CHECK",
+              "settlement_id": "119",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1000.0E0",
+              "check_number": "CHK-62",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "62",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1000.0E0",
+              "check_number": "CHK-63",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "63",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "-250.0E0",
+              "check_number": "CHK-64",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "64",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1.005E0",
+              "check_number": "CHK-65",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "65",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "5000.0E0",
+              "check_number": "CHK-66",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "66",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "0E0/0E0",
+              "check_number": "CHK-67",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "67",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1000.0E0",
+              "check_number": "CHK-68",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "68",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "10.0E0",
+              "check_number": "CHK-69",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "69",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "10.0E0",
+              "check_number": "CHK-70",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "70",
+              "payment_method": "check",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "11.0E0",
+              "check_number": "CHK-71",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "71",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "12.0E0",
+              "check_number": "CHK-72",
+              "claim_id": "119",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "72",
+              "payment_method": "CHECK",
+              "settlement_id": "121",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "5.0E0",
+              "check_number": "CHK-73",
+              "claim_id": "1",
+              "issued_date": "2019-04-03",
+              "payee_name": "Get Payee",
+              "payment_id": "73",
+              "payment_method": "CHECK",
+              "settlement_id": "1",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "20.0E0",
+              "check_number": "CHK-74",
+              "claim_id": "120",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "74",
+              "payment_method": "CHECK",
+              "settlement_id": "120",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "1.0E0",
+              "check_number": "CHK-75",
+              "claim_id": "120",
+              "issued_date": "2019-04-03",
+              "payee_name": "<b>A&B</b>",
+              "payment_id": "75",
+              "payment_method": "CHECK",
+              "settlement_id": "120",
+              "status": "ISSUED"
+            },
+            {
+              "amount": "2.0E0",
+              "check_number": "CHK-76",
+              "claim_id": "120",
+              "issued_date": "2019-04-03",
+              "payee_name": "Reserved Claimant",
+              "payment_id": "76",
+              "payment_method": "CHECK",
+              "settlement_id": "120",
+              "status": "ISSUED"
+            }
+          ],
+          "sql": "select * from PAYMENT where payment_id > 60 or claim_id = 1 order by payment_id"
+        },
+        "payment_totals": {
+          "rows": [
+            {
+              "max_payment_id": "76",
+              "payment_count": "76"
+            }
+          ],
+          "sql": "select count(*) as payment_count, max(payment_id) as max_payment_id from PAYMENT"
+        },
+        "settlements_used": {
+          "rows": [
+            {
+              "claim_id": "1",
+              "settlement_amount": "0.0E0",
+              "settlement_id": "1"
+            },
+            {
+              "claim_id": "119",
+              "settlement_amount": "0.0E0",
+              "settlement_id": "119"
+            },
+            {
+              "claim_id": "120",
+              "settlement_amount": "0.0E0",
+              "settlement_id": "120"
+            },
+            {
+              "claim_id": "119",
+              "settlement_amount": "1000.0E0",
+              "settlement_id": "121"
+            }
+          ],
+          "sql": "select settlement_id, claim_id, settlement_amount from SETTLEMENT where claim_id in (1, 119, 120) order by settlement_id"
+        }
+      },
+      "record": null,
+      "request": {
+        "actor": "parity",
+        "form": {},
+        "method": "GET",
+        "path": "/parity/query"
+      },
+      "rules": [
+        "PAY-R03",
+        "PAY-R05",
+        "PAY-R06",
+        "PAY-R08",
+        "PAY-R09",
+        "PAY-R10",
+        "PAY-R11",
+        "PAY-R13"
+      ],
+      "scenario": "payment_live_db_after",
+      "service_request": {
+        "method": "GET",
+        "params": [
+          [
+            "sql",
+            "select column_name, type_name, column_size, is_nullable from information_schema.system_columns where table_name = 'PAYMENT' order by ordinal_position"
+          ],
+          [
+            "sql",
+            "select * from PAYMENT where payment_id > 60 or claim_id = 1 order by payment_id"
+          ],
+          [
+            "sql",
+            "select count(*) as payment_count, max(payment_id) as max_payment_id from PAYMENT"
+          ],
+          [
+            "sql",
+            "select settlement_id, claim_id, settlement_amount from SETTLEMENT where claim_id in (1, 119, 120) order by settlement_id"
+          ]
+        ],
+        "path": "/parity/query"
+      },
+      "slice": "payment",
+      "source": "docs/specs/SPEC-PAY-001-live.json db_after",
+      "verdict": "PASS"
+    }
+  ],
+  "slice": "payment"
+}

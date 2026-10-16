@@ -1,0 +1,829 @@
+{
+  "scenarios": [
+    {
+      "actual": {
+        "body": {
+          "errors": [
+            "settlement.deductible.invalid"
+          ],
+          "fields": {},
+          "screen": "calculate"
+        },
+        "db_state": {},
+        "status": 200
+      },
+      "change": "CHG-001",
+      "checks": [
+        {
+          "actual": 200,
+          "expected": 200,
+          "name": "status",
+          "ok": true
+        },
+        {
+          "actual": "calculate",
+          "expected": "calculate",
+          "name": "screen",
+          "ok": true
+        },
+        {
+          "actual": [
+            "settlement.deductible.invalid"
+          ],
+          "expected": [
+            "settlement.deductible.invalid"
+          ],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Settlement with a non-numeric deductible",
+      "difference": "A non-blank, unparseable deductible is a validation error instead of the error screen",
+      "expected": {
+        "business_fields": {},
+        "db_state": {},
+        "screen": "calculate",
+        "status": 200,
+        "validation_errors": [
+          "settlement.deductible.invalid"
+        ]
+      },
+      "legacy_expected": {
+        "business_fields": {},
+        "db_state": {},
+        "result": "forward:/WEB-INF/jsp/error.jsp",
+        "status": 200,
+        "validation_errors": []
+      },
+      "record": "docs/changes/CHG-001-invalid-deductible.md",
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "claimId": "119",
+          "coveredAmount": "5000.00",
+          "deductible": "abc",
+          "depreciation": "0.00"
+        },
+        "method": "POST",
+        "path": "/claims/settlement/calculate.do"
+      },
+      "rules": [
+        "SETTLE-R06 (v1)",
+        "SETTLE-R06 (v2)"
+      ],
+      "scenario": "settlement_bad_deductible",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "coveredAmount",
+            "5000.00"
+          ],
+          [
+            "deductible",
+            "abc"
+          ],
+          [
+            "depreciation",
+            "0.00"
+          ]
+        ],
+        "path": "/settlement/calculate"
+      },
+      "slice": "settlement",
+      "source": "transcripts/settlement_bad_deductible.json",
+      "verdict": "CHANGED (CHG-001)"
+    },
+    {
+      "actual": {
+        "body": {
+          "errors": [],
+          "fields": {
+            "cappedAtLimit": "false",
+            "coveredAmount": "5000.00",
+            "deductibleApplied": "0.00",
+            "depreciation": "500.00",
+            "settlementAmount": "4500.00"
+          },
+          "screen": "calculate"
+        },
+        "db_state": {
+          "claim.120.status": "CLOSED"
+        },
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "false",
+          "expected": "false",
+          "name": "field cappedAtLimit",
+          "ok": true
+        },
+        {
+          "actual": "5000.00",
+          "expected": "5000.00",
+          "name": "field coveredAmount",
+          "ok": true
+        },
+        {
+          "actual": "0.00",
+          "expected": "0.00",
+          "name": "field deductibleApplied",
+          "ok": true
+        },
+        {
+          "actual": "500.00",
+          "expected": "500.00",
+          "name": "field depreciation",
+          "ok": true
+        },
+        {
+          "actual": "4500.00",
+          "expected": "4500.00",
+          "name": "field settlementAmount",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        },
+        {
+          "actual": "CLOSED",
+          "expected": "CLOSED",
+          "name": "db claim.120.status",
+          "ok": true
+        }
+      ],
+      "description": "FNOL settlement with a blank deductible",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "cappedAtLimit": "false",
+          "coveredAmount": "5000.00",
+          "deductibleApplied": "0.00",
+          "depreciation": "500.00",
+          "settlementAmount": "4500.00"
+        },
+        "db_state": {
+          "claim.120.status": "CLOSED"
+        },
+        "result": "forward:/WEB-INF/jsp/settlement/calculate.jsp",
+        "status": 200,
+        "validation_errors": []
+      },
+      "legacy_expected": null,
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "claimId": "120",
+          "coveredAmount": "5000.00",
+          "deductible": "",
+          "depreciation": "500.00"
+        },
+        "method": "POST",
+        "path": "/claims/settlement/calculate.do"
+      },
+      "rules": [
+        "SETTLE-R05",
+        "SETTLE-R10",
+        "SETTLE-R24"
+      ],
+      "scenario": "settlement_blank_deductible",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "claimId",
+            "120"
+          ],
+          [
+            "coveredAmount",
+            "5000.00"
+          ],
+          [
+            "deductible",
+            ""
+          ],
+          [
+            "depreciation",
+            "500.00"
+          ]
+        ],
+        "path": "/settlement/calculate"
+      },
+      "slice": "settlement",
+      "source": "transcripts/settlement_blank_deductible.json",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "errors": [],
+          "fields": {
+            "cappedAtLimit": "true",
+            "coveredAmount": "5000.00",
+            "deductibleApplied": "500.00",
+            "depreciation": "0.00",
+            "settlementAmount": "1000.00"
+          },
+          "screen": "calculate"
+        },
+        "db_state": {},
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "true",
+          "expected": "true",
+          "name": "field cappedAtLimit",
+          "ok": true
+        },
+        {
+          "actual": "5000.00",
+          "expected": "5000.00",
+          "name": "field coveredAmount",
+          "ok": true
+        },
+        {
+          "actual": "500.00",
+          "expected": "500.00",
+          "name": "field deductibleApplied",
+          "ok": true
+        },
+        {
+          "actual": "0.00",
+          "expected": "0.00",
+          "name": "field depreciation",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field settlementAmount",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Calculate a standard settlement",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "cappedAtLimit": "true",
+          "coveredAmount": "5000.00",
+          "deductibleApplied": "500.00",
+          "depreciation": "0.00",
+          "settlementAmount": "1000.00"
+        },
+        "db_state": {},
+        "result": "forward:/WEB-INF/jsp/settlement/calculate.jsp",
+        "status": 200,
+        "validation_errors": []
+      },
+      "legacy_expected": null,
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "claimId": "119",
+          "coveredAmount": "5000.00",
+          "deductible": "500.00",
+          "depreciation": "0.00"
+        },
+        "method": "POST",
+        "path": "/claims/settlement/calculate.do"
+      },
+      "rules": [
+        "SETTLE-R01",
+        "SETTLE-R11",
+        "SETTLE-R13",
+        "SETTLE-R20",
+        "SETTLE-R22",
+        "SETTLE-R24"
+      ],
+      "scenario": "settlement_calculate",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "coveredAmount",
+            "5000.00"
+          ],
+          [
+            "deductible",
+            "500.00"
+          ],
+          [
+            "depreciation",
+            "0.00"
+          ]
+        ],
+        "path": "/settlement/calculate"
+      },
+      "slice": "settlement",
+      "source": "transcripts/settlement_calculate.json",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "errors": [],
+          "fields": {
+            "cappedAtLimit": "false",
+            "coveredAmount": "1000.00",
+            "deductibleApplied": "2000.00",
+            "depreciation": "0.00",
+            "settlementAmount": "0.00"
+          },
+          "screen": "calculate"
+        },
+        "db_state": {},
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "false",
+          "expected": "false",
+          "name": "field cappedAtLimit",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field coveredAmount",
+          "ok": true
+        },
+        {
+          "actual": "2000.00",
+          "expected": "2000.00",
+          "name": "field deductibleApplied",
+          "ok": true
+        },
+        {
+          "actual": "0.00",
+          "expected": "0.00",
+          "name": "field depreciation",
+          "ok": true
+        },
+        {
+          "actual": "0.00",
+          "expected": "0.00",
+          "name": "field settlementAmount",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Settlement floored when deductible exceeds the loss",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "cappedAtLimit": "false",
+          "coveredAmount": "1000.00",
+          "deductibleApplied": "2000.00",
+          "depreciation": "0.00",
+          "settlementAmount": "0.00"
+        },
+        "db_state": {},
+        "result": "forward:/WEB-INF/jsp/settlement/calculate.jsp",
+        "status": 200,
+        "validation_errors": []
+      },
+      "legacy_expected": null,
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "claimId": "120",
+          "coveredAmount": "1000.00",
+          "deductible": "2000.00",
+          "depreciation": "0.00"
+        },
+        "method": "POST",
+        "path": "/claims/settlement/calculate.do"
+      },
+      "rules": [
+        "SETTLE-R12",
+        "SETTLE-R22"
+      ],
+      "scenario": "settlement_deductible_floor",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "claimId",
+            "120"
+          ],
+          [
+            "coveredAmount",
+            "1000.00"
+          ],
+          [
+            "deductible",
+            "2000.00"
+          ],
+          [
+            "depreciation",
+            "0.00"
+          ]
+        ],
+        "path": "/settlement/calculate"
+      },
+      "slice": "settlement",
+      "source": "transcripts/settlement_deductible_floor.json",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "errors": [],
+          "fields": {
+            "cappedAtLimit": "false",
+            "coveredAmount": "1.01",
+            "deductibleApplied": "0.00",
+            "depreciation": "0.00",
+            "settlementAmount": "1.00"
+          },
+          "screen": "calculate"
+        },
+        "db_state": {},
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "false",
+          "expected": "false",
+          "name": "field cappedAtLimit",
+          "ok": true
+        },
+        {
+          "actual": "1.01",
+          "expected": "1.01",
+          "name": "field coveredAmount",
+          "ok": true
+        },
+        {
+          "actual": "0.00",
+          "expected": "0.00",
+          "name": "field deductibleApplied",
+          "ok": true
+        },
+        {
+          "actual": "0.00",
+          "expected": "0.00",
+          "name": "field depreciation",
+          "ok": true
+        },
+        {
+          "actual": "1.00",
+          "expected": "1.00",
+          "name": "field settlementAmount",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Settlement using double half-cent rounding",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "cappedAtLimit": "false",
+          "coveredAmount": "1.01",
+          "deductibleApplied": "0.00",
+          "depreciation": "0.00",
+          "settlementAmount": "1.00"
+        },
+        "db_state": {},
+        "result": "forward:/WEB-INF/jsp/settlement/calculate.jsp",
+        "status": 200,
+        "validation_errors": []
+      },
+      "legacy_expected": null,
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "claimId": "120",
+          "coveredAmount": "1.005",
+          "deductible": "",
+          "depreciation": "0.00"
+        },
+        "method": "POST",
+        "path": "/claims/settlement/calculate.do"
+      },
+      "rules": [
+        "SETTLE-R16",
+        "SETTLE-R21"
+      ],
+      "scenario": "settlement_half_cent",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "claimId",
+            "120"
+          ],
+          [
+            "coveredAmount",
+            "1.005"
+          ],
+          [
+            "deductible",
+            ""
+          ],
+          [
+            "depreciation",
+            "0.00"
+          ]
+        ],
+        "path": "/settlement/calculate"
+      },
+      "slice": "settlement",
+      "source": "transcripts/settlement_half_cent.json",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "errors": [],
+          "fields": {
+            "cappedAtLimit": "true",
+            "coveredAmount": "20000.00",
+            "deductibleApplied": "100.00",
+            "depreciation": "0.00",
+            "settlementAmount": "1000.00"
+          },
+          "screen": "calculate"
+        },
+        "db_state": {},
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "true",
+          "expected": "true",
+          "name": "field cappedAtLimit",
+          "ok": true
+        },
+        {
+          "actual": "20000.00",
+          "expected": "20000.00",
+          "name": "field coveredAmount",
+          "ok": true
+        },
+        {
+          "actual": "100.00",
+          "expected": "100.00",
+          "name": "field deductibleApplied",
+          "ok": true
+        },
+        {
+          "actual": "0.00",
+          "expected": "0.00",
+          "name": "field depreciation",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field settlementAmount",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        }
+      ],
+      "description": "Settlement capped by the policy limit",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "cappedAtLimit": "true",
+          "coveredAmount": "20000.00",
+          "deductibleApplied": "100.00",
+          "depreciation": "0.00",
+          "settlementAmount": "1000.00"
+        },
+        "db_state": {},
+        "result": "forward:/WEB-INF/jsp/settlement/calculate.jsp",
+        "status": 200,
+        "validation_errors": []
+      },
+      "legacy_expected": null,
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "claimId": "119",
+          "coveredAmount": "20000.00",
+          "deductible": "100.00",
+          "depreciation": "0.00"
+        },
+        "method": "POST",
+        "path": "/claims/settlement/calculate.do"
+      },
+      "rules": [
+        "SETTLE-R13"
+      ],
+      "scenario": "settlement_policy_cap",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "coveredAmount",
+            "20000.00"
+          ],
+          [
+            "deductible",
+            "100.00"
+          ],
+          [
+            "depreciation",
+            "0.00"
+          ]
+        ],
+        "path": "/settlement/calculate"
+      },
+      "slice": "settlement",
+      "source": "transcripts/settlement_policy_cap.json",
+      "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "body": {
+          "errors": [],
+          "fields": {
+            "savedBy": "supervisor",
+            "settlementAmount": "1000.00"
+          },
+          "screen": "save"
+        },
+        "db_state": {
+          "settlement.claim.119.amount": "1000.00"
+        },
+        "status": 200
+      },
+      "change": null,
+      "checks": [
+        {
+          "actual": "2xx",
+          "expected": "2xx",
+          "name": "status class",
+          "ok": true
+        },
+        {
+          "actual": "supervisor",
+          "expected": "supervisor",
+          "name": "field savedBy",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "field settlementAmount",
+          "ok": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "validation errors",
+          "ok": true
+        },
+        {
+          "actual": "1000.00",
+          "expected": "1000.00",
+          "name": "db settlement.claim.119.amount",
+          "ok": true
+        }
+      ],
+      "description": "Save the calculated settlement",
+      "difference": "-",
+      "expected": {
+        "business_fields": {
+          "savedBy": "supervisor",
+          "settlementAmount": "1000.00"
+        },
+        "db_state": {
+          "settlement.claim.119.amount": "1000.00"
+        },
+        "result": "forward:/WEB-INF/jsp/settlement/save.jsp",
+        "status": 200,
+        "validation_errors": []
+      },
+      "legacy_expected": null,
+      "record": null,
+      "request": {
+        "actor": "supervisor",
+        "form": {
+          "claimId": "119",
+          "coveredAmount": "5000.00",
+          "deductible": "500.00",
+          "depreciation": "0.00"
+        },
+        "method": "POST",
+        "path": "/claims/settlement/save.do"
+      },
+      "rules": [
+        "SETTLE-R25",
+        "SETTLE-R27",
+        "SETTLE-R28",
+        "SETTLE-R29"
+      ],
+      "scenario": "settlement_save",
+      "service_request": {
+        "method": "POST",
+        "params": [
+          [
+            "claimId",
+            "119"
+          ],
+          [
+            "coveredAmount",
+            "5000.00"
+          ],
+          [
+            "deductible",
+            "500.00"
+          ],
+          [
+            "depreciation",
+            "0.00"
+          ],
+          [
+            "user",
+            "supervisor"
+          ]
+        ],
+        "path": "/settlement/save"
+      },
+      "slice": "settlement",
+      "source": "transcripts/settlement_save.json",
+      "verdict": "PASS"
+    }
+  ],
+  "slice": "settlement"
+}

@@ -29,3 +29,11 @@ jobs:
         run: make traceability
       - name: Verify the parity report and the traceability matrix are current
         run: git diff --exit-code parity/report.md parity/report.json docs/TRACEABILITY.md
+      - name: Set up JDK 21 for the payment service
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Payment service tests (ADR-002)
+        run: cd services/payment-service && mvn -B verify

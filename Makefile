@@ -1,4 +1,4 @@
-.PHONY: build run seed test capture clean service-build service-test service-run parity traceability payment-spec-proof payment-spec-check payment-spec-html
+.PHONY: build run seed test capture clean service-build service-test service-run parity traceability payment-spec-proof payment-spec-check payment-spec-html payment-service-build payment-service-test payment-service-run payment-service-run-parity payment-parity
 
 # Settlement service (ADR-001): Spring Boot 3.5 on Java 21, port 8083.
 SERVICE_DIR = services/settlement-service
@@ -31,6 +31,28 @@ service-run:
 # Replays the settlement transcripts against a running service (make service-run).
 parity:
 	python3 tools/parity/settlement_parity.py
+
+# Payment service (ADR-002): Spring Boot 3.5 on Java 21, port 8084.
+PAYMENT_SERVICE_DIR = services/payment-service
+
+payment-service-build:
+	cd $(PAYMENT_SERVICE_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B clean package -DskipTests
+
+payment-service-test:
+	cd $(PAYMENT_SERVICE_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B clean verify
+
+payment-service-run:
+	cd $(PAYMENT_SERVICE_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B spring-boot:run
+
+# The same service with the parity-only /parity/* endpoints (ADR-002).
+payment-service-run-parity:
+	cd $(PAYMENT_SERVICE_DIR) && JAVA_HOME=$(SERVICE_JAVA_HOME) mvn -B spring-boot:run -Dspring-boot.run.profiles=parity
+
+# Replays the payment transcripts and the SPEC-PAY-001 live requests against a
+# running make payment-service-run-parity, then rewrites parity/report.md,
+# parity/report.json and parity/report.html.
+payment-parity:
+	python3 tools/parity/payment_parity.py
 
 # Regenerates docs/TRACEABILITY.md from the spec, the git history, the tests,
 # parity/routes.json and parity/report.json. Needs nothing running.

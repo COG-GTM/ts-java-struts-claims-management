@@ -55,6 +55,334 @@
       "record": null,
       "scenario": "settlement_save",
       "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Issue a settlement payment",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_issue",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Review payment history",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_history",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "No session: the filter redirects to login",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L01",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Seed state: claim 119 has no payments",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L03",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Amount omitted on the seed: falls back to settlement 119 (0)",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L04",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Amount omitted: falls back to the newest settlement (1000.00)",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L06",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Unparseable amount: falls back to the newest settlement",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L07",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Negative amount is accepted",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L08",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Half-cent amount is stored unrounded and displayed with %.2f",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L09",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Amount above the settlement is accepted",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L10",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "NaN parses as a double and is accepted",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L11",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Exponent notation parses",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L12",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "checkNumber request parameter is ignored",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L13",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "paymentMethod is stored as sent (not upper-cased)",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L14",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "paymentMethod omitted: NOT NULL insert failure",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L15",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "payeeName omitted: NOT NULL insert failure",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L16",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "paymentMethod longer than VARCHAR(20): insert failure",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L17",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Claim with no settlement row: null settlement",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L18",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "claimId omitted: 119",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L19",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "claimId unparseable: 119",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L20",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "A GET also issues a payment",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L21",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Claim 120 (status CLOSED) is paid; settlement 120 is linked",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L22",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Payee text with markup is stored as sent",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L23",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "History with no claimId: claim 119, issue order, fixed detail link",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L24",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "History for claim 1: seeded and new payments",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L25",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "History for a claim with no payments",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L26",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Detail of one payment",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L27",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Detail with no paymentId: payment 61",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L28",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Detail of a payment that does not exist",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L29",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Detail shows payee markup escaped",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L30",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Detail shows the lower-case method",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L31",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Remittance with no claimId: claim 119 (total includes NaN)",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L32",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Remittance total is the sum of stored amounts",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L33",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Remittance for a claim with no payments",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L34",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "An adjuster can issue a payment",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L36",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Remittance for claim 120 after the adjuster's payment",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L37",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "No session: issue redirects to login and inserts nothing",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L38",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "No session: detail redirects to login",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L39",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "No session: remittance redirects to login",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L40",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "Detail with an unparseable paymentId: payment 61",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_L41",
+      "verdict": "PASS"
+    },
+    {
+      "change": null,
+      "description": "PAYMENT and SETTLEMENT rows after the live replay",
+      "difference": "-",
+      "record": null,
+      "scenario": "payment_live_db_after",
+      "verdict": "PASS"
     }
   ]
 }
