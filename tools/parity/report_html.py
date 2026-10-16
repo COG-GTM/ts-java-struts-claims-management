@@ -154,6 +154,7 @@ h2{font-size:16px;margin:0 0 6px}h3{font-size:13px;margin:14px 0 4px;color:var(-
 .rule b{font-family:ui-monospace,monospace}.muted{color:var(--mute)}a{color:var(--acc);cursor:pointer}
 .md table{font-size:12px;margin:6px 0}.md h1{font-size:17px}.md h2{font-size:15px;margin-top:14px}
 .empty{color:var(--mute);font-style:italic}
+main[hidden]{display:none}.col code{word-break:break-word}
 @media(max-width:900px){main{grid-template-columns:1fr}}
 </style>
 </head>
@@ -183,6 +184,7 @@ const D = JSON.parse(document.getElementById('data').textContent);
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const vclass = v => v.split(' ')[0];
+const inline = t => esc(t).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
 const state = {slice:'all', verdict:'all', q:'', sel:null, change:null};
 
 function chips(){
@@ -218,12 +220,12 @@ function answer(title, cls, a, extra){
    <div class="kv"><span>status</span><span><code>${esc(a.status)}</code></span>
    <span>screen</span><span><code>${esc(a.screen||a.result||'')}</code></span></div>
    <h3>Business fields</h3>${kv(a.business_fields)}
-   <h3>Validation errors</h3>${(a.validation_errors||[]).length?'<code>'+esc(JSON.stringify(a.validation_errors))+'</code>':'<span class="empty">none</span>'}
+   <h3>Validation errors</h3>${(a.validation_errors||[]).length?a.validation_errors.map(e=>'<div><code>'+esc(e)+'</code></div>').join(''):'<span class="empty">none</span>'}
    <h3>Database</h3>${kv(a.db_state)}${extra?'<p class="muted">'+extra+'</p>':''}</div>`;
 }
 function ruleBlock(key){
   const r = D.rules[key]; if (!r) return `<div class="rule"><b>${esc(key)}</b> <span class="muted">not in a spec</span></div>`;
-  return `<div class="rule ${r.note?'sup':''}"><b>${esc(key)}</b> <span class="muted">${esc(r.spec)}${r.note?' · '+esc(r.note):''}</span><div>${esc(r.text).replace(/\n/g,'<br>')}</div></div>`;
+  return `<div class="rule ${r.note?'sup':''}"><b>${esc(key)}</b> <span class="muted">${esc(r.spec)}${r.note?' · '+esc(r.note):''}</span><div>${inline(r.text).replace(/\n/g,' ')}</div></div>`;
 }
 function detail(){
   const s = D.scenarios.find(x => x.scenario === state.sel);
@@ -246,7 +248,6 @@ function detail(){
 }
 function md(text){
   const lines = text.split('\n'); let out = '', list = false, table = [];
-  const inline = t => esc(t).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
   const flushTable = () => { if (!table.length) return; const cells = r => r.replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
     out += '<table><thead><tr>' + cells(table[0]).map(c=>'<th>'+inline(c)+'</th>').join('') + '</tr></thead><tbody>' +
       table.slice(2).map(r => '<tr>' + cells(r).map(c=>'<td>'+inline(c)+'</td>').join('') + '</tr>').join('') + '</tbody></table>'; table = []; };
