@@ -40,7 +40,9 @@ SPEC = os.path.join("docs", "specs", "SPEC-SETTLE-001.md")
 OUTPUT = os.path.join("docs", "TRACEABILITY.md")
 
 GENERATED = [OUTPUT, os.path.join("parity", "report.md"),
-             os.path.join("parity", "report.json")]
+             os.path.join("parity", "report.json"),
+             os.path.join("docs", "specs", "SPEC-SETTLE-001-history.md"),
+             os.path.join("docs", "specs", "SPEC-SETTLE-001-history.html")]
 SEARCHED = ["docs", "parity", "services", "src", "tools", "Makefile"]
 
 # "SETTLE-R06", "SETTLE-R06 (v2)", "SETTLE-R06 (v1, superseded by v2)",
