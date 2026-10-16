@@ -290,6 +290,12 @@ def repo_url():
 
 
 def current_ref():
+    """Branch name for the file links. GitHub Actions checks out a detached
+    commit, so the branch is taken from its environment there to keep the
+    generated files identical to a local run on the same branch."""
+    for var in ("GITHUB_HEAD_REF", "GITHUB_REF_NAME"):
+        if os.environ.get(var):
+            return os.environ[var]
     ref = git("rev-parse", "--abbrev-ref", "HEAD").strip()
     return ref if ref != "HEAD" else git("rev-parse", "HEAD").strip()
 
