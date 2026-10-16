@@ -1,0 +1,7 @@
+# Excerpt of the Jetty console (make run, Java 11) while tools/analysis/payments_live.py ran.
+# ANSI colour codes stripped; one occurrence of each line shown.
+WARNING: Container data source unavailable; using DriverManager
+javax.naming.NamingException: org.hsqldb.jdbc.JDBCDataSource: invalid RefAddr: password
+DataSource lookup failed: javax.naming.NamingException
+# 'DataSource lookup failed' lines in the whole run: 6
+# 'Using container claims data source' lines in the whole run: 0

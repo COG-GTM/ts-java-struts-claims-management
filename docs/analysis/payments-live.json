@@ -1,0 +1,960 @@
+{
+ "base": "http://localhost:8080",
+ "precondition": "fresh make seed, then make run",
+ "steps": [
+  {
+   "id": "L01",
+   "purpose": "Unauthenticated request is redirected",
+   "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/payment/history.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {},
+    "forward": null,
+    "link_count_detail61": 0,
+    "links": [],
+    "location": "http://localhost:8080/claims/login.do",
+    "status": 302
+   }
+  },
+  {
+   "id": "L02",
+   "purpose": "Sign in",
+   "request": {
+    "form": {
+     "password": "supervisor",
+     "username": "supervisor"
+    },
+    "method": "POST",
+    "path": "/claims/login.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "signedInUser": "supervisor"
+    },
+    "forward": "/WEB-INF/jsp/home.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L03",
+   "purpose": "Nav link: history with no claimId (fresh seed)",
+   "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/payment/history.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {},
+    "forward": "/WEB-INF/jsp/payment/history.jsp",
+    "link_count_detail61": 2,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L04",
+   "purpose": "History for a seeded claim",
+   "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/payment/history.do?claimId=2"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "checkNumber_2": "CHK-00002",
+     "paymentAmount_2": "250.00",
+     "paymentStatus_2": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/history.jsp",
+    "link_count_detail61": 2,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L05",
+   "purpose": "History detail link target with no row 61 yet",
+   "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/payment/detail.do?paymentId=61"
+   },
+   "response": {
+    "error_page": true,
+    "error_reference_status": "null",
+    "fields": {},
+    "forward": "/WEB-INF/jsp/error.jsp",
+    "link_count_detail61": 0,
+    "links": [],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L06",
+   "purpose": "Detail with no paymentId (fresh seed)",
+   "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/payment/detail.do"
+   },
+   "response": {
+    "error_page": true,
+    "error_reference_status": "null",
+    "fields": {},
+    "forward": "/WEB-INF/jsp/error.jsp",
+    "link_count_detail61": 0,
+    "links": [],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L07",
+   "purpose": "Detail for a seeded payment",
+   "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/payment/detail.do?paymentId=2"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "detailPaymentAmount": "250.00",
+     "detailPaymentCheck": "CHK-00002",
+     "detailPaymentClaim": "2",
+     "detailPaymentDate": "2019-03-15",
+     "detailPaymentId": "2",
+     "detailPaymentStatus": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/detail.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L08",
+   "purpose": "Remittance for a seeded claim",
+   "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/payment/remittance.do?claimId=2"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "remitAmount_2": "250.00",
+     "remitCheck_2": "CHK-00002",
+     "remitClaimId": "2",
+     "remitCount": "1",
+     "remitDate_2": "2019-03-15",
+     "remitStatus_2": "ISSUED",
+     "remitTotal": "250.00"
+    },
+    "forward": "/WEB-INF/jsp/payment/remittance.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L09",
+   "purpose": "Remittance with no claimId (fresh seed)",
+   "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/payment/remittance.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "remitClaimId": "119",
+     "remitCount": "0",
+     "remitTotal": "0.00"
+    },
+    "forward": "/WEB-INF/jsp/payment/remittance.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L10",
+   "purpose": "Issue by GET, no amount: falls back to seeded settlement 119 amount",
+   "request": {
+    "form": {
+     "claimId": "119",
+     "payeeName": "Get Payee",
+     "paymentMethod": "CHECK"
+    },
+    "method": "GET",
+    "path": "/claims/payment/issue.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "checkNumber": "CHK-61",
+     "paymentAmount": "0.00",
+     "paymentStatus": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/issue.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L11",
+   "purpose": "Issue by POST, transcript inputs plus a checkNumber",
+   "request": {
+    "form": {
+     "amount": "1000.00",
+     "checkNumber": "MY-CHECK-1",
+     "claimId": "119",
+     "payeeName": "Reserved Claimant",
+     "paymentMethod": "CHECK"
+    },
+    "method": "POST",
+    "path": "/claims/payment/issue.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "checkNumber": "CHK-62",
+     "paymentAmount": "1000.00",
+     "paymentStatus": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/issue.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L12",
+   "purpose": "Negative amount",
+   "request": {
+    "form": {
+     "amount": "-50",
+     "claimId": "119",
+     "payeeName": "Neg",
+     "paymentMethod": "CHECK"
+    },
+    "method": "POST",
+    "path": "/claims/payment/issue.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "checkNumber": "CHK-63",
+     "paymentAmount": "-50.00",
+     "paymentStatus": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/issue.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L13",
+   "purpose": "Sub-cent amount",
+   "request": {
+    "form": {
+     "amount": "1.005",
+     "claimId": "119",
+     "payeeName": "Half",
+     "paymentMethod": "CHECK"
+    },
+    "method": "POST",
+    "path": "/claims/payment/issue.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "checkNumber": "CHK-64",
+     "paymentAmount": "1.01",
+     "paymentStatus": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/issue.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L14",
+   "purpose": "Amount above the 1000 policy limit of claim 119",
+   "request": {
+    "form": {
+     "amount": "250000",
+     "claimId": "119",
+     "payeeName": "Big",
+     "paymentMethod": "CHECK"
+    },
+    "method": "POST",
+    "path": "/claims/payment/issue.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "checkNumber": "CHK-65",
+     "paymentAmount": "250000.00",
+     "paymentStatus": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/issue.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L15",
+   "purpose": "Unparsable amount",
+   "request": {
+    "form": {
+     "amount": "abc",
+     "claimId": "119",
+     "payeeName": "Bad",
+     "paymentMethod": "CHECK"
+    },
+    "method": "POST",
+    "path": "/claims/payment/issue.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "checkNumber": "CHK-66",
+     "paymentAmount": "0.00",
+     "paymentStatus": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/issue.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L16",
+   "purpose": "Free-text lower-case payment method",
+   "request": {
+    "form": {
+     "amount": "10",
+     "claimId": "119",
+     "payeeName": "Wire",
+     "paymentMethod": "wire"
+    },
+    "method": "POST",
+    "path": "/claims/payment/issue.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "checkNumber": "CHK-67",
+     "paymentAmount": "10.00",
+     "paymentStatus": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/issue.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L17",
+   "purpose": "Missing payeeName",
+   "request": {
+    "form": {
+     "amount": "10",
+     "claimId": "119",
+     "paymentMethod": "CHECK"
+    },
+    "method": "POST",
+    "path": "/claims/payment/issue.do"
+   },
+   "response": {
+    "error_page": true,
+    "error_reference_status": "null",
+    "fields": {},
+    "forward": "/WEB-INF/jsp/error.jsp",
+    "link_count_detail61": 0,
+    "links": [],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L18",
+   "purpose": "Missing paymentMethod",
+   "request": {
+    "form": {
+     "amount": "10",
+     "claimId": "119",
+     "payeeName": "NoMethod"
+    },
+    "method": "POST",
+    "path": "/claims/payment/issue.do"
+   },
+   "response": {
+    "error_page": true,
+    "error_reference_status": "null",
+    "fields": {},
+    "forward": "/WEB-INF/jsp/error.jsp",
+    "link_count_detail61": 0,
+    "links": [],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L19",
+   "purpose": "Claim with no settlement",
+   "request": {
+    "form": {
+     "amount": "10",
+     "claimId": "999",
+     "payeeName": "Ghost",
+     "paymentMethod": "CHECK"
+    },
+    "method": "POST",
+    "path": "/claims/payment/issue.do"
+   },
+   "response": {
+    "error_page": true,
+    "error_reference_status": "null",
+    "fields": {},
+    "forward": "/WEB-INF/jsp/error.jsp",
+    "link_count_detail61": 0,
+    "links": [],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L20",
+   "purpose": "Unparsable claimId",
+   "request": {
+    "form": {
+     "amount": "5",
+     "claimId": "abc",
+     "payeeName": "Default",
+     "paymentMethod": "CHECK"
+    },
+    "method": "POST",
+    "path": "/claims/payment/issue.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "checkNumber": "CHK-68",
+     "paymentAmount": "5.00",
+     "paymentStatus": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/issue.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L21",
+   "purpose": "Issue against a CLOSED claim (120) with a seeded zero settlement",
+   "request": {
+    "form": {
+     "amount": "75",
+     "claimId": "120",
+     "payeeName": "Closed claim",
+     "paymentMethod": "CHECK"
+    },
+    "method": "POST",
+    "path": "/claims/payment/issue.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "checkNumber": "CHK-69",
+     "paymentAmount": "75.00",
+     "paymentStatus": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/issue.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L22",
+   "purpose": "Save a new settlement for claim 119 (1000.00)",
+   "request": {
+    "form": {
+     "claimId": "119",
+     "coveredAmount": "5000.00",
+     "deductible": "500.00",
+     "depreciation": "0.00"
+    },
+    "method": "POST",
+    "path": "/claims/settlement/save.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "savedBy": "supervisor",
+     "settlementAmount": "1000.00"
+    },
+    "forward": "/WEB-INF/jsp/settlement/save.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L23",
+   "purpose": "Issue with no amount after the save: newest settlement amount",
+   "request": {
+    "form": {
+     "claimId": "119",
+     "payeeName": "After save",
+     "paymentMethod": "CHECK"
+    },
+    "method": "POST",
+    "path": "/claims/payment/issue.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "checkNumber": "CHK-70",
+     "paymentAmount": "1000.00",
+     "paymentStatus": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/issue.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L24",
+   "purpose": "History for claim 119 after the issues",
+   "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/payment/history.do?claimId=119"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "checkNumber_61": "CHK-61",
+     "checkNumber_62": "CHK-62",
+     "checkNumber_63": "CHK-63",
+     "checkNumber_64": "CHK-64",
+     "checkNumber_65": "CHK-65",
+     "checkNumber_66": "CHK-66",
+     "checkNumber_67": "CHK-67",
+     "checkNumber_68": "CHK-68",
+     "checkNumber_70": "CHK-70",
+     "paymentAmount_61": "0.00",
+     "paymentAmount_62": "1000.00",
+     "paymentAmount_63": "-50.00",
+     "paymentAmount_64": "1.01",
+     "paymentAmount_65": "250000.00",
+     "paymentAmount_66": "0.00",
+     "paymentAmount_67": "10.00",
+     "paymentAmount_68": "5.00",
+     "paymentAmount_70": "1000.00",
+     "paymentStatus_61": "ISSUED",
+     "paymentStatus_62": "ISSUED",
+     "paymentStatus_63": "ISSUED",
+     "paymentStatus_64": "ISSUED",
+     "paymentStatus_65": "ISSUED",
+     "paymentStatus_66": "ISSUED",
+     "paymentStatus_67": "ISSUED",
+     "paymentStatus_68": "ISSUED",
+     "paymentStatus_70": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/history.jsp",
+    "link_count_detail61": 2,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L25",
+   "purpose": "Detail with no paymentId now resolves 61",
+   "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/payment/detail.do"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "detailPaymentAmount": "0.00",
+     "detailPaymentCheck": "CHK-61",
+     "detailPaymentClaim": "119",
+     "detailPaymentDate": "2019-04-03",
+     "detailPaymentId": "61",
+     "detailPaymentStatus": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/detail.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L26",
+   "purpose": "Detail of the sub-cent payment",
+   "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/payment/detail.do?paymentId=64"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "detailPaymentAmount": "1.01",
+     "detailPaymentCheck": "CHK-64",
+     "detailPaymentClaim": "119",
+     "detailPaymentDate": "2019-04-03",
+     "detailPaymentId": "64",
+     "detailPaymentStatus": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/detail.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L27",
+   "purpose": "Remittance for claim 119 after the issues",
+   "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/payment/remittance.do?claimId=119"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "remitAmount_61": "0.00",
+     "remitAmount_62": "1000.00",
+     "remitAmount_63": "-50.00",
+     "remitAmount_64": "1.01",
+     "remitAmount_65": "250000.00",
+     "remitAmount_66": "0.00",
+     "remitAmount_67": "10.00",
+     "remitAmount_68": "5.00",
+     "remitAmount_70": "1000.00",
+     "remitCheck_61": "CHK-61",
+     "remitCheck_62": "CHK-62",
+     "remitCheck_63": "CHK-63",
+     "remitCheck_64": "CHK-64",
+     "remitCheck_65": "CHK-65",
+     "remitCheck_66": "CHK-66",
+     "remitCheck_67": "CHK-67",
+     "remitCheck_68": "CHK-68",
+     "remitCheck_70": "CHK-70",
+     "remitClaimId": "119",
+     "remitCount": "9",
+     "remitDate_61": "2019-04-03",
+     "remitDate_62": "2019-04-03",
+     "remitDate_63": "2019-04-03",
+     "remitDate_64": "2019-04-03",
+     "remitDate_65": "2019-04-03",
+     "remitDate_66": "2019-04-03",
+     "remitDate_67": "2019-04-03",
+     "remitDate_68": "2019-04-03",
+     "remitDate_70": "2019-04-03",
+     "remitStatus_61": "ISSUED",
+     "remitStatus_62": "ISSUED",
+     "remitStatus_63": "ISSUED",
+     "remitStatus_64": "ISSUED",
+     "remitStatus_65": "ISSUED",
+     "remitStatus_66": "ISSUED",
+     "remitStatus_67": "ISSUED",
+     "remitStatus_68": "ISSUED",
+     "remitStatus_70": "ISSUED",
+     "remitTotal": "251966.01"
+    },
+    "forward": "/WEB-INF/jsp/payment/remittance.jsp",
+    "link_count_detail61": 0,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  },
+  {
+   "id": "L28",
+   "purpose": "Eight concurrent issues for claim 2",
+   "request": {
+    "form": {
+     "amount": "1",
+     "claimId": "2",
+     "payeeName": "Race 0",
+     "paymentMethod": "CHECK"
+    },
+    "method": "POST",
+    "note": "8 parallel requests, payeeName Race 0..7",
+    "path": "/claims/payment/issue.do"
+   },
+   "response": {
+    "responses": [
+     {
+      "error_page": true,
+      "error_reference_status": "null",
+      "fields": {},
+      "forward": "/WEB-INF/jsp/error.jsp",
+      "link_count_detail61": 0,
+      "links": [],
+      "location": null,
+      "status": 200
+     },
+     {
+      "error_page": true,
+      "error_reference_status": "null",
+      "fields": {},
+      "forward": "/WEB-INF/jsp/error.jsp",
+      "link_count_detail61": 0,
+      "links": [],
+      "location": null,
+      "status": 200
+     },
+     {
+      "error_page": false,
+      "error_reference_status": null,
+      "fields": {
+       "checkNumber": "CHK-72",
+       "paymentAmount": "1.00",
+       "paymentStatus": "ISSUED"
+      },
+      "forward": "/WEB-INF/jsp/payment/issue.jsp",
+      "link_count_detail61": 0,
+      "links": [
+       "/claims/payment/history.do"
+      ],
+      "location": null,
+      "status": 200
+     },
+     {
+      "error_page": false,
+      "error_reference_status": null,
+      "fields": {
+       "checkNumber": "CHK-73",
+       "paymentAmount": "1.00",
+       "paymentStatus": "ISSUED"
+      },
+      "forward": "/WEB-INF/jsp/payment/issue.jsp",
+      "link_count_detail61": 0,
+      "links": [
+       "/claims/payment/history.do"
+      ],
+      "location": null,
+      "status": 200
+     },
+     {
+      "error_page": false,
+      "error_reference_status": null,
+      "fields": {
+       "checkNumber": "CHK-75",
+       "paymentAmount": "1.00",
+       "paymentStatus": "ISSUED"
+      },
+      "forward": "/WEB-INF/jsp/payment/issue.jsp",
+      "link_count_detail61": 0,
+      "links": [
+       "/claims/payment/history.do"
+      ],
+      "location": null,
+      "status": 200
+     },
+     {
+      "error_page": true,
+      "error_reference_status": "null",
+      "fields": {},
+      "forward": "/WEB-INF/jsp/error.jsp",
+      "link_count_detail61": 0,
+      "links": [],
+      "location": null,
+      "status": 200
+     },
+     {
+      "error_page": false,
+      "error_reference_status": null,
+      "fields": {
+       "checkNumber": "CHK-71",
+       "paymentAmount": "1.00",
+       "paymentStatus": "ISSUED"
+      },
+      "forward": "/WEB-INF/jsp/payment/issue.jsp",
+      "link_count_detail61": 0,
+      "links": [
+       "/claims/payment/history.do"
+      ],
+      "location": null,
+      "status": 200
+     },
+     {
+      "error_page": false,
+      "error_reference_status": null,
+      "fields": {
+       "checkNumber": "CHK-74",
+       "paymentAmount": "1.00",
+       "paymentStatus": "ISSUED"
+      },
+      "forward": "/WEB-INF/jsp/payment/issue.jsp",
+      "link_count_detail61": 0,
+      "links": [
+       "/claims/payment/history.do"
+      ],
+      "location": null,
+      "status": 200
+     }
+    ],
+    "summary": {
+     "error_pages": 3,
+     "issued": [
+      "CHK-71",
+      "CHK-72",
+      "CHK-73",
+      "CHK-74",
+      "CHK-75"
+     ]
+    }
+   }
+  },
+  {
+   "id": "L29",
+   "purpose": "History for claim 2 after the race",
+   "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/payment/history.do?claimId=2"
+   },
+   "response": {
+    "error_page": false,
+    "error_reference_status": null,
+    "fields": {
+     "checkNumber_2": "CHK-00002",
+     "checkNumber_71": "CHK-71",
+     "checkNumber_72": "CHK-72",
+     "checkNumber_73": "CHK-73",
+     "checkNumber_74": "CHK-74",
+     "checkNumber_75": "CHK-75",
+     "paymentAmount_2": "250.00",
+     "paymentAmount_71": "1.00",
+     "paymentAmount_72": "1.00",
+     "paymentAmount_73": "1.00",
+     "paymentAmount_74": "1.00",
+     "paymentAmount_75": "1.00",
+     "paymentStatus_2": "ISSUED",
+     "paymentStatus_71": "ISSUED",
+     "paymentStatus_72": "ISSUED",
+     "paymentStatus_73": "ISSUED",
+     "paymentStatus_74": "ISSUED",
+     "paymentStatus_75": "ISSUED"
+    },
+    "forward": "/WEB-INF/jsp/payment/history.jsp",
+    "link_count_detail61": 2,
+    "links": [
+     "/claims/payment/history.do"
+    ],
+    "location": null,
+    "status": 200
+   }
+  }
+ ]
+}
