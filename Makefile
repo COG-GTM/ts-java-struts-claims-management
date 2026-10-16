@@ -37,8 +37,9 @@ parity:
 traceability:
 	python3 tools/traceability.py
 
-# Regenerates docs/specs/SPEC-SETTLE-001-history.md from the git history of the
-# spec, the tests and parity/routes.json. Needs the full history, nothing running.
+# Regenerates docs/specs/SPEC-SETTLE-001-history.md and .html (the rule-by-rule
+# change history with its interactive timeline) from the git history of the
+# spec, the tests, parity/routes.json and docs/changes. Needs nothing running.
 spec-history:
 	python3 tools/spec_history.py
 
