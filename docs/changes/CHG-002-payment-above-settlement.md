@@ -103,7 +103,7 @@ bundle has no such key because the legacy app never validates this field.
 
 Five live requests of `docs/specs/SPEC-PAY-001-live.json` no longer match the
 service: `payment_live_L10` (5000.00 against 1000.00) and `payment_live_L21`,
-`L22`, `L23`, `L36` (positive amounts against settlements at 0). Each is
+`payment_live_L22`, `payment_live_L23`, `payment_live_L36` (positive amounts against settlements at 0). Each is
 registered in `parity/routes.json` against this record with the approved
 service response and its unchanged `payment_rows_through`, so `make parity`
 reports them as `CHANGED (CHG-002)` and still fails if the service answers
