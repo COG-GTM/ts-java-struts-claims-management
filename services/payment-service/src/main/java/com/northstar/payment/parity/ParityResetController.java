@@ -7,9 +7,12 @@ import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -23,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
  * the legacy schema.sql and seed.sql, then runs one explicit precondition
  * script from parity/preconditions/payment, so each parity scenario states
  * the database it starts from instead of inheriting the previous scenario's.
+ * It is absent without that profile and answers only loopback callers (the
+ * parity scripts run on the same machine), since it erases issued payments.
  */
 @RestController
 @Profile("parity")
@@ -43,8 +48,11 @@ public class ParityResetController {
     }
 
     @PostMapping("/parity/reset")
-    public ResponseEntity<Map<String, String>> reset(
+    public ResponseEntity<Map<String, String>> reset(HttpServletRequest request,
             @RequestParam(required = false) String precondition) {
+        if (!isLoopback(request.getRemoteAddr())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new FileSystemResource(legacyDbDir.resolve("schema.sql")));
         populator.addScript(new FileSystemResource(legacyDbDir.resolve("seed.sql")));
@@ -59,5 +67,13 @@ public class ParityResetController {
         populator.execute(dataSource);
         return ResponseEntity.ok(Map.of("precondition",
                 precondition == null ? "" : precondition));
+    }
+
+    private static boolean isLoopback(String address) {
+        try {
+            return java.net.InetAddress.getByName(address).isLoopbackAddress();
+        } catch (java.net.UnknownHostException failure) {
+            return false;
+        }
     }
 }
