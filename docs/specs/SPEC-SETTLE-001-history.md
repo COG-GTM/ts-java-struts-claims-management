@@ -101,7 +101,7 @@ Tests: `SettlementCalculateEndpointTest#missingClaimFallsBackToTheLimit10000` (s
 | Check | Result | Detail |
 | --- | --- | --- |
 | Version line sequence | Note | Version moves 0.2 to 0.4 in `5f4260c`; no commit of the spec carries 0.3. |
-| Version line bumped when rules change | OK | Every commit that added or changed a rule version also changed the Version line. |
+| Version line bumped when rules change | OK | Every commit that added, changed, removed or restored a rule version also changed the Version line. |
 | Rule history row for every rule version | OK | All 33 rule versions have a row, and each row names the spec version that introduced it. |
 | Rule text is append-only | OK | No rule version was reworded after it was introduced. Re-wrapped only, with the superseded marker added: SETTLE-R06 (v1) in `5f4260c`, SETTLE-R08 (v1) in `2a5ef42`. |
 | Superseded versions kept and linked | OK | Every revised rule keeps its earlier text, marked superseded by the version that replaced it. |

@@ -169,12 +169,16 @@ def build_history(commits):
     for commit in commits:
         spec = parse_spec(git("show", "%s:%s" % (commit["sha"], SPEC)))
         snapshots.append(spec)
-        added, edited, superseded, removed = [], [], [], []
+        added, edited, superseded, removed, restored = [], [], [], [], []
         for rule in spec["order"]:
             block = spec["rules"][rule]
             before = previous["rules"].get(rule) if previous else None
             entry = versions.setdefault(rule, {"edits": []})
-            if before is None:
+            if before is None and "introduced" in entry:
+                entry.setdefault("restored", []).append(commit)
+                entry["removed_in"] = None
+                restored.append(rule)
+            elif before is None:
                 entry.update({
                     "introduced": commit, "intro_text": block["text"],
                     "intro_version": spec["version"],
@@ -200,7 +204,7 @@ def build_history(commits):
             "version": spec["version"],
             "version_before": previous["version"] if previous else None,
             "added": added, "edited": edited, "superseded": superseded,
-            "removed": removed, "history_rows": new_rows,
+            "removed": removed, "restored": restored, "history_rows": new_rows,
             "diff": git("show", "--format=", "--unified=3", commit["sha"],
                         "--", SPEC),
         })
@@ -359,15 +363,16 @@ def checks(commits, versions, current, rows):
         "Versions in commit order: %s." % ", ".join(seen)})
 
     unbumped = [c["short"] for c in commits[1:]
-                if (c["added"] or c["edited"]) and c["version"] == c["version_before"]]
+                if (c["added"] or c["edited"] or c["removed"] or c["restored"])
+                and c["version"] == c["version_before"]]
     found.append({
         "check": "Version line bumped when rules change",
         "result": "Note" if unbumped else "OK",
         "detail": ("Rules changed without a Version bump in %s."
                    % ", ".join("`%s`" % s for s in unbumped)) if unbumped else
-        "Every commit that added or changed a rule version also changed the Version line."})
+        "Every commit that added, changed, removed or restored a rule version also changed the Version line."})
 
-    missing, mismatched = [], []
+    missing, unstated, mismatched = [], [], []
     for row in rows:
         rule = row["rule"]
         text = current["history"].get(rule)
@@ -376,13 +381,17 @@ def checks(commits, versions, current, rows):
             continue
         stated = ROW_VERSION.search(text)
         intro = versions[rule]["intro_version"]
-        if stated and intro and "%s.%s" % stated.groups() != intro:
+        if stated is None:
+            unstated.append(label(rule))
+        elif intro and "%s.%s" % stated.groups() != intro:
             mismatched.append("%s says %s.%s, introduced at %s"
                               % (label(rule), stated.group(1), stated.group(2),
                                  intro))
     problems = []
     if missing:
         problems.append("No Rule history row: %s." % ", ".join(missing))
+    if unstated:
+        problems.append("Row names no spec version: %s." % ", ".join(unstated))
     if mismatched:
         problems.append("Row version differs from the spec version that "
                         "introduced the rule: %s." % "; ".join(mismatched))
@@ -502,6 +511,7 @@ def collect():
             "intro_version": data["intro_version"],
             "removed_in": short_commit(data["removed_in"])
             if data["removed_in"] else None,
+            "restored_in": [short_commit(c) for c in data.get("restored", [])],
             "history_row": current["history"].get(rule, "-"),
             "predecessor": predecessor,
             "successor": anchor(successor) if successor in versions else None,
@@ -528,6 +538,7 @@ def collect():
                          edited=[anchor(r) for r in c["edited"]],
                          superseded=[anchor(r) for r in c["superseded"]],
                          removed=[anchor(r) for r in c["removed"]],
+                         restored=[anchor(r) for r in c["restored"]],
                          history_rows=[label(r) for r in c["history_rows"]],
                          diff=c["diff"]) for c in commits],
         "rows": rows,
@@ -582,7 +593,10 @@ def write_markdown(data):
             "%s → %s" % (c["version_before"], c["version"])
         lines.append("| %s | %s %s | %s | %s | %s | %s |" % (
             version, md_commit(c), md_escape(c["subject"]), c["date"],
-            md_rules(c["added"], by_anchor) or "-",
+            ", ".join(x for x in [md_rules(c["added"], by_anchor),
+                                  md_rules(c["restored"], by_anchor)
+                                  and md_rules(c["restored"], by_anchor)
+                                  + " (restored)"] if x) or "-",
             md_rules(c["edited"], by_anchor) or "-",
             ", ".join(c["history_rows"]) or "-"))
 
@@ -811,7 +825,7 @@ $("subtitle").innerHTML="Generated by <code>make spec-history</code> from the gi
 var stats=[[D.current_version,"current spec version"],[D.commits.length,"commits to the spec"],[Object.keys(ids).length,"rule ids"],[D.rows.length,"rule versions"],[D.revised_ids.length,"revised rule ids"],[D.rows.filter(function(r){return r.changes.length;}).length,"versions with a change record"]];
 $("stats").innerHTML=stats.map(function(s){return '<div class="stat"><b>'+esc(s[0])+'</b>'+esc(s[1])+'</div>';}).join("");
 
-function commitSummary(c){var p=[];if(c.added.length)p.push("+"+c.added.length+" rule version"+(c.added.length>1?"s":""));if(c.edited.length)p.push(c.edited.length+" edited");if(c.superseded.length)p.push(c.superseded.length+" superseded");if(c.removed.length)p.push(c.removed.length+" removed");return p.join(", ")||"no rule change";}
+function commitSummary(c){var p=[];if(c.added.length)p.push("+"+c.added.length+" rule version"+(c.added.length>1?"s":""));if(c.edited.length)p.push(c.edited.length+" edited");if(c.superseded.length)p.push(c.superseded.length+" superseded");if(c.removed.length)p.push(c.removed.length+" removed");if(c.restored.length)p.push(c.restored.length+" restored");return p.join(", ")||"no rule change";}
 $("timeline").innerHTML=D.commits.map(function(c){return '<div class="tnode" role="listitem"><span class="dot"></span><button data-commit="'+esc(c.short)+'"><div class="ver">v'+esc(c.version)+'</div><div class="meta"><code>'+esc(c.short)+'</code> · '+esc(c.date.slice(0,10))+'</div><div class="chg">'+esc(commitSummary(c))+'</div></button></div>';}).join("");
 $("tl-table").innerHTML=D.commits.map(function(c){return '<tr><td>'+(c.version_before?esc(c.version_before)+" → ":"")+esc(c.version)+'</td><td><button class="linkbtn" data-commit="'+esc(c.short)+'"><code>'+esc(c.short)+'</code></button> '+esc(c.subject)+'</td><td>'+esc(c.date)+'</td><td>'+(c.added.length>3?c.added.length+" rule versions":c.added.map(ruleBtn).join(", ")||"-")+'</td><td>'+(c.edited.map(ruleBtn).join(", ")||"-")+'</td></tr>';}).join("");
 
@@ -869,7 +883,7 @@ function openCommit(s,push){
   var h='<h2>Spec version '+(c.version_before?esc(c.version_before)+' → ':'')+esc(c.version)+'</h2>';
   h+='<p>'+cLink(c)+' '+esc(c.subject)+'<br><span class="muted">'+esc(c.date)+' · <a href="'+esc(D.repo)+'/blob/'+esc(c.sha)+'/'+esc(D.spec)+'" target="_blank" rel="noopener">spec as of this commit</a></span></p>';
   function list(t,a){return a.length?'<h3>'+t+' ('+a.length+')</h3><p>'+a.map(ruleBtn).join(", ")+'</p>':"";}
-  h+=list("Rule versions added",c.added)+list("Rule text edited",c.edited)+list("Marked superseded",c.superseded)+list("Removed",c.removed);
+  h+=list("Rule versions added",c.added)+list("Rule text edited",c.edited)+list("Marked superseded",c.superseded)+list("Removed",c.removed)+list("Restored",c.restored);
   if(c.history_rows.length)h+='<h3>Rule history rows added</h3><p>'+esc(c.history_rows.join(", "))+'</p>';
   h+='<h3>Diff of the spec</h3><pre class="diff">'+diffHtml(c.diff)+'</pre>';
   $("panel").innerHTML=h;$("panel").scrollTop=0;
