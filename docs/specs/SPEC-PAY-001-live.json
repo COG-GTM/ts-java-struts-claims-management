@@ -1,0 +1,1228 @@
+{
+ "base": "http://localhost:8080/claims",
+ "note": "Captured by tools/spec/pay_live_proof.py against make seed && make run (fresh seed, Java 11).",
+ "steps": [
+  {
+   "id": "L01",
+   "title": "History without a session",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/history.do",
+    "form": {}
+   },
+   "response": {
+    "status": 302,
+    "result": "redirect http://localhost:8080/claims/login.do",
+    "fields": {},
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L02",
+   "title": "Issue without a session",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "Anon",
+     "amount": "1",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 302,
+    "result": "redirect http://localhost:8080/claims/login.do",
+    "fields": {},
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L03",
+   "title": "Login as supervisor",
+   "request": {
+    "method": "POST",
+    "path": "/claims/login.do",
+    "form": {
+     "username": "supervisor",
+     "password": "supervisor"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/home.jsp",
+    "fields": {
+     "signedInUser": "supervisor"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L04",
+   "title": "History, no parameters, fresh seed",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/history.do",
+    "form": {}
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/history.jsp",
+    "fields": {},
+    "snippets": {
+     "linkParagraphs": "<p><a href=\"detail.do?paymentId=61\">Payment detail</a> |\n<a href=\"remittance.do?claimId=119\">Payment remittance</a></p>\n<p><a href=\"detail.do?paymentId=61\">Payment detail</a> |\n<a href=\"remittance.do?claimId=119\">Payment remittance</a></p>",
+     "detailLink": "<a href=\"detail.do?paymentId=61\">",
+     "remittanceLink": "<a href=\"remittance.do?claimId=119\">",
+     "screenAudit": "<table class=\"screen-audit\" cellpadding=\"3\" cellspacing=\"0\" border=\"1\">\n<tr>\n<th>Screen context</th>\n<td>Operational record view</td>\n</tr>\n<tr>\n<th>Operator</th>\n<td>supervisor</td>\n</tr>\n<tr>\n<th>As of date</th>\n<td>2019-04-01</td>\n</tr>\n</table>"
+    }
+   }
+  },
+  {
+   "id": "L05",
+   "title": "History for claim 1 (seeded payment 1)",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/history.do",
+    "form": {
+     "claimId": "1"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/history.jsp",
+    "fields": {
+     "checkNumber_1": "CHK-00001",
+     "paymentAmount_1": "500.00",
+     "paymentStatus_1": "ISSUED"
+    },
+    "snippets": {
+     "detailLink": "<a href=\"detail.do?paymentId=61\">",
+     "remittanceLink": "<a href=\"remittance.do?claimId=1\">"
+    }
+   }
+  },
+  {
+   "id": "L06",
+   "title": "History, claimId=abc falls back to 119",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/history.do",
+    "form": {
+     "claimId": "abc"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/history.jsp",
+    "fields": {},
+    "snippets": {
+     "detailLink": "<a href=\"detail.do?paymentId=61\">",
+     "remittanceLink": "<a href=\"remittance.do?claimId=119\">"
+    }
+   }
+  },
+  {
+   "id": "L07",
+   "title": "Detail, no parameters, fresh seed (default 61 absent)",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/detail.do",
+    "form": {}
+   },
+   "response": {
+    "status": 200,
+    "result": "error.jsp (Reference status: null)",
+    "fields": {},
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L08",
+   "title": "Detail for missing payment 9999",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/detail.do",
+    "form": {
+     "paymentId": "9999"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "error.jsp (Reference status: null)",
+    "fields": {},
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L09",
+   "title": "Detail for seeded payment 1",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/detail.do",
+    "form": {
+     "paymentId": "1"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/detail.jsp",
+    "fields": {
+     "detailPaymentId": "1",
+     "detailPaymentClaim": "1",
+     "detailPaymentAmount": "500.00",
+     "detailPaymentCheck": "CHK-00001",
+     "detailPaymentDate": "2019-03-15",
+     "detailPaymentStatus": "ISSUED"
+    },
+    "snippets": {
+     "payeeCell": "<th>Payee</th><td>Claimant 1</td>",
+     "methodCell": "<th>Method</th><td>CHECK</td>",
+     "screenAudit": "<table class=\"screen-audit\" cellpadding=\"3\" cellspacing=\"0\" border=\"1\">\n<tr>\n<th>Screen context</th>\n<td>Operational record view</td>\n</tr>\n<tr>\n<th>Operator</th>\n<td>supervisor</td>\n</tr>\n<tr>\n<th>As of date</th>\n<td>2019-04-01</td>\n</tr>\n</table>"
+    }
+   }
+  },
+  {
+   "id": "L10",
+   "title": "Detail, paymentId=abc falls back to 61 (absent)",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/detail.do",
+    "form": {
+     "paymentId": "abc"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "error.jsp (Reference status: null)",
+    "fields": {},
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L11",
+   "title": "Remittance, no parameters, fresh seed",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/remittance.do",
+    "form": {}
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+    "fields": {
+     "remitClaimId": "119",
+     "remitCount": "0",
+     "remitTotal": "0.00"
+    },
+    "snippets": {
+     "screenAudit": "<table class=\"screen-audit\" cellpadding=\"3\" cellspacing=\"0\" border=\"1\">\n<tr>\n<th>Screen context</th>\n<td>Operational record view</td>\n</tr>\n<tr>\n<th>Operator</th>\n<td>supervisor</td>\n</tr>\n<tr>\n<th>As of date</th>\n<td>2019-04-01</td>\n</tr>\n</table>"
+    }
+   }
+  },
+  {
+   "id": "L12",
+   "title": "Remittance for claim 1",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/remittance.do",
+    "form": {
+     "claimId": "1"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+    "fields": {
+     "remitCheck_1": "CHK-00001",
+     "remitDate_1": "2019-03-15",
+     "remitAmount_1": "500.00",
+     "remitStatus_1": "ISSUED",
+     "remitClaimId": "1",
+     "remitCount": "1",
+     "remitTotal": "500.00"
+    },
+    "snippets": {
+     "payeeCells": "<th>Payee</th>\n<th>Issued date</th>\n<th>Amount</th>\n<th>Status</th></tr>\n\n<tr>\n<td><span id=\"f_remitCheck_1\">CHK-00001</span></td>\n<td>Claimant 1</td>\n<td><span id=\"f_remitDate_1\">2019-03-15</span></td>\n<td><span id=\"f_remitAmount_1\">500.00</span></td>\n<td><span id=\"f_remitStatus_1\">ISSUED</span></td>\n</tr>\n\n</table>"
+    }
+   }
+  },
+  {
+   "id": "L13",
+   "title": "Remittance, claimId=abc falls back to 119",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/remittance.do",
+    "form": {
+     "claimId": "abc"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+    "fields": {
+     "remitClaimId": "119",
+     "remitCount": "0",
+     "remitTotal": "0.00"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L14",
+   "title": "Issue, no amount: falls back to settlement amount",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "Live Payee",
+     "paymentMethod": "wire"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+    "fields": {
+     "paymentAmount": "1118.00",
+     "checkNumber": "CHK-61",
+     "paymentStatus": "ISSUED"
+    },
+    "snippets": {
+     "screenAudit": "<table class=\"screen-audit\" cellpadding=\"3\" cellspacing=\"0\" border=\"1\">\n<tr>\n<th>Screen context</th>\n<td>Operational record view</td>\n</tr>\n<tr>\n<th>Operator</th>\n<td>supervisor</td>\n</tr>\n<tr>\n<th>As of date</th>\n<td>2019-04-01</td>\n</tr>\n</table>"
+    }
+   }
+  },
+  {
+   "id": "L15",
+   "title": "Issue, amount=abc: falls back to settlement amount",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "Second Payee",
+     "amount": "abc",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+    "fields": {
+     "paymentAmount": "1118.00",
+     "checkNumber": "CHK-62",
+     "paymentStatus": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L16",
+   "title": "Issue, claimId=abc falls back to 119; amount 12.345",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "abc",
+     "payeeName": "Third Payee",
+     "amount": "12.345",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+    "fields": {
+     "paymentAmount": "12.35",
+     "checkNumber": "CHK-63",
+     "paymentStatus": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L17",
+   "title": "Issue, claim 120 (settlement amount 0), no amount",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "120",
+     "payeeName": "Zero Payee",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+    "fields": {
+     "paymentAmount": "0.00",
+     "checkNumber": "CHK-64",
+     "paymentStatus": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L18",
+   "title": "Issue for claim without a settlement",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "9999",
+     "payeeName": "Nobody",
+     "amount": "1",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "error.jsp (Reference status: null)",
+    "fields": {},
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L19",
+   "title": "Issue without payeeName",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "amount": "1",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "error.jsp (Reference status: null)",
+    "fields": {},
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L20",
+   "title": "Issue without paymentMethod",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "No Method",
+     "amount": "1"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "error.jsp (Reference status: null)",
+    "fields": {},
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L21",
+   "title": "Issue with 101-char payeeName",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP",
+     "amount": "1",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "error.jsp (Reference status: null)",
+    "fields": {},
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L22",
+   "title": "Issue with 21-char paymentMethod",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "Long Method",
+     "amount": "1",
+     "paymentMethod": "MMMMMMMMMMMMMMMMMMMMM"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "error.jsp (Reference status: null)",
+    "fields": {},
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L23",
+   "title": "Issue with empty payeeName",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "",
+     "amount": "1",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+    "fields": {
+     "paymentAmount": "1.00",
+     "checkNumber": "CHK-65",
+     "paymentStatus": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L24",
+   "title": "Remittance 118 after failures (count unchanged)",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/remittance.do",
+    "form": {
+     "claimId": "118"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+    "fields": {
+     "remitCheck_61": "CHK-61",
+     "remitDate_61": "2019-04-03",
+     "remitAmount_61": "1118.00",
+     "remitStatus_61": "ISSUED",
+     "remitCheck_62": "CHK-62",
+     "remitDate_62": "2019-04-03",
+     "remitAmount_62": "1118.00",
+     "remitStatus_62": "ISSUED",
+     "remitCheck_65": "CHK-65",
+     "remitDate_65": "2019-04-03",
+     "remitAmount_65": "1.00",
+     "remitStatus_65": "ISSUED",
+     "remitClaimId": "118",
+     "remitCount": "3",
+     "remitTotal": "2237.00"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L25",
+   "title": "Issue, negative amount",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "Negative Payee",
+     "amount": "-5",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+    "fields": {
+     "paymentAmount": "-5.00",
+     "checkNumber": "CHK-66",
+     "paymentStatus": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L26",
+   "title": "Issue by GET",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "Get Payee",
+     "amount": "7",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+    "fields": {
+     "paymentAmount": "7.00",
+     "checkNumber": "CHK-67",
+     "paymentStatus": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L27",
+   "title": "Issue, amount=1e3",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "Sci Payee",
+     "amount": "1e3",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+    "fields": {
+     "paymentAmount": "1000.00",
+     "checkNumber": "CHK-68",
+     "paymentStatus": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L28",
+   "title": "Issue, amount=1,000 (unparseable, falls back)",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "Comma Payee",
+     "amount": "1,000",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+    "fields": {
+     "paymentAmount": "1118.00",
+     "checkNumber": "CHK-69",
+     "paymentStatus": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L29",
+   "title": "Issue, amount with surrounding spaces",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "Space Payee",
+     "amount": " 5 ",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+    "fields": {
+     "paymentAmount": "5.00",
+     "checkNumber": "CHK-70",
+     "paymentStatus": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L30",
+   "title": "Issue, client checkNumber ignored, 100-char payee and 20-char method accepted",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ",
+     "amount": "1",
+     "paymentMethod": "NNNNNNNNNNNNNNNNNNNN",
+     "checkNumber": "MINE-1"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+    "fields": {
+     "paymentAmount": "1.00",
+     "checkNumber": "CHK-71",
+     "paymentStatus": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L31",
+   "title": "Issue, payee with HTML characters",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "O'Brien <b>&</b> \"Co\"",
+     "amount": "2",
+     "paymentMethod": "ach"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+    "fields": {
+     "paymentAmount": "2.00",
+     "checkNumber": "CHK-72",
+     "paymentStatus": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L32",
+   "title": "Issue, amount=NaN",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "NaN Payee",
+     "amount": "NaN",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+    "fields": {
+     "paymentAmount": "NaN",
+     "checkNumber": "CHK-73",
+     "paymentStatus": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L33",
+   "title": "Detail of payment 61 (issued in L14, method wire)",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/detail.do",
+    "form": {
+     "paymentId": "61"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/detail.jsp",
+    "fields": {
+     "detailPaymentId": "61",
+     "detailPaymentClaim": "118",
+     "detailPaymentAmount": "1118.00",
+     "detailPaymentCheck": "CHK-61",
+     "detailPaymentDate": "2019-04-03",
+     "detailPaymentStatus": "ISSUED"
+    },
+    "snippets": {
+     "payeeCell": "<th>Payee</th><td>Live Payee</td>",
+     "methodCell": "<th>Method</th><td>wire</td>"
+    }
+   }
+  },
+  {
+   "id": "L34",
+   "title": "Detail of payment 72 (HTML payee, method ach)",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/detail.do",
+    "form": {
+     "paymentId": "72"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/detail.jsp",
+    "fields": {
+     "detailPaymentId": "72",
+     "detailPaymentClaim": "118",
+     "detailPaymentAmount": "2.00",
+     "detailPaymentCheck": "CHK-72",
+     "detailPaymentDate": "2019-04-03",
+     "detailPaymentStatus": "ISSUED"
+    },
+    "snippets": {
+     "payeeCell": "<th>Payee</th><td>O&#39;Brien &lt;b&gt;&amp;&lt;/b&gt; &quot;Co&quot;</td>",
+     "methodCell": "<th>Method</th><td>ach</td>"
+    }
+   }
+  },
+  {
+   "id": "L35",
+   "title": "Detail, no parameters, now that 61 exists",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/detail.do",
+    "form": {}
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/detail.jsp",
+    "fields": {
+     "detailPaymentId": "61",
+     "detailPaymentClaim": "118",
+     "detailPaymentAmount": "1118.00",
+     "detailPaymentCheck": "CHK-61",
+     "detailPaymentDate": "2019-04-03",
+     "detailPaymentStatus": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L36",
+   "title": "History for claim 118 (ordered by payment id)",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/history.do",
+    "form": {
+     "claimId": "118"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/history.jsp",
+    "fields": {
+     "checkNumber_61": "CHK-61",
+     "paymentAmount_61": "1118.00",
+     "paymentStatus_61": "ISSUED",
+     "checkNumber_62": "CHK-62",
+     "paymentAmount_62": "1118.00",
+     "paymentStatus_62": "ISSUED",
+     "checkNumber_65": "CHK-65",
+     "paymentAmount_65": "1.00",
+     "paymentStatus_65": "ISSUED",
+     "checkNumber_66": "CHK-66",
+     "paymentAmount_66": "-5.00",
+     "paymentStatus_66": "ISSUED",
+     "checkNumber_67": "CHK-67",
+     "paymentAmount_67": "7.00",
+     "paymentStatus_67": "ISSUED",
+     "checkNumber_68": "CHK-68",
+     "paymentAmount_68": "1000.00",
+     "paymentStatus_68": "ISSUED",
+     "checkNumber_69": "CHK-69",
+     "paymentAmount_69": "1118.00",
+     "paymentStatus_69": "ISSUED",
+     "checkNumber_70": "CHK-70",
+     "paymentAmount_70": "5.00",
+     "paymentStatus_70": "ISSUED",
+     "checkNumber_71": "CHK-71",
+     "paymentAmount_71": "1.00",
+     "paymentStatus_71": "ISSUED",
+     "checkNumber_72": "CHK-72",
+     "paymentAmount_72": "2.00",
+     "paymentStatus_72": "ISSUED",
+     "checkNumber_73": "CHK-73",
+     "paymentAmount_73": "NaN",
+     "paymentStatus_73": "ISSUED"
+    },
+    "snippets": {
+     "detailLink": "<a href=\"detail.do?paymentId=61\">",
+     "remittanceLink": "<a href=\"remittance.do?claimId=118\">",
+     "rowOrder": null
+    }
+   }
+  },
+  {
+   "id": "L37",
+   "title": "History, no parameters, after L16 (claim 119)",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/history.do",
+    "form": {}
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/history.jsp",
+    "fields": {
+     "checkNumber_63": "CHK-63",
+     "paymentAmount_63": "12.35",
+     "paymentStatus_63": "ISSUED"
+    },
+    "snippets": {
+     "detailLink": "<a href=\"detail.do?paymentId=61\">",
+     "remittanceLink": "<a href=\"remittance.do?claimId=119\">"
+    }
+   }
+  },
+  {
+   "id": "L38",
+   "title": "History, claimId=abc after L16",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/history.do",
+    "form": {
+     "claimId": "abc"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/history.jsp",
+    "fields": {
+     "checkNumber_63": "CHK-63",
+     "paymentAmount_63": "12.35",
+     "paymentStatus_63": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L39",
+   "title": "Remittance for claim 118",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/remittance.do",
+    "form": {
+     "claimId": "118"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+    "fields": {
+     "remitCheck_61": "CHK-61",
+     "remitDate_61": "2019-04-03",
+     "remitAmount_61": "1118.00",
+     "remitStatus_61": "ISSUED",
+     "remitCheck_62": "CHK-62",
+     "remitDate_62": "2019-04-03",
+     "remitAmount_62": "1118.00",
+     "remitStatus_62": "ISSUED",
+     "remitCheck_65": "CHK-65",
+     "remitDate_65": "2019-04-03",
+     "remitAmount_65": "1.00",
+     "remitStatus_65": "ISSUED",
+     "remitCheck_66": "CHK-66",
+     "remitDate_66": "2019-04-03",
+     "remitAmount_66": "-5.00",
+     "remitStatus_66": "ISSUED",
+     "remitCheck_67": "CHK-67",
+     "remitDate_67": "2019-04-03",
+     "remitAmount_67": "7.00",
+     "remitStatus_67": "ISSUED",
+     "remitCheck_68": "CHK-68",
+     "remitDate_68": "2019-04-03",
+     "remitAmount_68": "1000.00",
+     "remitStatus_68": "ISSUED",
+     "remitCheck_69": "CHK-69",
+     "remitDate_69": "2019-04-03",
+     "remitAmount_69": "1118.00",
+     "remitStatus_69": "ISSUED",
+     "remitCheck_70": "CHK-70",
+     "remitDate_70": "2019-04-03",
+     "remitAmount_70": "5.00",
+     "remitStatus_70": "ISSUED",
+     "remitCheck_71": "CHK-71",
+     "remitDate_71": "2019-04-03",
+     "remitAmount_71": "1.00",
+     "remitStatus_71": "ISSUED",
+     "remitCheck_72": "CHK-72",
+     "remitDate_72": "2019-04-03",
+     "remitAmount_72": "2.00",
+     "remitStatus_72": "ISSUED",
+     "remitCheck_73": "CHK-73",
+     "remitDate_73": "2019-04-03",
+     "remitAmount_73": "NaN",
+     "remitStatus_73": "ISSUED",
+     "remitClaimId": "118",
+     "remitCount": "11",
+     "remitTotal": "NaN"
+    },
+    "snippets": {
+     "rows": null
+    }
+   }
+  },
+  {
+   "id": "L40",
+   "title": "Remittance for claim 119",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/remittance.do",
+    "form": {
+     "claimId": "119"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+    "fields": {
+     "remitCheck_63": "CHK-63",
+     "remitDate_63": "2019-04-03",
+     "remitAmount_63": "12.35",
+     "remitStatus_63": "ISSUED",
+     "remitClaimId": "119",
+     "remitCount": "1",
+     "remitTotal": "12.35"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L41",
+   "title": "Remittance for claim 120 (zero amount payment)",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/remittance.do",
+    "form": {
+     "claimId": "120"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+    "fields": {
+     "remitCheck_64": "CHK-64",
+     "remitDate_64": "2019-04-03",
+     "remitAmount_64": "0.00",
+     "remitStatus_64": "ISSUED",
+     "remitClaimId": "120",
+     "remitCount": "1",
+     "remitTotal": "0.00"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L42",
+   "title": "Settlement save for claim 118 (creates a newer settlement)",
+   "request": {
+    "method": "POST",
+    "path": "/claims/settlement/save.do",
+    "form": {
+     "claimId": "118",
+     "coveredAmount": "3000",
+     "deductible": "250",
+     "depreciation": "0"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/settlement/save.jsp",
+    "fields": {
+     "settlementAmount": "2750.00",
+     "savedBy": "supervisor"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L43",
+   "title": "Issue for claim 118, no amount, after newer settlement",
+   "request": {
+    "method": "POST",
+    "path": "/claims/payment/issue.do",
+    "form": {
+     "claimId": "118",
+     "payeeName": "Latest Payee",
+     "paymentMethod": "CHECK"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+    "fields": {
+     "paymentAmount": "2750.00",
+     "checkNumber": "CHK-74",
+     "paymentStatus": "ISSUED"
+    },
+    "snippets": {}
+   }
+  },
+  {
+   "id": "L44",
+   "title": "Detail of payment 74 (amount from newer settlement)",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/detail.do",
+    "form": {
+     "paymentId": "74"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/detail.jsp",
+    "fields": {
+     "detailPaymentId": "74",
+     "detailPaymentClaim": "118",
+     "detailPaymentAmount": "2750.00",
+     "detailPaymentCheck": "CHK-74",
+     "detailPaymentDate": "2019-04-03",
+     "detailPaymentStatus": "ISSUED"
+    },
+    "snippets": {
+     "payeeCell": "<th>Payee</th><td>Latest Payee</td>",
+     "methodCell": "<th>Method</th><td>CHECK</td>"
+    }
+   }
+  },
+  {
+   "id": "L45",
+   "title": "Detail of payment 73 (amount NaN)",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/detail.do",
+    "form": {
+     "paymentId": "73"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/detail.jsp",
+    "fields": {
+     "detailPaymentId": "73",
+     "detailPaymentClaim": "118",
+     "detailPaymentAmount": "NaN",
+     "detailPaymentCheck": "CHK-73",
+     "detailPaymentDate": "2019-04-03",
+     "detailPaymentStatus": "ISSUED"
+    },
+    "snippets": {
+     "payeeCell": "<th>Payee</th><td>NaN Payee</td>",
+     "methodCell": "<th>Method</th><td>CHECK</td>"
+    }
+   }
+  },
+  {
+   "id": "L46",
+   "title": "Detail of payment 65 (empty payee)",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/detail.do",
+    "form": {
+     "paymentId": "65"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/detail.jsp",
+    "fields": {
+     "detailPaymentId": "65",
+     "detailPaymentClaim": "118",
+     "detailPaymentAmount": "1.00",
+     "detailPaymentCheck": "CHK-65",
+     "detailPaymentDate": "2019-04-03",
+     "detailPaymentStatus": "ISSUED"
+    },
+    "snippets": {
+     "payeeCell": "<th>Payee</th><td></td>",
+     "methodCell": "<th>Method</th><td>CHECK</td>"
+    }
+   }
+  },
+  {
+   "id": "L47",
+   "title": "Remittance for claim 118 at end of run",
+   "request": {
+    "method": "GET",
+    "path": "/claims/payment/remittance.do",
+    "form": {
+     "claimId": "118"
+    }
+   },
+   "response": {
+    "status": 200,
+    "result": "forward /WEB-INF/jsp/payment/remittance.jsp",
+    "fields": {
+     "remitCheck_61": "CHK-61",
+     "remitDate_61": "2019-04-03",
+     "remitAmount_61": "1118.00",
+     "remitStatus_61": "ISSUED",
+     "remitCheck_62": "CHK-62",
+     "remitDate_62": "2019-04-03",
+     "remitAmount_62": "1118.00",
+     "remitStatus_62": "ISSUED",
+     "remitCheck_65": "CHK-65",
+     "remitDate_65": "2019-04-03",
+     "remitAmount_65": "1.00",
+     "remitStatus_65": "ISSUED",
+     "remitCheck_66": "CHK-66",
+     "remitDate_66": "2019-04-03",
+     "remitAmount_66": "-5.00",
+     "remitStatus_66": "ISSUED",
+     "remitCheck_67": "CHK-67",
+     "remitDate_67": "2019-04-03",
+     "remitAmount_67": "7.00",
+     "remitStatus_67": "ISSUED",
+     "remitCheck_68": "CHK-68",
+     "remitDate_68": "2019-04-03",
+     "remitAmount_68": "1000.00",
+     "remitStatus_68": "ISSUED",
+     "remitCheck_69": "CHK-69",
+     "remitDate_69": "2019-04-03",
+     "remitAmount_69": "1118.00",
+     "remitStatus_69": "ISSUED",
+     "remitCheck_70": "CHK-70",
+     "remitDate_70": "2019-04-03",
+     "remitAmount_70": "5.00",
+     "remitStatus_70": "ISSUED",
+     "remitCheck_71": "CHK-71",
+     "remitDate_71": "2019-04-03",
+     "remitAmount_71": "1.00",
+     "remitStatus_71": "ISSUED",
+     "remitCheck_72": "CHK-72",
+     "remitDate_72": "2019-04-03",
+     "remitAmount_72": "2.00",
+     "remitStatus_72": "ISSUED",
+     "remitCheck_73": "CHK-73",
+     "remitDate_73": "2019-04-03",
+     "remitAmount_73": "NaN",
+     "remitStatus_73": "ISSUED",
+     "remitCheck_74": "CHK-74",
+     "remitDate_74": "2019-04-03",
+     "remitAmount_74": "2750.00",
+     "remitStatus_74": "ISSUED",
+     "remitClaimId": "118",
+     "remitCount": "12",
+     "remitTotal": "NaN"
+    },
+    "snippets": {}
+   }
+  }
+ ],
+ "db": {
+  "note": "Read-only JDBC probe (tools/spec/PayDbRead.java) on target/db/northstar after Jetty stopped, at the end of the run above. Payee and method are shown in [brackets] to expose empty strings and case.",
+  "columns": "payment_id | claim_id | settlement_id | [payee_name] | amount | [payment_method] | check_number | issued_date | status",
+  "rows": [
+   "61 | 118 | 118 | [Live Payee] | 1118.0E0 | [wire] | CHK-61 | 2019-04-03 | ISSUED",
+   "62 | 118 | 118 | [Second Payee] | 1118.0E0 | [CHECK] | CHK-62 | 2019-04-03 | ISSUED",
+   "63 | 119 | 119 | [Third Payee] | 12.345E0 | [CHECK] | CHK-63 | 2019-04-03 | ISSUED",
+   "64 | 120 | 120 | [Zero Payee] | 0.0E0 | [CHECK] | CHK-64 | 2019-04-03 | ISSUED",
+   "65 | 118 | 118 | [] | 1.0E0 | [CHECK] | CHK-65 | 2019-04-03 | ISSUED",
+   "66 | 118 | 118 | [Negative Payee] | -5.0E0 | [CHECK] | CHK-66 | 2019-04-03 | ISSUED",
+   "67 | 118 | 118 | [Get Payee] | 7.0E0 | [CHECK] | CHK-67 | 2019-04-03 | ISSUED",
+   "68 | 118 | 118 | [Sci Payee] | 1000.0E0 | [CHECK] | CHK-68 | 2019-04-03 | ISSUED",
+   "69 | 118 | 118 | [Comma Payee] | 1118.0E0 | [CHECK] | CHK-69 | 2019-04-03 | ISSUED",
+   "70 | 118 | 118 | [Space Payee] | 5.0E0 | [CHECK] | CHK-70 | 2019-04-03 | ISSUED",
+   "71 | 118 | 118 | [QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ] | 1.0E0 | [NNNNNNNNNNNNNNNNNNNN] | CHK-71 | 2019-04-03 | ISSUED",
+   "72 | 118 | 118 | [O'Brien <b>&</b> \"Co\"] | 2.0E0 | [ach] | CHK-72 | 2019-04-03 | ISSUED",
+   "73 | 118 | 118 | [NaN Payee] | 0E0/0E0 | [CHECK] | CHK-73 | 2019-04-03 | ISSUED",
+   "74 | 118 | 121 | [Latest Payee] | 2750.0E0 | [CHECK] | CHK-74 | 2019-04-03 | ISSUED",
+   "count=74 max=74",
+   "SETTLEMENT 118 claim 118 amount 1118.0E0",
+   "SETTLEMENT 119 claim 119 amount 0.0E0",
+   "SETTLEMENT 120 claim 120 amount 0.0E0",
+   "SETTLEMENT 121 claim 118 amount 2750.0E0",
+   "claim118 count=12"
+  ]
+ }
+}
