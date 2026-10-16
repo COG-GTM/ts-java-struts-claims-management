@@ -73,6 +73,7 @@ def reset(base, precondition):
     """Rebuild the service database: seed plus one precondition script."""
     query = urllib.parse.urlencode({"precondition": precondition})
     req = urllib.request.Request(base + "/parity/reset?" + query, data=b"", method="POST")
+    req.add_header("X-Parity-Reset", "1")
     try:
         with urllib.request.urlopen(req) as response:
             response.read()

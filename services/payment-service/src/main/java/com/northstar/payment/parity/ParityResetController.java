@@ -26,12 +26,16 @@ import org.springframework.web.bind.annotation.RestController;
  * the legacy schema.sql and seed.sql, then runs one explicit precondition
  * script from parity/preconditions/payment, so each parity scenario states
  * the database it starts from instead of inheriting the previous scenario's.
- * It is absent without that profile and answers only loopback callers (the
- * parity scripts run on the same machine), since it erases issued payments.
+ * It is absent without that profile and, since it erases issued payments,
+ * answers only loopback callers that send the {@value #RESET_HEADER} header:
+ * an HTML form cannot set that header and a cross-site script cannot send it
+ * without a CORS preflight, which the service does not allow.
  */
 @RestController
 @Profile("parity")
 public class ParityResetController {
+
+    static final String RESET_HEADER = "X-Parity-Reset";
 
     private static final Pattern SCRIPT_NAME = Pattern.compile("[A-Za-z0-9_-]+\\.sql");
 
@@ -50,7 +54,7 @@ public class ParityResetController {
     @PostMapping("/parity/reset")
     public ResponseEntity<Map<String, String>> reset(HttpServletRequest request,
             @RequestParam(required = false) String precondition) {
-        if (!isLoopback(request.getRemoteAddr())) {
+        if (!isLoopback(request.getRemoteAddr()) || request.getHeader(RESET_HEADER) == null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
