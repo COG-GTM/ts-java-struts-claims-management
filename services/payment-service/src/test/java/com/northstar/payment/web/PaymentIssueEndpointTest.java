@@ -198,7 +198,7 @@ class PaymentIssueEndpointTest {
     }
 
     /**
-     * Rules: PAY-R05 (v2), PAY-R13.
+     * Rules: PAY-R05 (v2).
      * CHG-002: 1500.00 for claim 119, whose latest settlement is 121 at
      * 1000.00, is answered with status 200, the issue screen, no fields and
      * the one validation key payment.amount.exceedsSettlement. No PAYMENT row
@@ -229,8 +229,8 @@ class PaymentIssueEndpointTest {
     /**
      * Rules: PAY-R05 (v2).
      * CHG-002 compares the parsed amount, unrounded, with the settlement
-     * amount: 1000.001 is above 1000.00 and is rejected, although it would
-     * print as 1000.00 (PAY-R27).
+     * amount: 1000.001 is above 1000.00 and is rejected, although the money
+     * format would print it as 1000.00.
      */
     @Test
     @Order(8)
