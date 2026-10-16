@@ -13,7 +13,7 @@ SPEC-PAY-001) the row is assembled from:
   (v1)``;
 * the tests whose javadoc cites the rule, under ``src/test`` and
   ``services/*/src/test``;
-* the transcripts mapped to the rule in ``parity/routes.json``;
+* the transcripts and live scenarios mapped to the rule in ``parity/routes.json``;
 * the parity verdict of each of those transcripts, from ``parity/report.json``
   (written by ``make parity``);
 * the ``docs/changes/CHG-nnn`` records that name the rule.
@@ -45,7 +45,8 @@ SPEC_NAME = re.compile(r"^SPEC-([A-Z]+)-\d+\.md$")
 OUTPUT = os.path.join("docs", "TRACEABILITY.md")
 
 GENERATED = [OUTPUT, os.path.join("parity", "report.md"),
-             os.path.join("parity", "report.json")]
+             os.path.join("parity", "report.json"),
+             os.path.join("parity", "report.html")]
 SEARCHED = ["docs", "parity", "services", "src", "tools", "Makefile"]
 
 # "SETTLE-R06", "SETTLE-R06 (v2)", "SETTLE-R06 (v1, superseded by v2)",
@@ -199,8 +200,14 @@ def tests_for(rule, citations):
 
 
 def transcripts_for(rule, routes):
+    """Scenarios mapped to the rule: the settlement transcripts of
+    ``transcript_rules`` and the payment scenarios of ``payment_scenarios``
+    (each a transcript or a live request of SPEC-PAY-001-live.json)."""
+    mapped = dict(routes.get("transcript_rules", {}))
+    for scenario in routes.get("payment_scenarios", []):
+        mapped.setdefault(scenario["scenario"], scenario["rules"])
     found = []
-    for scenario, cited in sorted(routes.get("transcript_rules", {}).items()):
+    for scenario, cited in sorted(mapped.items()):
         if any(refers_to(entry, rule) for entry in cited):
             found.append(scenario)
     return found

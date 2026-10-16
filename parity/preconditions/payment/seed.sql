@@ -1,0 +1,2 @@
+-- The legacy seed as loaded from src/main/resources/db/seed.sql: 60 PAYMENT
+-- rows, settlement 119 (0.00) for claim 119. Nothing to add.

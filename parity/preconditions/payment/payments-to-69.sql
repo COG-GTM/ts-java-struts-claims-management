@@ -1,0 +1,12 @@
+-- docs/specs/SPEC-PAY-001-live.json db_after.payment_rows_after_seed:
+-- settlement 121 and payments 61 to 69 as the live proof left them.
+INSERT INTO SETTLEMENT VALUES (121, 119, 5000, 500, 0, FALSE, 1000, 'supervisor', '2019-04-01');
+INSERT INTO PAYMENT VALUES (61, 119, 119, 'Reserved Claimant', 0.0E0, 'CHECK', 'CHK-61', '2019-04-03', 'ISSUED');
+INSERT INTO PAYMENT VALUES (62, 119, 121, 'Reserved Claimant', 1000.0E0, 'CHECK', 'CHK-62', '2019-04-03', 'ISSUED');
+INSERT INTO PAYMENT VALUES (63, 119, 121, 'Reserved Claimant', 1000.0E0, 'CHECK', 'CHK-63', '2019-04-03', 'ISSUED');
+INSERT INTO PAYMENT VALUES (64, 119, 121, 'Reserved Claimant', -250.0E0, 'CHECK', 'CHK-64', '2019-04-03', 'ISSUED');
+INSERT INTO PAYMENT VALUES (65, 119, 121, 'Reserved Claimant', 1.005E0, 'CHECK', 'CHK-65', '2019-04-03', 'ISSUED');
+INSERT INTO PAYMENT VALUES (66, 119, 121, 'Reserved Claimant', 5000.0E0, 'CHECK', 'CHK-66', '2019-04-03', 'ISSUED');
+INSERT INTO PAYMENT VALUES (67, 119, 121, 'Reserved Claimant', CAST('NaN' AS DOUBLE), 'CHECK', 'CHK-67', '2019-04-03', 'ISSUED');
+INSERT INTO PAYMENT VALUES (68, 119, 121, 'Reserved Claimant', 1000.0E0, 'CHECK', 'CHK-68', '2019-04-03', 'ISSUED');
+INSERT INTO PAYMENT VALUES (69, 119, 121, 'Reserved Claimant', 10.0E0, 'CHECK', 'CHK-69', '2019-04-03', 'ISSUED');
