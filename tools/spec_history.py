@@ -35,6 +35,7 @@ Usage: python3 tools/spec_history.py [--ref BRANCH]  (see `make spec-history`)
 """
 
 import argparse
+import datetime
 import glob
 import html
 import json
@@ -162,13 +163,16 @@ def split_outside_parentheses(text):
 def spec_commits():
     """Every commit on the current branch that touched the spec, oldest first."""
     log = git("log", "--no-merges", "--topo-order", "--reverse",
-              "--format=%H%x1f%h%x1f%aI%x1f%an%x1f%s%x1f%(trailers:key=Co-authored-by,valueonly,separator=%x1e)",
+              "--format=%H%x1f%h%x1f%at%x1f%an%x1f%s%x1f%(trailers:key=Co-authored-by,valueonly,separator=%x1e)",
               "--", SPEC)
     commits = []
     for record in log.splitlines():
         if not record.strip():
             continue
-        sha, short, date, author, subject, trailers = record.split("\x1f")
+        sha, short, stamp, author, subject, trailers = record.split("\x1f")
+        # Formatted here, not by git: git's %aI writes "+00:00" or "Z" for UTC
+        # depending on its version, which would make the output differ by machine.
+        date = datetime.datetime.fromtimestamp(int(stamp), datetime.timezone.utc).isoformat()
         coauthors = [name.split("<")[0].strip() for name in trailers.split("\x1e") if name.strip()]
         commits.append({"sha": sha, "short": short, "date": date[:10],
                         "datetime": date, "author": author,

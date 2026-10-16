@@ -28,4 +28,4 @@ jobs:
       - name: Regenerate the traceability matrix and the spec history
         run: make traceability spec-history
       - name: Verify the parity report, the traceability matrix and the spec history are current
-        run: git diff --exit-code parity/report.md parity/report.json docs/TRACEABILITY.md docs/specs/SPEC-SETTLE-001-history.md
+        run: git diff --exit-code parity/report.md parity/report.json docs/TRACEABILITY.md docs/specs/SPEC-SETTLE-001-history.md docs/specs/SPEC-SETTLE-001-history.html
