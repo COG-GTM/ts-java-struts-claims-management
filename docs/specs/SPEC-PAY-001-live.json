@@ -314,7 +314,7 @@
       "purpose": "Sign in",
       "request": {
         "form": {
-          "password": "supervisor",
+          "password": "***",
           "username": "supervisor"
         },
         "method": "POST",
@@ -1628,7 +1628,7 @@
       "purpose": "Sign in as an adjuster",
       "request": {
         "form": {
-          "password": "legacy7",
+          "password": "***",
           "username": "adjuster7"
         },
         "method": "POST",

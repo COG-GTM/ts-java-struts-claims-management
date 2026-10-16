@@ -119,8 +119,14 @@ def rules_and_history():
     return rules, history
 
 
+# Spec twins and live-proof captures are generated from the spec: a refresh of
+# them is not a change to any rule.
+GENERATED_GLOBS = ["docs/specs/*.html", "docs/specs/*-live.json"]
+
+
 def searched_paths():
-    return SEARCHED + [":(exclude)" + path for path in GENERATED]
+    return (SEARCHED + [":(exclude)" + path for path in GENERATED]
+            + [":(exclude,glob)" + pattern for pattern in GENERATED_GLOBS])
 
 
 def last_commit(rule):

@@ -7,7 +7,12 @@ rows read-only with tools/spec/PayDbRead.java, and writes everything to
 docs/specs/SPEC-PAY-001-live.json. Each step is quoted by id (L01, L02, ...)
 from the spec. Re-running from the seed writes the same bytes.
 
-Usage: python3 tools/spec/pay_live_proof.py  (see `make payment-spec-proof`)
+Passwords sent to /login.do are recorded as "***".
+
+Usage: python3 tools/spec/pay_live_proof.py           (make payment-spec-proof)
+       python3 tools/spec/pay_live_proof.py --check   (make payment-spec-check)
+--check replays the same requests but compares the result with the committed
+file instead of overwriting it, and exits 1 when legacy behaviour moved.
 """
 
 import http.cookiejar
@@ -176,7 +181,12 @@ def raw_markup(body, needle):
     return body[index: index + 120] if index >= 0 else ""
 
 
+def recorded(form):
+    return {k: ("***" if k == "password" else v) for k, v in form.items()}
+
+
 def main():
+    check = "--check" in sys.argv[1:]
     capture.reset_database()
     process = capture.start_server()
     steps = []
@@ -195,7 +205,7 @@ def main():
             row = {
                 "id": step_id, "purpose": purpose, "actor": key,
                 "request": {"method": method, "path": "/claims" + path,
-                            "form": form},
+                            "form": recorded(form)},
                 "response": {
                     "status": code, "location": location,
                     "result": capture.result(body, code, location),
@@ -224,9 +234,23 @@ def main():
         "steps": steps,
         "db_after": json.loads(db.decode("utf-8")),
     }
+    text = json.dumps(out, indent=2, sort_keys=True) + "\n"
+    if check:
+        with open(OUTPUT, encoding="utf-8") as handle:
+            committed = json.load(handle)
+        moved = [s["id"] for s, c in zip(out["steps"], committed["steps"]) if s != c]
+        if len(out["steps"]) != len(committed["steps"]):
+            moved.append("step count")
+        if out["db_after"] != committed["db_after"]:
+            moved.append("db_after")
+        if moved:
+            raise SystemExit("legacy payment behaviour differs from %s: %s"
+                             % (os.path.relpath(OUTPUT, ROOT), ", ".join(moved)))
+        print("%s matches the legacy app (%d steps)"
+              % (os.path.relpath(OUTPUT, ROOT), len(out["steps"])))
+        return
     with open(OUTPUT, "w", encoding="utf-8") as handle:
-        json.dump(out, handle, indent=2, sort_keys=True)
-        handle.write("\n")
+        handle.write(text)
     print("wrote %s (%d steps)" % (os.path.relpath(OUTPUT, ROOT), len(steps)))
 
 
