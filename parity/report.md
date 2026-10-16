@@ -19,7 +19,7 @@ Scenarios listed under `approved_differences` in `parity/routes.json` are
 judged against their `docs/changes/CHG-nnn` record and reported as CHANGED,
 and still fail on anything the record does not approve.
 
-51 scenarios: 50 PASS, 1 CHANGED, 0 FAIL.
+52 scenarios: 49 PASS, 3 CHANGED, 0 FAIL.
 
 | Scenario | Legacy behaviour | Verdict | Difference |
 | --- | --- | --- | --- |
@@ -43,7 +43,7 @@ and still fail on anything the record does not approve.
 | `payment_remittance_claim_fallback` | Remittance, claimId=abc falls back to 119 | PASS | - |
 | `payment_issue_amount_omitted` | Issue, no amount: falls back to settlement amount | PASS | - |
 | `payment_issue_amount_unparseable` | Issue, amount=abc: falls back to settlement amount | PASS | - |
-| `payment_issue_claim_fallback_unrounded` | Issue, claimId=abc falls back to 119; amount 12.345 | PASS | - |
+| `payment_issue_claim_fallback_unrounded` | Issue, claimId=abc falls back to 119; amount 12.345 | CHANGED (CHG-002) | Live step L16 issued 12.345 to claim 119 whose newest settlement (the seeded 119) is 0.00; under the CHG-002 cap the service rejects it, writes no payment 63 and consumes no id. The claimId fallback (PAY-R04) and unrounded storage (PAY-R09) the step proved stay covered by PaymentIssueEndpointTest.unparseableClaimIdIs119AndAmountIsStoredUnrounded |
 | `payment_issue_zero_settlement` | Issue, claim 120 (settlement amount 0), no amount | PASS | - |
 | `payment_issue_no_settlement` | Issue for claim without a settlement | PASS | - |
 | `payment_issue_missing_payee` | Issue without payeeName | PASS | - |
@@ -74,6 +74,7 @@ and still fail on anything the record does not approve.
 | `payment_detail_nan` | Detail of payment 73 (amount NaN) | PASS | - |
 | `payment_detail_empty_payee` | Detail of payment 65 (empty payee) | PASS | - |
 | `payment_remittance_final` | Remittance for claim 118 at end of run | PASS | - |
+| `payment_issue_over_settlement` | CHG-002: issue 1500.00 for claim 119 whose newest settlement is 1000.00 - legacy issues payment 61 (CHK-61, ISSUED), the service rejects the amount | CHANGED (CHG-002) | An amount above the claim's newest settlement amount is a validation error instead of an issued payment; no row written, no payment_id consumed |
 
 Status class: the legacy error path forwards to `error.jsp` with a 200;
 ADR-001:51,84 and ADR-002 replace that forward with the equivalent error

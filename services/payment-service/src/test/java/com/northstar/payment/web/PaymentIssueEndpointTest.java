@@ -21,7 +21,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Endpoint tests for /payment/issue against the seeded fixture (payments 1-60,
- * settlements 118/119/120 with amounts 1118/0/0). Tests run in order because
+ * settlements 118/119/120 with amounts 1118/0/0) plus, from the first test on,
+ * the state the capture had when transcripts/payment_issue.json was recorded:
+ * settlement 121 for claim 119 at 1000.00
+ * (parity/preconditions/payment/capture-state.sql). Tests run in order because
  * every issue allocates the next payment_id.
  */
 @SpringBootTest
@@ -44,12 +47,15 @@ class PaymentIssueEndpointTest {
     /**
      * Rules: PAY-R02, PAY-R14, PAY-R15, PAY-R16, PAY-R17 (v1 of each).
      * Transcript: payment_issue — 1000.00 for claim 119 becomes payment 61,
-     * CHK-61, ISSUED, and the row carries claim 119, settlement 119, issued
+     * CHK-61, ISSUED, and the row carries claim 119, settlement 121 (the one
+     * settlement_save wrote before the capture issued; capture-state.sql), issued
      * 2019-04-03 (src/main/java/com/northstar/claims/web/PaymentIssueAction.java:22-43).
      */
     @Test
     @Order(1)
     void issueWritesPayment61() throws Exception {
+        // parity/preconditions/payment/capture-state.sql: claim 119's newest settlement is 1000.00
+        jdbc.update("insert into SETTLEMENT values (121, 119, 5000, 500, 0, TRUE, 1000, 'supervisor', '2019-04-01')");
         mvc.perform(post("/payment/issue")
                         .param("claimId", "119")
                         .param("payeeName", "Reserved Claimant")
@@ -64,7 +70,7 @@ class PaymentIssueEndpointTest {
                 .andExpect(jsonPath("$.fields.paymentStatus").value("ISSUED"));
         Map<String, Object> row = jdbc.queryForMap("select * from PAYMENT where payment_id = 61");
         assertThat(row.get("CLAIM_ID")).isEqualTo(119);
-        assertThat(row.get("SETTLEMENT_ID")).isEqualTo(119);
+        assertThat(row.get("SETTLEMENT_ID")).isEqualTo(121);
         assertThat(row.get("PAYEE_NAME")).isEqualTo("Reserved Claimant");
         assertThat(row.get("AMOUNT")).isEqualTo(1000.0);
         assertThat(row.get("PAYMENT_METHOD")).isEqualTo("CHECK");
@@ -263,14 +269,63 @@ class PaymentIssueEndpointTest {
                 .andExpect(jsonPath("$.fields").isEmpty())
                 .andExpect(jsonPath("$.errors").isEmpty());
         assertThat(paymentCount()).isEqualTo(before);
-        jdbc.update("insert into SETTLEMENT values (121, 118, 3000, 250, 0, FALSE, 2750, 'supervisor', '2019-04-01')");
+        jdbc.update("insert into SETTLEMENT values (122, 118, 3000, 250, 0, FALSE, 2750, 'supervisor', '2019-04-01')");
         mvc.perform(post("/payment/issue").param("claimId", "118").param("payeeName", "Latest Payee")
                         .param("paymentMethod", "CHECK"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fields.paymentAmount").value("2750.00"));
         Map<String, Object> row = jdbc.queryForMap(
                 "select settlement_id, amount from PAYMENT where payment_id = (select max(payment_id) from PAYMENT)");
-        assertThat(row.get("SETTLEMENT_ID")).isEqualTo(121);
+        assertThat(row.get("SETTLEMENT_ID")).isEqualTo(122);
         assertThat(row.get("AMOUNT")).isEqualTo(2750.0);
+    }
+
+    /**
+     * Rule: PAY-R07 (v2), approved by docs/changes/CHG-002-payment-exceeds-settlement.md.
+     * Precondition as parity/preconditions/payment/chg-002-settlement-1000.sql:
+     * claim 119's newest settlement is 121 at 1000.00 (inserted by the first test,
+     * the same row), not the seeded 0.00. Legacy "Before" (CHG-002 record): 1500.00 is issued
+     * as payment 61. Service: 1500.00 and 1000.01 are rejected with status 200,
+     * the issue screen, no fields and exactly one error
+     * {@code payment.amount.exceedsSettlement}; no row is written and the next
+     * payment_id is not consumed. 1000.00 (equal), an omitted amount (PAY-R06
+     * fallback) and NaN (PAY-R08) are still issued.
+     */
+    @Test
+    @Order(9)
+    void amountAboveTheNewestSettlementIsRejectedWithoutConsumingAnId() throws Exception {
+        assertThat(jdbc.queryForObject(
+                "select settlement_amount from SETTLEMENT where claim_id = 119 order by settlement_id desc limit 1",
+                Double.class)).isEqualTo(1000.0);
+        int before = paymentCount();
+        int maxBefore = jdbc.queryForObject("select max(payment_id) from PAYMENT", Integer.class);
+        for (String over : new String[] {"1500.00", "1000.01"}) {
+            mvc.perform(post("/payment/issue").param("claimId", "119").param("payeeName", "Reserved Claimant")
+                            .param("amount", over).param("paymentMethod", "CHECK"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.screen").value("issue"))
+                    .andExpect(jsonPath("$.fields").isEmpty())
+                    .andExpect(jsonPath("$.errors[0]").value("payment.amount.exceedsSettlement"))
+                    .andExpect(jsonPath("$.errors.length()").value(1));
+        }
+        assertThat(paymentCount()).isEqualTo(before);
+        assertThat(jdbc.queryForObject("select max(payment_id) from PAYMENT", Integer.class)).isEqualTo(maxBefore);
+        mvc.perform(post("/payment/issue").param("claimId", "119").param("payeeName", "Reserved Claimant")
+                        .param("amount", "1000.00").param("paymentMethod", "CHECK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors").isEmpty())
+                .andExpect(jsonPath("$.fields.paymentAmount").value("1000.00"))
+                .andExpect(jsonPath("$.fields.checkNumber").value("CHK-" + (maxBefore + 1)));
+        mvc.perform(post("/payment/issue").param("claimId", "119").param("payeeName", "Reserved Claimant")
+                        .param("paymentMethod", "CHECK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors").isEmpty())
+                .andExpect(jsonPath("$.fields.paymentAmount").value("1000.00"));
+        mvc.perform(post("/payment/issue").param("claimId", "119").param("payeeName", "Reserved Claimant")
+                        .param("amount", "NaN").param("paymentMethod", "CHECK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors").isEmpty())
+                .andExpect(jsonPath("$.fields.paymentAmount").value("NaN"));
+        assertThat(paymentCount()).isEqualTo(before + 3);
     }
 }

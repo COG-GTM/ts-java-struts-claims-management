@@ -17,6 +17,7 @@ for. report.html is one self-contained file with no network dependency.
 import html
 import json
 import os
+import re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 REPORT_JSON = os.path.join(ROOT, "parity", "report.json")
@@ -193,9 +194,13 @@ details.text pre { max-height: 30em; }
   var verdictOf = function (row) { return row.verdict.split(' ')[0]; };
   var sliceOf = function (row) { return row.slice || row.scenario.split('_')[0]; };
   var ruleLink = function (rule) {
-    var family = rule.split('-R')[0];
-    var spec = specs[family];
-    return spec ? '<a href="../' + spec + '"><code>' + esc(rule) + '</code></a>' : '<code>' + esc(rule) + '</code>';
+    var m = rule.match(/^((\w+)-R\d+)(?:\s*\((v\d+)\))?/);
+    var spec = m ? specs[m[2]] : undefined;
+    if (!spec) return '<code>' + esc(rule) + '</code>';
+    // The spec's HTML twin anchors the current text of a rule at #PAY-R07 and a
+    // superseded version at #PAY-R07-v1; a bare .md target ignores the anchor.
+    var anchor = m[1] + (m[3] && spec.html && m[3] !== spec.current[m[1]] ? '-' + m[3] : '');
+    return '<a href="../' + esc(spec.path) + '#' + esc(anchor) + '" title="' + esc(m[1] + (m[3] ? ' ' + m[3] : '') + ' in ' + spec.path) + '"><code>' + esc(rule) + '</code></a>';
   };
   var summary = document.getElementById('summary');
   var counts = {PASS: 0, CHANGED: 0, FAIL: 0};
@@ -312,8 +317,23 @@ details.text pre { max-height: 30em; }
 """
 
 
+def spec_link(spec_path):
+    """Where a rule id links to: the spec's self-contained HTML twin when it
+    exists (its anchors are #<id> for the current version and #<id>-v<n> for a
+    superseded one, as tools/spec/build_*_spec_html.py writes them), else the
+    Markdown. ``current`` maps each rule id to its newest version so the report
+    can tell which anchor a qualified mention such as "PAY-R07 (v2)" needs."""
+    html = spec_path[:-3] + ".html"
+    current = {}
+    with open(os.path.join(ROOT, spec_path), encoding="utf-8") as handle:
+        for match in re.finditer(r"^\*\*(\w+-R\d+) \((v\d+)", handle.read(), re.M):
+            current[match.group(1)] = match.group(2)
+    exists = os.path.exists(os.path.join(ROOT, html))
+    return {"path": html if exists else spec_path, "html": exists, "current": current}
+
+
 def write_html(rows):
-    specs = {family_of(entry[5]): entry[5] for entry in SLICES}
+    specs = {family_of(entry[5]): spec_link(entry[5]) for entry in SLICES}
     data = json.dumps(rows, sort_keys=True, ensure_ascii=False).replace("</", "<\\/")
     page = HTML_TEMPLATE.replace("__DATA__", data).replace("__SPECS__", json.dumps(specs, sort_keys=True))
     with open(REPORT_HTML, "w", encoding="utf-8") as handle:

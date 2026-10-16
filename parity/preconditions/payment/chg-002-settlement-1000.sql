@@ -1,0 +1,17 @@
+-- Database precondition of the parity scenario payment_issue_over_settlement
+-- (CHG-002, PAY-R07 v2), stated on its own so the scenario does not depend on
+-- capture-state.sql or on the order the scenarios run in.
+--
+-- The legacy seed gives claim 119 settlement 119 with settlement_amount 0, so a
+-- cap test against the seed alone would reject every positive amount. The
+-- legacy "Before" run recorded in docs/changes/CHG-002-payment-exceeds-settlement.md
+-- first saved a new settlement for claim 119 (POST /claims/settlement/save.do,
+-- coveredAmount 5000.00, deductible 500.00, depreciation 0.00, capped at the
+-- 1000 policy limit of policy 9001: settlement_amount 1000.00, savedBy
+-- supervisor, settlement_id 121 = max 120 + 1, calculated_date the literal
+-- 2019-04-01) and then issued 1500.00 against it. This row puts the service
+-- database in exactly that state before the request.
+--
+-- Applied by POST /parity/reset on the payment service (parity profile) on top
+-- of the legacy schema and seed.
+INSERT INTO SETTLEMENT VALUES (121, 119, 5000, 500, 0, TRUE, 1000, 'supervisor', '2019-04-01');

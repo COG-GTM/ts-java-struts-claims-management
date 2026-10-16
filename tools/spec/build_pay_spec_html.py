@@ -13,7 +13,7 @@ LIVE = os.path.join("docs", "specs", "SPEC-PAY-001-live.json")
 OQ = os.path.join("docs", "specs", "OPEN-QUESTIONS.md")
 TRANSCRIPTS = os.path.join("transcripts")
 
-RULE = re.compile(r"^\*\*(PAY-R\d+) \((v\d+)\)\*\* — (.*)$")
+RULE = re.compile(r"^\*\*(PAY-R\d+) \((v\d+)(, superseded by v\d+)?\)\*\* — (.*)$")
 CITE = re.compile(r"((?:src|docs|tools|transcripts)/[\w./-]+):([\d,-]+)")
 STEP = re.compile(r"\bL\d\d\b")
 DBROW = re.compile(r"db rows? ([\d,\- ]+)")
@@ -35,8 +35,9 @@ def parse_spec(text):
             continue
         match = RULE.match(line)
         if match:
-            current = {"id": match.group(1), "version": match.group(2), "section": section,
-                       "text": match.group(3), "observed": [], "read": []}
+            current = {"id": match.group(1), "version": match.group(2) + (match.group(3) or ""),
+                       "superseded": bool(match.group(3)), "section": section,
+                       "text": match.group(4), "observed": [], "read": [], "approved": []}
             rules.append(current)
             continue
         if current is None:
@@ -44,8 +45,8 @@ def parse_spec(text):
         if line.strip() == "":
             current = None
             continue
-        if line.startswith("Observed:") or line.startswith("Read:"):
-            current["_mode"] = "observed" if line.startswith("Observed:") else "read"
+        if line.startswith("Observed:") or line.startswith("Read:") or line.startswith("Approved:"):
+            current["_mode"] = line.split(":", 1)[0].lower()
             line = line.split(":", 1)[1]
         mode = current.get("_mode")
         if mode:
@@ -56,6 +57,7 @@ def parse_spec(text):
         rule.pop("_mode", None)
         rule["observed"] = " ".join(rule["observed"]).rstrip(";")
         rule["read"] = " ".join(rule["read"]).rstrip(";")
+        rule["approved"] = " ".join(rule["approved"]).rstrip(";")
         rule["text"] = rule["text"].replace("\n", " ")
     return sections, rules
 
@@ -200,16 +202,27 @@ def main():
             evidence += [transcript_html(t) for t in r["transcripts"]]
             if r["db"]:
                 evidence.append(db_html(set(r["db"])))
+            anchor = "%s-%s" % (r["id"], r["version"].split(",")[0]) if r["superseded"] else r["id"]
+            vnum = int(r["version"][1:].split(",")[0])
+            approved = ""
+            if r["approved"]:
+                approved += ('<p class="cite approved">Approved: <a href="../../%s">%s</a>; supersedes '
+                             '<a href="#%s-v%d">%s (v%d)</a>, whose text is the legacy behaviour the monolith keeps.</p>'
+                             % (e(r["approved"]), e(r["approved"]), r["id"], vnum - 1, r["id"], vnum - 1))
+            if r["superseded"]:
+                approved += ('<p class="cite approved">Superseded by <a href="#%s">%s (%s)</a> for the service; '
+                             'this text is the legacy behaviour the monolith keeps.</p>'
+                             % (r["id"], r["id"], r["version"].split("superseded by ")[1]))
             parts.append(
                 '<details class="rule" id="%s" data-status="%s" data-text="%s">'
                 '<summary><span class="rid">%s <small>(%s)</small></span><span class="badge %s">%s</span>'
                 '<span class="short">%s</span></summary>'
-                '<div class="body"><p class="full">%s</p>'
+                '<div class="body"><p class="full">%s</p>%s'
                 '<div class="cols"><div class="col"><h3>Cited source lines</h3><p class="cite">Read: %s</p>%s</div>'
                 '<div class="col"><h3>Proof on the running legacy app</h3><p class="cite">Observed: %s</p>%s</div></div>'
                 '</div></details>' % (
-                    r["id"], r["status"], e(r["text"].lower()), r["id"], r["version"], r["status"], label[r["status"]],
-                    md_inline(r["text"][:140] + ("…" if len(r["text"]) > 140 else "")), md_inline(r["text"]),
+                    anchor, r["status"], e(r["text"].lower()), r["id"], r["version"], r["status"], label[r["status"]],
+                    md_inline(r["text"][:140] + ("…" if len(r["text"]) > 140 else "")), md_inline(r["text"]), approved,
                     md_inline(r["read"]) or "<i>none</i>", "".join(source_html(s) for s in r["sources"]) or "<p class=muted>No source citation.</p>",
                     md_inline(r["observed"]) or "<i>none</i>", "".join(evidence) or "<p class=muted>No transcript or live request.</p>"))
         parts.append("</section>")

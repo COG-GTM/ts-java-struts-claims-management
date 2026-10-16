@@ -1187,24 +1187,31 @@
     {
       "actual": {
         "db_state": {
-          "payment.63.amount": "12.35",
-          "payment.63.settlement_id": "119",
-          "payment.63.stored_amount": "12.345",
-          "payment.count.claim.119": "1"
+          "payment.63.amount": null,
+          "payment.count.claim.119": "0"
         },
-        "errors": [],
-        "fields": {
-          "checkNumber": "CHK-63",
-          "paymentAmount": "12.35",
-          "paymentStatus": "ISSUED"
-        },
+        "errors": [
+          "payment.amount.exceedsSettlement"
+        ],
+        "fields": {},
         "screen": "issue",
         "status": 200
       },
-      "approved_expected": null,
-      "change": null,
+      "approved_expected": {
+        "business_fields": {},
+        "db_state": {
+          "payment.63.amount": null,
+          "payment.count.claim.119": "0"
+        },
+        "screen": "issue",
+        "status": 200,
+        "validation_errors": [
+          "payment.amount.exceedsSettlement"
+        ]
+      },
+      "change": "CHG-002",
       "description": "Issue, claimId=abc falls back to 119; amount 12.345",
-      "difference": "-",
+      "difference": "Live step L16 issued 12.345 to claim 119 whose newest settlement (the seeded 119) is 0.00; under the CHG-002 cap the service rejects it, writes no payment 63 and consumes no id. The claimId fallback (PAY-R04) and unrounded storage (PAY-R09) the step proved stay covered by PaymentIssueEndpointTest.unparseableClaimIdIs119AndAmountIsStoredUnrounded",
       "expected": {
         "business_fields": {
           "checkNumber": "CHK-63",
@@ -1224,7 +1231,7 @@
       "precondition": [
         "live-after-L15.sql"
       ],
-      "record": null,
+      "record": "docs/changes/CHG-002-payment-exceeds-settlement.md",
       "request": {
         "form": {
           "amount": "12.345",
@@ -1254,7 +1261,7 @@
       "source": {
         "observed": "docs/specs/SPEC-PAY-001-live.json step L16"
       },
-      "verdict": "PASS"
+      "verdict": "CHANGED (CHG-002)"
     },
     {
       "actual": {
@@ -3373,6 +3380,84 @@
         "observed": "docs/specs/SPEC-PAY-001-live.json step L47"
       },
       "verdict": "PASS"
+    },
+    {
+      "actual": {
+        "db_state": {
+          "payment.61.amount": null,
+          "payment.count.claim.119": "0"
+        },
+        "errors": [
+          "payment.amount.exceedsSettlement"
+        ],
+        "fields": {},
+        "screen": "issue",
+        "status": 200
+      },
+      "approved_expected": {
+        "business_fields": {},
+        "db_state": {
+          "payment.61.amount": null,
+          "payment.count.claim.119": "0"
+        },
+        "screen": "issue",
+        "status": 200,
+        "validation_errors": [
+          "payment.amount.exceedsSettlement"
+        ]
+      },
+      "change": "CHG-002",
+      "description": "CHG-002: issue 1500.00 for claim 119 whose newest settlement is 1000.00 - legacy issues payment 61 (CHK-61, ISSUED), the service rejects the amount",
+      "difference": "An amount above the claim's newest settlement amount is a validation error instead of an issued payment; no row written, no payment_id consumed",
+      "expected": {
+        "business_fields": {
+          "checkNumber": "CHK-61",
+          "paymentAmount": "1500.00",
+          "paymentStatus": "ISSUED"
+        },
+        "db_state": {
+          "payment.61.amount": "1500.00",
+          "payment.61.settlement_id": "121",
+          "payment.61.status": "ISSUED",
+          "payment.count.claim.119": "1"
+        },
+        "result": "forward /WEB-INF/jsp/payment/issue.jsp",
+        "status": 200,
+        "validation_errors": []
+      },
+      "precondition": [
+        "chg-002-settlement-1000.sql"
+      ],
+      "record": "docs/changes/CHG-002-payment-exceeds-settlement.md",
+      "request": {
+        "form": {
+          "amount": "1500.00",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "path": "/claims/payment/issue.do"
+      },
+      "rules": [
+        "PAY-R07 (v2)"
+      ],
+      "scenario": "payment_issue_over_settlement",
+      "service_request": {
+        "form": {
+          "amount": "1500.00",
+          "claimId": "119",
+          "payeeName": "Reserved Claimant",
+          "paymentMethod": "CHECK"
+        },
+        "method": "POST",
+        "url": "http://localhost:8084/payment/issue"
+      },
+      "slice": "payment",
+      "source": {
+        "observed": "manual run against localhost Jetty on 2026-10-16, recorded request by request in docs/changes/CHG-002-payment-exceeds-settlement.md (Before)"
+      },
+      "verdict": "CHANGED (CHG-002)"
     }
   ]
 }

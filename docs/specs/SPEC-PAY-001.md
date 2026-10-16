@@ -1,6 +1,6 @@
 # SPEC-PAY-001 — Payment issue, history, detail and remittance
 
-Version: 0.1
+Version: 0.2
 
 Scope: the payment issue, history, detail and remittance request flows of the
 claims application (`/claims/payment/*.do`). Every rule below is taken either
@@ -68,10 +68,32 @@ Observed: manual run against localhost Jetty, steps L14, L15, L17, L28, L43;
 Read: src/main/java/com/northstar/claims/web/PaymentIssueAction.java:30-31;
 src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:39-45
 
-**PAY-R07 (v1)** — Anything `Double.parseDouble` accepts is a valid amount:
+**PAY-R07 (v1, superseded by v2)** — Anything `Double.parseDouble` accepts is a valid amount:
 `-5` issues a payment of -5.00, `1e3` issues 1000.00, and ` 5 ` (surrounding
 spaces) issues 5.00. No sign, range or format check is applied.
 Observed: manual run against localhost Jetty, steps L25, L27, L29, db rows 66, 68, 70;
+Read: src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:39-45;
+src/main/java/com/northstar/claims/web/PaymentIssueAction.java:30-31
+
+**PAY-R07 (v2)** — Anything `Double.parseDouble` accepts is still a valid
+amount (`-5`, `1e3`, ` 5 `, and `NaN` per PAY-R08), except that an amount
+strictly greater than the claim's newest `settlement_amount` (the row PAY-R05
+selects) is rejected before the id is allocated and before the insert: status
+200 on the issue screen, no business fields, exactly one validation error, key
+`payment.amount.exceedsSettlement`; no PAYMENT row is written and the next
+`payment_id` is not consumed. An amount equal to the settlement amount, a
+missing or unparseable amount (which falls back to that same settlement amount
+per PAY-R06) and `NaN` (the comparison is false) are still issued. This is a
+deliberate difference from the legacy behaviour of v1, which the monolith
+keeps; it applies to `services/payment-service` only.
+Approved: docs/changes/CHG-002-payment-exceeds-settlement.md;
+Observed: manual run against localhost Jetty on 2026-10-16, recorded request
+by request in docs/changes/CHG-002-payment-exceeds-settlement.md (settlement
+save for claim 119 at 1000.00, then issue 1500.00: the legacy app issues
+payment 61, CHK-61, ISSUED, 1500.00; this is the behaviour the change departs
+from, recorded as CHANGED (CHG-002) in parity/routes.json, scenario
+payment_issue_over_settlement, precondition
+parity/preconditions/payment/chg-002-settlement-1000.sql);
 Read: src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:39-45;
 src/main/java/com/northstar/claims/web/PaymentIssueAction.java:30-31
 
@@ -389,6 +411,7 @@ claim118 count=12
 | PAY-R05 | v1 | Initial rule, version 0.1 |
 | PAY-R06 | v1 | Initial rule, version 0.1 |
 | PAY-R07 | v1 | Initial rule, version 0.1 |
+| PAY-R07 | v2 | Version 0.2: an amount above the claim's newest `settlement_amount` becomes a validation error (status 200, issue screen, no business fields, key `payment.amount.exceedsSettlement`) with no PAYMENT row written and no `payment_id` consumed, per docs/changes/CHG-002-payment-exceeds-settlement.md; equal, missing/unparseable and NaN amounts are still issued; v1 text retained above as the legacy behaviour |
 | PAY-R08 | v1 | Initial rule, version 0.1 |
 | PAY-R09 | v1 | Initial rule, version 0.1 |
 | PAY-R10 | v1 | Initial rule, version 0.1 |

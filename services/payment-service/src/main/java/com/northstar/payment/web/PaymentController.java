@@ -43,6 +43,9 @@ import com.northstar.payment.persistence.StoredPayment;
 @RestController
 public class PaymentController {
 
+    /** PAY-R07 (v2), CHG-002: the single validation key of the amount cap. */
+    static final String AMOUNT_EXCEEDS_SETTLEMENT = "payment.amount.exceedsSettlement";
+
     private final PaymentRepository payments;
     private final SettlementLookupRepository settlements;
 
@@ -66,13 +69,20 @@ public class PaymentController {
         // PAY-R05: PaymentIssueAction.java:23,28 - the newest settlement, or nothing
         ClaimSettlement settlement = settlements.findLatestByClaim(claim)
                 .orElseThrow(() -> new MissingSettlementException(claim));
+        // PAY-R06, PAY-R07, PAY-R08: PaymentIssueAction.java:30-31
+        double paymentAmount = LegacyParameters.decimal(amount, settlement.settlementAmount());
+        // PAY-R07 (v2), CHG-002: service-only cap at the newest settlement amount,
+        // checked before the id is allocated so a rejection consumes no payment_id
+        // and writes no row. Equal amounts and NaN (comparison false) pass as in v1.
+        if (paymentAmount > settlement.settlementAmount()) {
+            return new PaymentResponse("issue", Map.of(), List.of(AMOUNT_EXCEEDS_SETTLEMENT));
+        }
         // PAY-R14: PaymentIssueAction.java:25,33
         int paymentId = payments.nextId();
         StoredPayment payment = new StoredPayment(paymentId, claim, settlement.settlementId(),
                 // PAY-R10: PaymentIssueAction.java:29,32 - stored exactly as sent
                 payeeName,
-                // PAY-R06, PAY-R07, PAY-R08: PaymentIssueAction.java:30-31
-                LegacyParameters.decimal(amount, settlement.settlementAmount()),
+                paymentAmount,
                 paymentMethod,
                 LegacyParameters.checkNumber(paymentId),
                 // PAY-R15: PaymentIssueAction.java:34-35

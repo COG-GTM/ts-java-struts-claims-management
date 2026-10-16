@@ -22,8 +22,10 @@ Extract the payment slice — `/payment/issue`, `/payment/history`,
 `/payment/detail`, `/payment/remittance` — into a single Spring Boot 3.5 /
 Java 21 service at `services/payment-service`, listening on port 8084, built
 the same way as the settlement service, and behaving exactly as SPEC-PAY-001
-says the monolith behaves. No `CHG-nnn` record is approved for this slice, so
-every rule, including the ones that look like defects, is reproduced.
+says the monolith behaves. Every rule, including the ones that look like
+defects, is reproduced unless a record under `docs/changes/CHG-nnn` approves a
+difference; the only such record is CHG-002 (PAY-R07 v2, the amount cap at the
+newest settlement amount).
 
 ### Why this slice next
 
@@ -143,9 +145,14 @@ slices.
 
 Legacy behaviour is reproduced as-is, including behaviour that looks wrong. A
 difference is only allowed when a record under `docs/changes/CHG-nnn` approves
-it; without such a record, the legacy behaviour wins. No such record exists for
-the payment slice, so every payment scenario must be PASS. Legacy oddities that
-are deliberately kept are listed in `docs/KNOWN_LEGACY_QUIRKS.md`.
+it; without such a record, the legacy behaviour wins. One record exists for the
+payment slice, `docs/changes/CHG-002-payment-exceeds-settlement.md` (PAY-R07
+v2): the service rejects an amount above the claim's newest settlement amount,
+which the monolith keeps accepting. Its parity scenario
+`payment_issue_over_settlement` is therefore CHANGED (CHG-002), with its own
+database precondition `parity/preconditions/payment/chg-002-settlement-1000.sql`;
+every other payment scenario must be PASS. Legacy oddities that are deliberately
+kept are listed in `docs/KNOWN_LEGACY_QUIRKS.md`.
 
 ## Consequences
 
