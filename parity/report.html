@@ -994,14 +994,15 @@ document.addEventListener('click', e => {
   const t = e.target.closest('[data-slice],[data-verdict],[data-s],[data-c],[data-change],[data-goto]'); if (!t) return;
   if (t.dataset.slice){ state.slice = t.dataset.slice; filters(); rows(); }
   else if (t.dataset.verdict){ state.verdict = t.dataset.verdict; filters(); rows(); }
-  else if (t.dataset.s){ location.hash = 'scenario=' + t.dataset.s; }
-  else if (t.dataset.c){ location.hash = 'change=' + t.dataset.c; }
-  else if (t.dataset.change){ location.hash = 'change=' + t.dataset.change; }
-  else if (t.dataset.goto){ location.hash = 'scenario=' + t.dataset.goto; }
+  else if (t.dataset.s){ go('scenario=' + t.dataset.s); }
+  else if (t.dataset.c){ go('change=' + t.dataset.c); }
+  else if (t.dataset.change){ go('change=' + t.dataset.change); }
+  else if (t.dataset.goto){ go('scenario=' + t.dataset.goto); }
 });
+function go(hash){ history.replaceState(null, '', '#' + hash); route(); }
 $('q').addEventListener('input', e => { state.q = e.target.value; rows(); });
-$('tab-scenarios').onclick = () => { location.hash = state.sel ? 'scenario=' + state.sel : ''; show('scenarios'); };
-$('tab-changes').onclick = () => { location.hash = 'change=' + (state.change || (D.changes[D.changes.length-1]||{}).change || ''); };
+$('tab-scenarios').onclick = () => go(state.sel ? 'scenario=' + state.sel : '');
+$('tab-changes').onclick = () => go('change=' + (state.change || (D.changes[D.changes.length-1]||{}).change || ''));
 window.addEventListener('hashchange', route);
 chips(); filters(); rows(); changes(); route();
 </script>
