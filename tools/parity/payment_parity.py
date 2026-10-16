@@ -142,15 +142,30 @@ def compare(expected, status, location, body, actual_db):
         checks.append(report.check("links", expected.get("links", []), links,
                                    links == expected.get("links", [])))
     text = expected.get("text")
-    for name, value in sorted(body.get("display", {}).items()):
-        if text is None:
-            continue
-        shown = value == "" or any(value in line for line in text)
-        checks.append(report.check("display " + name, "shown on the legacy page", value, shown))
+    display = body.get("display", {})
+    if text is not None:
+        for name in sorted(set(required_display(result, expected)) | set(display)):
+            if name not in display:
+                checks.append(report.check("display " + name, "shown on the legacy page",
+                                           "(missing)", False))
+                continue
+            value = display[name]
+            shown = value == "" or any(value in line for line in text)
+            checks.append(report.check("display " + name, "shown on the legacy page", value, shown))
     for key, value in sorted(expected.get("db_state", {}).items()):
         checks.append(report.check("db " + key, value, actual_db.get(key), actual_db.get(key) == value))
     diffs = ["%s %r != %r" % (c["name"], c["actual"], c["expected"]) for c in checks if not c["ok"]]
     return checks, diffs
+
+
+def required_display(result, expected):
+    """Payee and method the legacy page prints outside <ns:field>."""
+    if "/detail.jsp" in result:
+        return ["payeeName", "paymentMethod"]
+    if "/remittance.jsp" in result:
+        return ["payeeName_" + key[len("remitCheck_"):]
+                for key in expected.get("business_fields", {}) if key.startswith("remitCheck_")]
+    return []
 
 
 def scenario(name, description, source, rules, legacy_request, actor, sent, expected, actual, checks,

@@ -61,8 +61,10 @@ The service therefore takes the signed-in user as an explicit `user` parameter
 (the same move ADR-001 made for `savedBy`) and answers 302 with
 `Location: /claims/login.do` when it is missing or empty. Checking who the user
 is stays out of scope: like the legacy filter, the service only checks that
-there is one. Consequence: 8084 is not internet-facing, and putting real
-authentication in front of it is a separate decision.
+there is one. The `user` parameter is not authentication: any caller that
+sends one is treated as signed in. Consequence: 8084 is not internet-facing, and
+putting real authentication in front of it is a separate decision that must be
+made before the service is reachable by anything but the monolith's network.
 
 ### How parity is judged
 
@@ -82,7 +84,8 @@ A payment response is at parity with the legacy one when these match:
 
 `tools/parity/payment_parity.py` replays the requests against the service run
 with the `parity` profile (`make payment-service-run-parity`), which adds
-`/parity/reset`, `/parity/apply` and a select-only `/parity/query`. The live
+`/parity/reset`, `/parity/apply` and a select-only `/parity/query` and binds
+the service to 127.0.0.1. The live
 replay starts from the seed and runs the live steps in their recorded order,
 because ids, check numbers and totals depend on what was issued before. Three
 live steps are setup, not payment behaviour: L02 and L35 sign in (the service
@@ -122,9 +125,18 @@ The service reproduces, on purpose:
 * history always shows the two `detail.do?paymentId=61` links;
 * an unknown payment id on detail is the error screen;
 * the remittance total sums every payment of the claim, so one NaN amount
-  makes it NaN.
+  makes it NaN;
+* money prints with `%.2f` in `Locale.US`, as the settlement service's
+  `FieldFormatter` does: the transcripts and the live proof were captured on an
+  en_US JVM, while the legacy `String.format` follows the host's default locale.
 
-Two writers exist during the transition: the monolith keeps issuing payments
-against the same schema until a cutover decision moves operators to the new
-service. The settlement service remains the only extracted writer of
-`SETTLEMENT`; the payment service only reads it.
+The service's database is its own in-memory copy of the seed, as in ADR-001.
+During the transition it does not see settlements saved through the monolith
+or the settlement service, or payments the monolith issues, and they do not see
+its payments. A payment issued after a new settlement therefore links the
+newest settlement the service knows, not the one just saved. The parity replay
+supplies the L05 settlement row as a precondition for this reason. Pointing the
+payment service, the settlement service and the monolith at one shared
+database is a separate decision that must come before any cutover. The
+settlement service remains the only extracted writer of `SETTLEMENT`; the
+payment service only reads it.
