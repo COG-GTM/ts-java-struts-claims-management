@@ -1,4 +1,4 @@
-.PHONY: build run seed test capture clean service-build service-test service-run parity traceability
+.PHONY: build run seed test capture clean service-build service-test service-run parity traceability payment-spec-proof payment-spec-check payment-spec-html
 
 # Settlement service (ADR-001): Spring Boot 3.5 on Java 21, port 8083.
 SERVICE_DIR = services/settlement-service
@@ -36,6 +36,22 @@ parity:
 # parity/routes.json and parity/report.json. Needs nothing running.
 traceability:
 	python3 tools/traceability.py
+
+# SPEC-PAY-001 live proof: resets the database to the seed, starts the legacy
+# app on 8080 (stop any running one first), replays the numbered requests and
+# writes docs/specs/SPEC-PAY-001-live.json.
+payment-spec-proof:
+	python3 tools/spec/pay_live_proof.py
+
+# Same replay, but fails instead of overwriting when the legacy responses or
+# PAYMENT rows differ from the committed SPEC-PAY-001-live.json.
+payment-spec-check:
+	python3 tools/spec/pay_live_proof.py --check
+
+# Writes the self-contained docs/specs/SPEC-PAY-001.html from the Markdown spec,
+# the live proof, the transcripts and the cited legacy source lines.
+payment-spec-html:
+	python3 tools/spec/build_spec_html.py
 
 clean:
 	mvn -q clean

@@ -2,7 +2,8 @@
 """Generate docs/TRACEABILITY.md from the repository, one row per spec rule.
 
 Nothing in the matrix is typed by hand. For every rule version declared in
-docs/specs/SPEC-SETTLE-001.md the row is assembled from:
+a spec (every ``docs/specs/SPEC-<SLICE>-nnn.md``, for example SPEC-SETTLE-001 and
+SPEC-PAY-001) the row is assembled from:
 
 * the spec version that last changed the rule, from the "Rule history" table of
   the spec;
@@ -21,6 +22,9 @@ A mention without a version (``SETTLE-R05``) belongs to every version of that
 rule; a qualified mention (``SETTLE-R06 (v2)``, ``| SETTLE-R06 | v2 |``) belongs
 to that version only.
 
+A spec may name only its own slice's rule ids: a SPEC-PAY spec that mentions a
+SETTLE rule (or the other way round) stops the run, and with it CI.
+
 The output holds no commit of its own and no timestamp, so running it twice on
 the same commit writes the same bytes. The generated files are excluded from the
 git history search for the same reason: a commit that only refreshes them is not
@@ -36,7 +40,8 @@ import re
 import subprocess
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SPEC = os.path.join("docs", "specs", "SPEC-SETTLE-001.md")
+SPEC_DIR = os.path.join("docs", "specs")
+SPEC_NAME = re.compile(r"^SPEC-([A-Z]+)-\d+\.md$")
 OUTPUT = os.path.join("docs", "TRACEABILITY.md")
 
 GENERATED = [OUTPUT, os.path.join("parity", "report.md"),
@@ -45,9 +50,9 @@ SEARCHED = ["docs", "parity", "services", "src", "tools", "Makefile"]
 
 # "SETTLE-R06", "SETTLE-R06 (v2)", "SETTLE-R06 (v1, superseded by v2)",
 # "| SETTLE-R06 | v2 |": the id, and the version it is qualified with if any.
-MENTION = re.compile(r"(SETTLE-R\d+)[ \t]*[|(,]?[ \t]*(?:v(\d+))?")
-HEADING = re.compile(r"^\*\*(SETTLE-R\d+) \(v(\d+)")
-HISTORY = re.compile(r"^\| (SETTLE-R\d+) \| v(\d+) \| (.*?) \|\s*$")
+MENTION = re.compile(r"\b([A-Z]+-R\d+)[ \t]*[|(,]?[ \t]*(?:v(\d+))?")
+HEADING = re.compile(r"^\*\*([A-Z]+-R\d+) \(v(\d+)")
+HISTORY = re.compile(r"^\| ([A-Z]+-R\d+) \| v(\d+) \| (.*?) \|\s*$")
 SPEC_VERSION = re.compile(r"version (\d+\.\d+)", re.I)
 JAVADOC_END = re.compile(r"\*/")
 MEMBER = re.compile(r"(\w+)\s*\(")
@@ -73,11 +78,34 @@ def git(*args):
     return subprocess.check_output(["git"] + list(args), cwd=ROOT).decode("utf-8")
 
 
+def specs():
+    """(path, slice) of every spec, settlement first so its rows keep their place."""
+    found = []
+    for name in sorted(os.listdir(os.path.join(ROOT, SPEC_DIR))):
+        match = SPEC_NAME.match(name)
+        if match:
+            found.append((os.path.join(SPEC_DIR, name), match.group(1)))
+    return sorted(found, key=lambda spec: (spec[1] != "SETTLE", spec[0]))
+
+
+def require_own_rules(path, slice_name):
+    """A spec names only its own slice's rule ids, not even in prose."""
+    foreign = sorted({rule for rule, unused in mentions(read(path))
+                      if not rule.startswith(slice_name + "-R")})
+    if foreign:
+        raise SystemExit("%s mentions another slice's rule ids: %s"
+                         % (path, ", ".join(foreign)))
+
+
 def rules_and_history():
-    """The rule versions the spec declares, in spec order, and their history."""
+    """The rule versions every spec declares, in spec order, and their history."""
     rules = []
     history = {}
-    for line in read(SPEC).splitlines():
+    lines = []
+    for path, slice_name in specs():
+        require_own_rules(path, slice_name)
+        lines += read(path).splitlines()
+    for line in lines:
         heading = HEADING.match(line)
         if heading:
             rules.append((heading.group(1), heading.group(2)))
@@ -91,8 +119,14 @@ def rules_and_history():
     return rules, history
 
 
+# Spec twins and live-proof captures are generated from the spec: a refresh of
+# them is not a change to any rule.
+GENERATED_GLOBS = ["docs/specs/*.html", "docs/specs/*-live.json"]
+
+
 def searched_paths():
-    return SEARCHED + [":(exclude)" + path for path in GENERATED]
+    return (SEARCHED + [":(exclude)" + path for path in GENERATED]
+            + [":(exclude,glob)" + pattern for pattern in GENERATED_GLOBS])
 
 
 def last_commit(rule):
@@ -213,7 +247,7 @@ def main():
         spec_version, change = history.get(rule, ("-", ""))
         scenarios = transcripts_for(rule, routes)
         rows.append({
-            "rule": "SETTLE-R%s (v%s)" % (rule[0].split("-R")[1], rule[1]),
+            "rule": "%s (v%s)" % rule,
             "spec_version": spec_version,
             "history": change or "-",
             "commit": last_commit(rule),
@@ -233,8 +267,9 @@ def main():
         "`parity/routes.json` and `parity/report.json`, and the file is rewritten",
         "byte for byte on every run.",
         "",
-        "One row per rule version of `docs/specs/SPEC-SETTLE-001.md`. *Spec version*",
-        "is the version of the spec that last changed the rule, from its Rule",
+        "One row per rule version of every spec (%s). *Spec version*" % ", ".join(
+            "`%s`" % path.replace(os.sep, "/") for path, unused in specs()),
+        "is the version of that spec that last changed the rule, from its Rule",
         "history row. *Last commit* is the last commit whose changed lines mention",
         "that rule version. *Tests* are the tests whose javadoc cites it, *Transcripts*",
         "the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in",

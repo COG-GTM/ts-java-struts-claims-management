@@ -5,8 +5,8 @@ every cell is read out of the spec, the git history, the tests,
 `parity/routes.json` and `parity/report.json`, and the file is rewritten
 byte for byte on every run.
 
-One row per rule version of `docs/specs/SPEC-SETTLE-001.md`. *Spec version*
-is the version of the spec that last changed the rule, from its Rule
+One row per rule version of every spec (`docs/specs/SPEC-SETTLE-001.md`, `docs/specs/SPEC-PAY-001.md`). *Spec version*
+is the version of that spec that last changed the rule, from its Rule
 history row. *Last commit* is the last commit whose changed lines mention
 that rule version. *Tests* are the tests whose javadoc cites it, *Transcripts*
 the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in
@@ -47,6 +47,26 @@ the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in
 | SETTLE-R29 (v1) | 0.1 | `46337e5` Generate the traceability matrix from the repository, and report parity as JSON | `SettlementSaveEndpointTest#saveRecomputesAndInsertsOneRowForClaim119` | `settlement_save` | settlement_save: PASS | - |
 | SETTLE-R30 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `SettlementDetailEndpointTest#detailForAClaimWithNoSettlementIsEmpty`, `SettlementDetailEndpointTest#detailShowsTheSeededSettlementForClaim119`, `SettlementDetailEndpointTest#detailTakesTheHighestSettlementIdForTheClaim`, `SettlementDetailEndpointTest#detailWithoutAClaimIdDefaultsTo119` | - | - | - |
 | SETTLE-R31 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `LegacyParametersTest#fieldFormattingMatchesTheFieldTag`, `SettlementDetailEndpointTest#detailShowsTheSeededSettlementForClaim119` | - | - | - |
+| PAY-R01 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R02 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R03 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R04 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R05 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R06 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R07 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R08 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R09 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R10 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R11 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R12 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R13 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R14 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R15 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R16 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R17 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R18 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R19 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
+| PAY-R20 (v1) | 0.1 | `e5ccd35` SPEC-PAY-001 v0.1: payment slice spec PAY-R01..PAY-R20 with live legacy proof and interactive HTML | - | - | - | - |
 
 ## Rule history
 
@@ -85,3 +105,23 @@ the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in
 | SETTLE-R29 (v1) | Initial rule, version 0.1 |
 | SETTLE-R30 (v1) | Initial rule, version 0.1 |
 | SETTLE-R31 (v1) | Initial rule, version 0.1 |
+| PAY-R01 (v1) | Initial rule, version 0.1 |
+| PAY-R02 (v1) | Initial rule, version 0.1 |
+| PAY-R03 (v1) | Initial rule, version 0.1 |
+| PAY-R04 (v1) | Initial rule, version 0.1 |
+| PAY-R05 (v1) | Initial rule, version 0.1 |
+| PAY-R06 (v1) | Initial rule, version 0.1 |
+| PAY-R07 (v1) | Initial rule, version 0.1 |
+| PAY-R08 (v1) | Initial rule, version 0.1 |
+| PAY-R09 (v1) | Initial rule, version 0.1 |
+| PAY-R10 (v1) | Initial rule, version 0.1 |
+| PAY-R11 (v1) | Initial rule, version 0.1 |
+| PAY-R12 (v1) | Initial rule, version 0.1 |
+| PAY-R13 (v1) | Initial rule, version 0.1 |
+| PAY-R14 (v1) | Initial rule, version 0.1 |
+| PAY-R15 (v1) | Initial rule, version 0.1 |
+| PAY-R16 (v1) | Initial rule, version 0.1 |
+| PAY-R17 (v1) | Initial rule, version 0.1 |
+| PAY-R18 (v1) | Initial rule, version 0.1 |
+| PAY-R19 (v1) | Initial rule, version 0.1 |
+| PAY-R20 (v1) | Initial rule, version 0.1 |
