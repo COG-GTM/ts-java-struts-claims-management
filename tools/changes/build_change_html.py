@@ -52,7 +52,7 @@ def sections(markdown):
     return title, out
 
 
-def inline(text, spec_links):
+def inline(text, spec_links, scenarios=frozenset()):
     """Escape, then turn citations, rule versions, scenarios and code into links
     and <code>; the order matters so a link is never re-escaped."""
     pieces = []
@@ -69,6 +69,13 @@ def inline(text, spec_links):
             out.append('<a class="cite" href="#src-%s">%s:%s</a>' % (anchor(path, spec), html.escape(path), spec))
             continue
         chunk = html.escape(piece[1])
+        # Scenario links first: the backtick conversion below would otherwise eat the delimiters SCENARIO matches.
+        def scenario_link(match):
+            name = match.group(1)
+            if name not in scenarios:
+                return match.group(0)  # a backticked identifier that only looks like a scenario name
+            return '<a class="scn" href="#scn-%s"><code>%s</code></a>' % (name, name)
+        chunk = SCENARIO.sub(scenario_link, chunk)
         chunk = re.sub(r"`([^`]+)`", r"<code>\1</code>", chunk)
         def rule_link(match):
             slice_name, version = match.group(1), match.group(3)
@@ -76,9 +83,10 @@ def inline(text, spec_links):
             label = match.group(0)
             if not spec:
                 return label
-            return '<a class="rule" href="%s#%s-R%s">%s</a>' % (spec, slice_name, match.group(2), label)
+            # A versioned mention opens that version's card (#PAY-R05-v2); an unversioned one opens the latest.
+            fragment = "%s-R%s" % (slice_name, match.group(2)) + ("-" + version if version else "")
+            return '<a class="rule" href="%s#%s">%s</a>' % (spec, fragment, label)
         chunk = RULE.sub(rule_link, chunk)
-        chunk = SCENARIO.sub(r'<a class="scn" href="#scn-\1">`\1`</a>', chunk).replace("`", "")
         out.append(chunk)
     return "".join(out)
 
@@ -87,19 +95,19 @@ def anchor(path, spec):
     return re.sub(r"[^A-Za-z0-9]", "-", path + "-" + spec)
 
 
-def render_body(lines, spec_links):
+def render_body(lines, spec_links, scenarios=frozenset()):
     out, para, table = [], [], []
 
     def flush():
         if para:
-            out.append("<p>%s</p>" % inline(" ".join(para), spec_links))
+            out.append("<p>%s</p>" % inline(" ".join(para), spec_links, scenarios))
             para.clear()
         if table:
             rows = [r for r in table if not re.match(r"^\|[\s|-]+\|$", r)]
             cells = [[c.strip() for c in r.strip("|").split("|")] for r in rows]
             out.append("<table><thead><tr>%s</tr></thead><tbody>%s</tbody></table>" % (
-                "".join("<th>%s</th>" % inline(c, spec_links) for c in cells[0]),
-                "".join("<tr>%s</tr>" % "".join("<td>%s</td>" % inline(c, spec_links) for c in r) for r in cells[1:])))
+                "".join("<th>%s</th>" % inline(c, spec_links, scenarios) for c in cells[0]),
+                "".join("<tr>%s</tr>" % "".join("<td>%s</td>" % inline(c, spec_links, scenarios) for c in r) for r in cells[1:])))
             table.clear()
 
     items = []
@@ -116,14 +124,14 @@ def render_body(lines, spec_links):
             items[-1] += " " + line.strip()
             continue
         if items and (not line.strip()):
-            out.append("<ul>%s</ul>" % "".join("<li>%s</li>" % inline(i, spec_links) for i in items))
+            out.append("<ul>%s</ul>" % "".join("<li>%s</li>" % inline(i, spec_links, scenarios) for i in items))
             items = []
         if not line.strip():
             flush()
         else:
             para.append(line.strip())
     if items:
-        out.append("<ul>%s</ul>" % "".join("<li>%s</li>" % inline(i, spec_links) for i in items))
+        out.append("<ul>%s</ul>" % "".join("<li>%s</li>" % inline(i, spec_links, scenarios) for i in items))
     flush()
     return "".join(out)
 
@@ -161,10 +169,12 @@ def build(record_path):
         if key not in seen:
             seen.add(key)
             cites.append({"path": key[0], "lines": key[1], "anchor": anchor(*key), "code": excerpt(*key)})
+    parity = parity_rows(rel)
+    scenarios = frozenset(row["scenario"] for row in parity)
     data = {
         "title": title, "record": rel,
-        "sections": [{"heading": h, "html": render_body(b, spec_links)} for h, b in parts],
-        "sources": cites, "parity": parity_rows(rel),
+        "sections": [{"heading": h, "html": render_body(b, spec_links, scenarios)} for h, b in parts],
+        "sources": cites, "parity": parity,
         "report": os.path.relpath(os.path.join(ROOT, "parity", "report.html"), os.path.dirname(record_path)),
     }
     payload = json.dumps(data, sort_keys=True).replace("</", "<\\/")

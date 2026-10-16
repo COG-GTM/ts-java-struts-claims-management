@@ -178,8 +178,11 @@ a { color:var(--ro); }
     panel.appendChild(el("h3", {text: "Live request and response (legacy app, port 8080)"}));
     ev.steps.forEach(function (id) { panel.appendChild(liveBlock(id)); });
     ev.db.forEach(function (k) { panel.appendChild(dbBlock(k)); });
-    return card(rule.id + " (v" + rule.version + ")", rule.id, rule.status, rich(rule.text), panel,
-                [rule.text, rule.observed, rule.read].join(" "));
+    var node = card(rule.id + " (v" + rule.version + ")", rule.id + "-v" + rule.version, rule.status, rich(rule.text), panel,
+                    [rule.text, rule.observed, rule.read].join(" "));
+    node.dataset.rule = rule.id;
+    node.dataset.version = rule.version;
+    return node;
   }
   function questionCard(q) {
     var panel = el("div", {cls: "ev"}, [
@@ -279,6 +282,12 @@ a { color:var(--ro); }
   function openHash() {
     var id = decodeURIComponent(location.hash.slice(1));
     var node = id && document.getElementById(id);
+    if (id && !node) {
+      // An unversioned rule id (#PAY-R05) opens the latest version of that rule.
+      var versions = Array.prototype.slice.call(document.querySelectorAll('section.card[data-rule="' + id + '"]'));
+      versions.sort(function (a, b) { return Number(a.dataset.version) - Number(b.dataset.version); });
+      node = versions[versions.length - 1];
+    }
     if (node) {
       if (node.classList.contains("hidden")) { filter = "All"; query = ""; document.querySelector("input[type=search]").value = ""; update(); }
       toggle(node, true);
