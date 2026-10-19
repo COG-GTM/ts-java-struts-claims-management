@@ -10,15 +10,24 @@ Scenarios listed in `parity/routes.json` are approved differences: they
 are judged against their `docs/changes/CHG-nnn` record and reported as
 CHANGED, and still fail on anything the record does not approve.
 
-| Scenario | Legacy behaviour | Verdict | Difference |
-| --- | --- | --- | --- |
-| `settlement_bad_deductible` | Settlement with a non-numeric deductible | CHANGED (CHG-001) | A non-blank, unparseable deductible is a validation error instead of the error screen |
-| `settlement_blank_deductible` | FNOL settlement with a blank deductible | PASS | - |
-| `settlement_calculate` | Calculate a standard settlement | PASS | - |
-| `settlement_deductible_floor` | Settlement floored when deductible exceeds the loss | PASS | - |
-| `settlement_half_cent` | Settlement using double half-cent rounding | PASS | - |
-| `settlement_policy_cap` | Settlement capped by the policy limit | PASS | - |
-| `settlement_save` | Save the calculated settlement | PASS | - |
+**Coverage** (SPEC-SETTLE-001, 33 rule versions, from the spec, the test javadocs and `parity/routes.json`):
+
+- Rules with at least one parity scenario: 17 / 33.
+- Rules covered only by unit tests: SETTLE-R02 (v1), SETTLE-R03 (v1), SETTLE-R04 (v1), SETTLE-R07 (v1), SETTLE-R08 (v2), SETTLE-R09 (v1), SETTLE-R14 (v1), SETTLE-R15 (v1), SETTLE-R17 (v1), SETTLE-R19 (v1), SETTLE-R23 (v1), SETTLE-R26 (v1), SETTLE-R30 (v1), SETTLE-R31 (v1).
+- Rules with no automated coverage: SETTLE-R08 (v1) (superseded by v2; the current text is covered under that version); SETTLE-R18 (v1) (no parity scenario and no test javadoc cites it).
+- Not exercised live: 14 rule versions (the unit-test-only ones above) have no legacy request replayed against the service; a scenario in `parity/routes.json` closes each.
+
+Verdict source: `automated` = the comparator's PASS/FAIL; `reviewer` = a CHANGED verdict accepted on the strength of its `docs/changes/CHG-nnn` record.
+
+| Scenario | Legacy behaviour | Verdict | Source | Difference |
+| --- | --- | --- | --- | --- |
+| `settlement_bad_deductible` | Settlement with a non-numeric deductible | CHANGED (CHG-001) | reviewer (CHG-001) | A non-blank, unparseable deductible is a validation error instead of the error screen |
+| `settlement_blank_deductible` | FNOL settlement with a blank deductible | PASS | automated | - |
+| `settlement_calculate` | Calculate a standard settlement | PASS | automated | - |
+| `settlement_deductible_floor` | Settlement floored when deductible exceeds the loss | PASS | automated | - |
+| `settlement_half_cent` | Settlement using double half-cent rounding | PASS | automated | - |
+| `settlement_policy_cap` | Settlement capped by the policy limit | PASS | automated | - |
+| `settlement_save` | Save the calculated settlement | PASS | automated | - |
 
 Status class: the legacy error path forwards to `error.jsp` with a 200;
 ADR-001:51,84 replaces that forward with the equivalent error status
@@ -38,44 +47,53 @@ compares what ADR-002 "How parity is judged" calls parity: status class,
 business fields (exact set), display texts and links, validation keys, and
 the PAYMENT rows from 61 up.
 
-| Scenario | Precondition | Legacy behaviour | Rules | Verdict | Difference |
-| --- | --- | --- | --- | --- | --- |
-| `payment_issue` | `settlement-121` | Issue a settlement payment | PAY-R01, PAY-R06, PAY-R07, PAY-R08 | PASS | - |
-| `payment_history` | `transcript-payment-61` | Review payment history | PAY-R14 | PASS | - |
-| `payment_live_L03` | `seed` | Seed state: claim 119 has no payments | PAY-R20 | PASS | - |
-| `payment_live_L04` | `seed` | Amount omitted on the seed: falls back to settlement 119 (0) | PAY-R03, PAY-R04, PAY-R06, PAY-R12 | PASS | - |
-| `payment_live_L06` | `payments-to-61` | Amount omitted: falls back to the newest settlement (1000.00) | PAY-R01, PAY-R03, PAY-R04, PAY-R06, PAY-R08 | PASS | - |
-| `payment_live_L07` | `payments-to-62` | Unparseable amount: falls back to the newest settlement | PAY-R04 | PASS | - |
-| `payment_live_L08` | `payments-to-63` | Negative amount is accepted | PAY-R05 | PASS | - |
-| `payment_live_L09` | `payments-to-64` | Half-cent amount is stored unrounded and displayed with %.2f | PAY-R05 | PASS | - |
-| `payment_live_L10` | `payments-to-65` | Amount above the settlement is accepted | PAY-R05 | PASS | - |
-| `payment_live_L11` | `payments-to-66` | NaN parses as a double and is accepted | PAY-R05 | PASS | - |
-| `payment_live_L12` | `payments-to-67` | Exponent notation parses | PAY-R05 | PASS | - |
-| `payment_live_L13` | `payments-to-68` | checkNumber request parameter is ignored | PAY-R07 | PASS | - |
-| `payment_live_L14` | `payments-to-69` | paymentMethod is stored as sent (not upper-cased) | PAY-R09 | PASS | - |
-| `payment_live_L15` | `payments-to-70` | paymentMethod omitted: NOT NULL insert failure | PAY-R06, PAY-R10 | PASS | - |
-| `payment_live_L16` | `payments-to-70` | payeeName omitted: NOT NULL insert failure | PAY-R10 | PASS | - |
-| `payment_live_L17` | `payments-to-70` | paymentMethod longer than VARCHAR(20): insert failure | PAY-R10 | PASS | - |
-| `payment_live_L18` | `payments-to-70` | Claim with no settlement row: null settlement | PAY-R06, PAY-R11 | PASS | - |
-| `payment_live_L19` | `payments-to-70` | claimId omitted: 119 | PAY-R02, PAY-R06 | PASS | - |
-| `payment_live_L20` | `payments-to-71` | claimId unparseable: 119 | PAY-R02 | PASS | - |
-| `payment_live_L21` | `payments-to-72` | A GET also issues a payment | PAY-R03, PAY-R12 | PASS | - |
-| `payment_live_L22` | `payments-to-73` | Claim 120 (status CLOSED) is paid; settlement 120 is linked | PAY-R03, PAY-R12 | PASS | - |
-| `payment_live_L23` | `payments-to-74` | Payee text with markup is stored as sent | PAY-R09 | PASS | - |
-| `payment_live_L24` | `payments-to-75` | History with no claimId: claim 119, issue order, fixed detail link | PAY-R14, PAY-R15 | PASS | - |
-| `payment_live_L25` | `payments-to-75` | History for claim 1: seeded and new payments | PAY-R14, PAY-R15 | PASS | - |
-| `payment_live_L26` | `payments-to-75` | History for a claim with no payments | PAY-R14, PAY-R15 | PASS | - |
-| `payment_live_L27` | `payments-to-75` | Detail of one payment | PAY-R08, PAY-R16 | PASS | - |
-| `payment_live_L28` | `payments-to-75` | Detail with no paymentId: payment 61 | PAY-R16 | PASS | - |
-| `payment_live_L29` | `payments-to-75` | Detail of a payment that does not exist | PAY-R17 | PASS | - |
-| `payment_live_L30` | `payments-to-75` | Detail shows payee markup escaped | PAY-R18 | PASS | - |
-| `payment_live_L31` | `payments-to-75` | Detail shows the lower-case method | PAY-R18 | PASS | - |
-| `payment_live_L32` | `payments-to-75` | Remittance with no claimId: claim 119 (total includes NaN) | PAY-R19, PAY-R20 | PASS | - |
-| `payment_live_L33` | `payments-to-75` | Remittance total is the sum of stored amounts | PAY-R19, PAY-R20 | PASS | - |
-| `payment_live_L34` | `payments-to-75` | Remittance for a claim with no payments | PAY-R20 | PASS | - |
-| `payment_live_L36` | `payments-to-75` | An adjuster can issue a payment | PAY-R12 | PASS | - |
-| `payment_live_L37` | `payments-to-76` | Remittance for claim 120 after the adjuster's payment | PAY-R19, PAY-R20 | PASS | - |
-| `payment_live_L41` | `payments-to-76` | Detail with an unparseable paymentId: payment 61 | PAY-R16 | PASS | - |
+**Coverage** (SPEC-PAY-001, 20 rule versions, from the spec, the test javadocs and `parity/routes.json`):
+
+- Rules with at least one parity scenario: 19 / 20.
+- Rules covered only by unit tests: none.
+- Rules with no automated coverage: PAY-R13 (v1) (Not reproduced: see Out of scope, per ADR-002-payment-boundary).
+- Not exercised live: none; every rule with automated coverage has a legacy request replayed against the service.
+
+Verdict source: `automated` = the comparator's PASS/FAIL; `reviewer` = a CHANGED verdict accepted on the strength of its `docs/changes/CHG-nnn` record.
+
+| Scenario | Precondition | Legacy behaviour | Rules | Verdict | Source | Difference |
+| --- | --- | --- | --- | --- | --- | --- |
+| `payment_issue` | `settlement-121` | Issue a settlement payment | PAY-R01, PAY-R06, PAY-R07, PAY-R08 | PASS | automated | - |
+| `payment_history` | `transcript-payment-61` | Review payment history | PAY-R14 | PASS | automated | - |
+| `payment_live_L03` | `seed` | Seed state: claim 119 has no payments | PAY-R20 | PASS | automated | - |
+| `payment_live_L04` | `seed` | Amount omitted on the seed: falls back to settlement 119 (0) | PAY-R03, PAY-R04, PAY-R06, PAY-R12 | PASS | automated | - |
+| `payment_live_L06` | `payments-to-61` | Amount omitted: falls back to the newest settlement (1000.00) | PAY-R01, PAY-R03, PAY-R04, PAY-R06, PAY-R08 | PASS | automated | - |
+| `payment_live_L07` | `payments-to-62` | Unparseable amount: falls back to the newest settlement | PAY-R04 | PASS | automated | - |
+| `payment_live_L08` | `payments-to-63` | Negative amount is accepted | PAY-R05 | PASS | automated | - |
+| `payment_live_L09` | `payments-to-64` | Half-cent amount is stored unrounded and displayed with %.2f | PAY-R05 | PASS | automated | - |
+| `payment_live_L10` | `payments-to-65` | Amount above the settlement is accepted | PAY-R05 | PASS | automated | - |
+| `payment_live_L11` | `payments-to-66` | NaN parses as a double and is accepted | PAY-R05 | PASS | automated | - |
+| `payment_live_L12` | `payments-to-67` | Exponent notation parses | PAY-R05 | PASS | automated | - |
+| `payment_live_L13` | `payments-to-68` | checkNumber request parameter is ignored | PAY-R07 | PASS | automated | - |
+| `payment_live_L14` | `payments-to-69` | paymentMethod is stored as sent (not upper-cased) | PAY-R09 | PASS | automated | - |
+| `payment_live_L15` | `payments-to-70` | paymentMethod omitted: NOT NULL insert failure | PAY-R06, PAY-R10 | PASS | automated | - |
+| `payment_live_L16` | `payments-to-70` | payeeName omitted: NOT NULL insert failure | PAY-R10 | PASS | automated | - |
+| `payment_live_L17` | `payments-to-70` | paymentMethod longer than VARCHAR(20): insert failure | PAY-R10 | PASS | automated | - |
+| `payment_live_L18` | `payments-to-70` | Claim with no settlement row: null settlement | PAY-R06, PAY-R11 | PASS | automated | - |
+| `payment_live_L19` | `payments-to-70` | claimId omitted: 119 | PAY-R02, PAY-R06 | PASS | automated | - |
+| `payment_live_L20` | `payments-to-71` | claimId unparseable: 119 | PAY-R02 | PASS | automated | - |
+| `payment_live_L21` | `payments-to-72` | A GET also issues a payment | PAY-R03, PAY-R12 | PASS | automated | - |
+| `payment_live_L22` | `payments-to-73` | Claim 120 (status CLOSED) is paid; settlement 120 is linked | PAY-R03, PAY-R12 | PASS | automated | - |
+| `payment_live_L23` | `payments-to-74` | Payee text with markup is stored as sent | PAY-R09 | PASS | automated | - |
+| `payment_live_L24` | `payments-to-75` | History with no claimId: claim 119, issue order, fixed detail link | PAY-R14, PAY-R15 | PASS | automated | - |
+| `payment_live_L25` | `payments-to-75` | History for claim 1: seeded and new payments | PAY-R14, PAY-R15 | PASS | automated | - |
+| `payment_live_L26` | `payments-to-75` | History for a claim with no payments | PAY-R14, PAY-R15 | PASS | automated | - |
+| `payment_live_L27` | `payments-to-75` | Detail of one payment | PAY-R08, PAY-R16 | PASS | automated | - |
+| `payment_live_L28` | `payments-to-75` | Detail with no paymentId: payment 61 | PAY-R16 | PASS | automated | - |
+| `payment_live_L29` | `payments-to-75` | Detail of a payment that does not exist | PAY-R17 | PASS | automated | - |
+| `payment_live_L30` | `payments-to-75` | Detail shows payee markup escaped | PAY-R18 | PASS | automated | - |
+| `payment_live_L31` | `payments-to-75` | Detail shows the lower-case method | PAY-R18 | PASS | automated | - |
+| `payment_live_L32` | `payments-to-75` | Remittance with no claimId: claim 119 (total includes NaN) | PAY-R19, PAY-R20 | PASS | automated | - |
+| `payment_live_L33` | `payments-to-75` | Remittance total is the sum of stored amounts | PAY-R19, PAY-R20 | PASS | automated | - |
+| `payment_live_L34` | `payments-to-75` | Remittance for a claim with no payments | PAY-R20 | PASS | automated | - |
+| `payment_live_L36` | `payments-to-75` | An adjuster can issue a payment | PAY-R12 | PASS | automated | - |
+| `payment_live_L37` | `payments-to-76` | Remittance for claim 120 after the adjuster's payment | PAY-R19, PAY-R20 | PASS | automated | - |
+| `payment_live_L41` | `payments-to-76` | Detail with an unparseable paymentId: payment 61 | PAY-R16 | PASS | automated | - |
 
 Live L01, L38, L39 and L40 (PAY-R13, the unauthenticated redirects) and the
 sign-in and settlement set-up steps L02, L05 and L35 are not scenarios: the
