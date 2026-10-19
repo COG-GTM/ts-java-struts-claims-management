@@ -13,8 +13,11 @@ import html
 import json
 import os
 import re
+import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import impact  # noqa: E402
 CITATION = re.compile(r"`?((?:src|services|tools|docs|parity)/[\w./-]+\.(?:java|xml|jsp|sql|py|json|md)):(\d+(?:-\d+)?)`?")
 RULE = re.compile(r"\b([A-Z]+)-R(\d+)\b(?: \((v\d+)[^)]*\)| (v\d+)\b)?")  # "<SLICE>-Rnn (v2, ...)" or "<SLICE>-Rnn v1"
 SCENARIO = re.compile(r"`(payment_[A-Za-z0-9_]+|settlement_[A-Za-z0-9_]+)`")
@@ -156,6 +159,8 @@ def parity_rows(record_rel):
 
 def build(record_path):
     rel = os.path.relpath(record_path, ROOT)
+    if impact.BEGIN in open(record_path).read():
+        impact.update(record_path)  # refresh the generated "Impact of CHG-nnn" block first
     markdown = read(rel)
     title, parts = sections(markdown)
     spec_links = {}

@@ -28,9 +28,11 @@ TABLE_ROW = re.compile(r"^\|(.*)\|\s*$")
 def verdict_source(row):
     """Who decided the verdict: the comparator (PASS/FAIL, also when the scenario
     has an approval record that the comparison then failed) or a reviewer, when
-    a CHANGED verdict rests on an approved docs/changes record."""
+    a CHANGED verdict rests on an approved docs/changes record. The approval's
+    optional ``decision`` text (parity/routes.json) says what the reviewer
+    decided, e.g. that the scenario was reclassified under the record."""
     if row["verdict"].startswith("CHANGED"):
-        return "reviewer", row.get("change") or row["verdict"]
+        return "reviewer", row.get("decision") or row.get("change") or row["verdict"]
     return "automated", None
 
 

@@ -197,6 +197,7 @@ def main():
             "verdict": verdict,
             "change": approval["change"] if approval else None,
             "record": approval["record"] if approval else None,
+            "decision": approval.get("decision") if approval else None,
             "difference": note,
             "legacy": approval.get("legacy") if approval else None,
         })

@@ -74,6 +74,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Issue a settlement payment",
       "difference": "-",
       "expected": {
@@ -130,6 +131,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Review payment history",
       "difference": "-",
       "expected": {
@@ -176,6 +178,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Seed state: claim 119 has no payments",
       "difference": "-",
       "expected": {
@@ -239,6 +242,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Amount omitted on the seed: falls back to settlement 119 (0)",
       "difference": "-",
       "expected": {
@@ -330,6 +334,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Amount omitted: falls back to the newest settlement (1000.00)",
       "difference": "-",
       "expected": {
@@ -444,6 +449,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Unparseable amount: falls back to the newest settlement",
       "difference": "-",
       "expected": {
@@ -577,6 +583,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Negative amount is accepted",
       "difference": "-",
       "expected": {
@@ -732,6 +739,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Half-cent amount is stored unrounded and displayed with %.2f",
       "difference": "-",
       "expected": {
@@ -894,6 +902,7 @@
         ]
       },
       "change": "CHG-002",
+      "decision": "reclassified under CHG-002, confirmed by reviewer",
       "description": "Amount above the settlement is accepted",
       "difference": "amount=5000.00 is above the claim's latest settlement (1000.00); the legacy app issues CHK-66, the service answers one validation error and writes no row",
       "expected": {
@@ -1077,6 +1086,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "NaN parses as a double and is accepted",
       "difference": "-",
       "expected": {
@@ -1298,6 +1308,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Exponent notation parses",
       "difference": "-",
       "expected": {
@@ -1541,6 +1552,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "checkNumber request parameter is ignored",
       "difference": "-",
       "expected": {
@@ -1807,6 +1819,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "paymentMethod is stored as sent (not upper-cased)",
       "difference": "-",
       "expected": {
@@ -2079,6 +2092,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "paymentMethod omitted: NOT NULL insert failure",
       "difference": "-",
       "expected": {
@@ -2347,6 +2361,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "payeeName omitted: NOT NULL insert failure",
       "difference": "-",
       "expected": {
@@ -2614,6 +2629,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "paymentMethod longer than VARCHAR(20): insert failure",
       "difference": "-",
       "expected": {
@@ -2882,6 +2898,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Claim with no settlement row: null settlement",
       "difference": "-",
       "expected": {
@@ -3166,6 +3183,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "claimId omitted: 119",
       "difference": "-",
       "expected": {
@@ -3475,6 +3493,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "claimId unparseable: 119",
       "difference": "-",
       "expected": {
@@ -3791,6 +3810,7 @@
         ]
       },
       "change": "CHG-002",
+      "decision": "reclassified under CHG-002, confirmed by reviewer",
       "description": "A GET also issues a payment",
       "difference": "amount=5 is above the claim's latest settlement (0.00); the legacy app issues CHK-73, the service answers one validation error and writes no row",
       "expected": {
@@ -4115,6 +4135,7 @@
         ]
       },
       "change": "CHG-002",
+      "decision": "reclassified under CHG-002, confirmed by reviewer",
       "description": "Claim 120 (status CLOSED) is paid; settlement 120 is linked",
       "difference": "amount=20.00 is above the claim's latest settlement (0.00); the legacy app issues CHK-74, the service answers one validation error and writes no row",
       "expected": {
@@ -4461,6 +4482,7 @@
         ]
       },
       "change": "CHG-002",
+      "decision": "reclassified under CHG-002, confirmed by reviewer",
       "description": "Payee text with markup is stored as sent",
       "difference": "amount=1.00 is above the claim's latest settlement (0.00); the legacy app issues CHK-75, the service answers one validation error and writes no row",
       "expected": {
@@ -4870,6 +4892,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "History with no claimId: claim 119, issue order, fixed detail link",
       "difference": "-",
       "expected": {
@@ -5298,6 +5321,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "History for claim 1: seeded and new payments",
       "difference": "-",
       "expected": {
@@ -5691,6 +5715,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "History for a claim with no payments",
       "difference": "-",
       "expected": {
@@ -6082,6 +6107,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Detail of one payment",
       "difference": "-",
       "expected": {
@@ -6478,6 +6504,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Detail with no paymentId: payment 61",
       "difference": "-",
       "expected": {
@@ -6861,6 +6888,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Detail of a payment that does not exist",
       "difference": "-",
       "expected": {
@@ -7246,6 +7274,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Detail shows payee markup escaped",
       "difference": "-",
       "expected": {
@@ -7641,6 +7670,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Detail shows the lower-case method",
       "difference": "-",
       "expected": {
@@ -8091,6 +8121,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Remittance with no claimId: claim 119 (total includes NaN)",
       "difference": "-",
       "expected": {
@@ -8545,6 +8576,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Remittance total is the sum of stored amounts",
       "difference": "-",
       "expected": {
@@ -8940,6 +8972,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Remittance for a claim with no payments",
       "difference": "-",
       "expected": {
@@ -9319,6 +9352,7 @@
         ]
       },
       "change": "CHG-002",
+      "decision": "reclassified under CHG-002, confirmed by reviewer",
       "description": "An adjuster can issue a payment",
       "difference": "amount=2.00 is above the claim's latest settlement (0.00); the legacy app issues CHK-76, the service answers one validation error and writes no row",
       "expected": {
@@ -9728,6 +9762,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Remittance for claim 120 after the adjuster's payment",
       "difference": "-",
       "expected": {
@@ -10156,6 +10191,7 @@
         "validation_errors": []
       },
       "change": null,
+      "decision": null,
       "description": "Detail with an unparseable paymentId: payment 61",
       "difference": "-",
       "expected": {
@@ -10386,6 +10422,7 @@
         ]
       },
       "change": "CHG-002",
+      "decision": "reclassified under CHG-002, confirmed by reviewer",
       "description": "An amount above the claim's latest saved settlement is rejected by the service and accepted by the legacy app",
       "difference": "CHG-002 scenario with its own precondition: settlement 121 (1000.00) on claim 119 and no payment above 60; amount=5000.00 is rejected with one validation error and no row, where the legacy app issues CHK-61",
       "expected": {

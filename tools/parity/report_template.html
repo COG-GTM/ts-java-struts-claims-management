@@ -79,7 +79,7 @@ const SPEC = { payment: "../docs/specs/SPEC-PAY-001.html", settlement: "../docs/
 const rows = REPORT.scenarios.map((r, i) => Object.assign({ index: i, slice: r.slice || r.scenario.split("_")[0], rules: r.rules || REPORT.transcript_rules[r.scenario] || [] }, r));
 const verdictClass = v => v.startsWith("CHANGED") ? "CHANGED" : v;
 const verdictSource = r => r.verdict.startsWith("CHANGED") ? "reviewer" : "automated";
-const badge = r => { const s = verdictSource(r); return `<span class="badge ${s}" title="${s === "reviewer" ? "CHANGED verdict accepted on the strength of its docs/changes record" : "PASS/FAIL decided by the comparator"}">${s}</span>`; };
+const badge = r => { const s = verdictSource(r); const text = s === "reviewer" && r.decision ? `reviewer: ${r.decision}` : s; return `<span class="badge ${s}" title="${s === "reviewer" ? "CHANGED verdict accepted on the strength of its docs/changes record" : "PASS/FAIL decided by the comparator"}">${esc(text)}</span>`; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let selected = null;
 

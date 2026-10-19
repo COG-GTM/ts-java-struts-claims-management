@@ -1320,6 +1320,7 @@
   "approved_differences": [
     {
       "change": "CHG-002",
+      "decision": "reclassified under CHG-002, confirmed by reviewer",
       "expected": {
         "business_fields": {},
         "payment_rows_through": 65,
@@ -1338,6 +1339,7 @@
     },
     {
       "change": "CHG-002",
+      "decision": "reclassified under CHG-002, confirmed by reviewer",
       "expected": {
         "business_fields": {},
         "payment_rows_through": 72,
@@ -1356,6 +1358,7 @@
     },
     {
       "change": "CHG-002",
+      "decision": "reclassified under CHG-002, confirmed by reviewer",
       "expected": {
         "business_fields": {},
         "payment_rows_through": 73,
@@ -1374,6 +1377,7 @@
     },
     {
       "change": "CHG-002",
+      "decision": "reclassified under CHG-002, confirmed by reviewer",
       "expected": {
         "business_fields": {},
         "payment_rows_through": 74,
@@ -1392,6 +1396,7 @@
     },
     {
       "change": "CHG-002",
+      "decision": "reclassified under CHG-002, confirmed by reviewer",
       "expected": {
         "business_fields": {},
         "payment_rows_through": 75,
@@ -1410,6 +1415,7 @@
     },
     {
       "change": "CHG-002",
+      "decision": "reclassified under CHG-002, confirmed by reviewer",
       "description": "An amount above the claim's latest saved settlement is rejected by the service and accepted by the legacy app",
       "expected": {
         "business_fields": {},
