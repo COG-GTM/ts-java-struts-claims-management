@@ -80,6 +80,7 @@ def inline(text, spec_links, scenarios=frozenset()):
             return '<a class="scn" href="#scn-%s"><code>%s</code></a>' % (name, name)
         chunk = SCENARIO.sub(scenario_link, chunk)
         chunk = re.sub(r"`([^`]+)`", r"<code>\1</code>", chunk)
+        chunk = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", chunk)
         def rule_link(match):
             slice_name, version = match.group(1), match.group(3) or match.group(4)
             spec = spec_links.get(slice_name)
@@ -115,10 +116,12 @@ def render_body(lines, spec_links, scenarios=frozenset()):
 
     items = []
     for line in lines:
+        if line.startswith("<!--") and line.rstrip().endswith("-->"):
+            continue  # generator markers are not content
         if line.startswith("|"):
             table.append(line)
             continue
-        if line.startswith("* "):
+        if line.startswith("* ") or line.startswith("- "):
             if para:
                 flush()
             items.append(line[2:])

@@ -149,7 +149,7 @@ Compared with `21e82c3`, the commit before this record was added (`e06bebf`).
 - `PaymentIssueEndpointTest#amountAboveTheSettlementIsRejectedAndWritesNothing` (added, `services/payment-service/src/test/java/com/northstar/payment/web/PaymentIssueEndpointTest.java`)
 - `PaymentIssueEndpointTest#zeroSettlementRejectsPositiveAmountsButIssuesTheFallback` (added, `services/payment-service/src/test/java/com/northstar/payment/web/PaymentIssueEndpointTest.java`)
 
-**Files changed** (26, of which 7 generated)
+**Files changed** (28, of which 7 generated)
 
 - `Makefile` (modified)
 - `docs/KNOWN_LEGACY_QUIRKS.md` (added)
@@ -164,8 +164,10 @@ Compared with `21e82c3`, the commit before this record was added (`e06bebf`).
 - `services/payment-service/src/test/java/com/northstar/payment/web/PaymentIssueEndpointTest.java` (modified)
 - `tools/changes/build_change_html.py` (modified)
 - `tools/changes/change_view_template.html` (added)
+- `tools/changes/impact.py` (added)
 - `tools/parity/payment_parity.py` (modified)
 - `tools/parity/payment_scenarios.py` (modified)
+- `tools/parity/report.py` (modified)
 - `tools/parity/report_template.html` (modified)
 - `tools/spec/build_spec_html.py` (modified)
 - `tools/spec/spec_view_template.html` (modified)
