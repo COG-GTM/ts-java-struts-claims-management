@@ -73,7 +73,7 @@ the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in
 | PAY-R23 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentReadEndpointTest#remittanceCountAndTotal` | `issue-amount-raw`, `remittance`, `remittance-total` | issue-amount-raw: PASS, remittance: PASS, remittance-total: PASS | - |
 | PAY-R24 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#amountFallbackAndRawValues` | `issue-amount-raw`, `detail` | issue-amount-raw: PASS, detail: PASS | - |
 | PAY-R25 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentReadEndpointTest#detailShowsOnePayment` | `issue-raw-text` | issue-raw-text: PASS | - |
-| PAY-R26 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#noOperatorRedirectsToLoginAndWritesNothing`, `PaymentReadEndpointTest#readsRedirectWithoutOperator` | `unauthenticated` | unauthenticated: PASS | - |
+| PAY-R26 (v1) | 0.1 | `82afa58` PAY-R26: operator redirect holds under a servlet context path; report coverage links clear filters | `PaymentIssueEndpointTest#noOperatorRedirectsToLoginAndWritesNothing`, `PaymentReadEndpointTest#readsRedirectWithoutOperator`, `PaymentReadEndpointTest#redirectHoldsUnderAContextPath` | `unauthenticated` | unauthenticated: PASS | - |
 
 ## Rule history
 
