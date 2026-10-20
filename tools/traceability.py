@@ -2,7 +2,7 @@
 """Generate docs/TRACEABILITY.md from the repository, one row per spec rule.
 
 Nothing in the matrix is typed by hand. For every rule version declared in
-docs/specs/SPEC-SETTLE-001.md the row is assembled from:
+every docs/specs/SPEC-<SLICE>-001.md the row is assembled from:
 
 * the spec version that last changed the rule, from the "Rule history" table of
   the spec;
@@ -36,18 +36,21 @@ import re
 import subprocess
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SPEC = os.path.join("docs", "specs", "SPEC-SETTLE-001.md")
+SPEC_DIR = os.path.join("docs", "specs")
+SPEC_FILE = re.compile(r"^SPEC-([A-Z]+)-\d+\.md$")
 OUTPUT = os.path.join("docs", "TRACEABILITY.md")
 
 GENERATED = [OUTPUT, os.path.join("parity", "report.md"),
-             os.path.join("parity", "report.json")]
+             os.path.join("parity", "report.json"),
+             os.path.join("docs", "specs", "SPEC-PAY-001-proof.json"),
+             os.path.join("docs", "specs", "SPEC-PAY-001.html")]
 SEARCHED = ["docs", "parity", "services", "src", "tools", "Makefile"]
 
 # "SETTLE-R06", "SETTLE-R06 (v2)", "SETTLE-R06 (v1, superseded by v2)",
 # "| SETTLE-R06 | v2 |": the id, and the version it is qualified with if any.
-MENTION = re.compile(r"(SETTLE-R\d+)[ \t]*[|(,]?[ \t]*(?:v(\d+))?")
-HEADING = re.compile(r"^\*\*(SETTLE-R\d+) \(v(\d+)")
-HISTORY = re.compile(r"^\| (SETTLE-R\d+) \| v(\d+) \| (.*?) \|\s*$")
+MENTION = re.compile(r"\b([A-Z]+-R\d+)[ \t]*[|(,]?[ \t]*(?:v(\d+))?")
+HEADING = re.compile(r"^\*\*([A-Z]+-R\d+) \(v(\d+)")
+HISTORY = re.compile(r"^\| ([A-Z]+-R\d+) \| v(\d+) \| (.*?) \|\s*$")
 SPEC_VERSION = re.compile(r"version (\d+\.\d+)", re.I)
 JAVADOC_END = re.compile(r"\*/")
 MEMBER = re.compile(r"(\w+)\s*\(")
@@ -73,11 +76,29 @@ def git(*args):
     return subprocess.check_output(["git"] + list(args), cwd=ROOT).decode("utf-8")
 
 
-def rules_and_history():
+def specs():
+    """Every slice spec, settlement first (the worked example), then by name."""
+    names = sorted(name for name in os.listdir(os.path.join(ROOT, SPEC_DIR))
+                   if SPEC_FILE.match(name))
+    names.sort(key=lambda name: SPEC_FILE.match(name).group(1) != "SETTLE")
+    return [os.path.join(SPEC_DIR, name) for name in names]
+
+
+def check_own_rules_only(spec):
+    """A spec names only its own slice's rule ids, not even in prose."""
+    slice_id = SPEC_FILE.match(os.path.basename(spec)).group(1)
+    foreign = sorted({rule_id for rule_id, unused in mentions(read(spec))
+                      if rule_id.split("-R")[0] != slice_id})
+    if foreign:
+        raise SystemExit("%s mentions another slice's rule ids: %s"
+                         % (spec, ", ".join(foreign)))
+
+
+def rules_and_history(spec):
     """The rule versions the spec declares, in spec order, and their history."""
     rules = []
     history = {}
-    for line in read(SPEC).splitlines():
+    for line in read(spec).splitlines():
         heading = HEADING.match(line)
         if heading:
             rules.append((heading.group(1), heading.group(2)))
@@ -203,7 +224,13 @@ def require_full_history():
 
 def main():
     require_full_history()
-    rules, history = rules_and_history()
+    rules = []
+    history = {}
+    for spec in specs():
+        check_own_rules_only(spec)
+        spec_rules, spec_history = rules_and_history(spec)
+        rules += spec_rules
+        history.update(spec_history)
     citations = javadoc_citations()
     routes = json.loads(read(os.path.join("parity", "routes.json")))
     parity = verdicts()
@@ -213,7 +240,7 @@ def main():
         spec_version, change = history.get(rule, ("-", ""))
         scenarios = transcripts_for(rule, routes)
         rows.append({
-            "rule": "SETTLE-R%s (v%s)" % (rule[0].split("-R")[1], rule[1]),
+            "rule": "%s (v%s)" % rule,
             "spec_version": spec_version,
             "history": change or "-",
             "commit": last_commit(rule),
@@ -233,7 +260,9 @@ def main():
         "`parity/routes.json` and `parity/report.json`, and the file is rewritten",
         "byte for byte on every run.",
         "",
-        "One row per rule version of `docs/specs/SPEC-SETTLE-001.md`. *Spec version*",
+        "One row per rule version of every `docs/specs/SPEC-<SLICE>-001.md`",
+        "(%s). *Spec version*" % ", ".join("`%s`" % os.path.basename(spec)[:-3]
+                                           for spec in specs()),
         "is the version of the spec that last changed the rule, from its Rule",
         "history row. *Last commit* is the last commit whose changed lines mention",
         "that rule version. *Tests* are the tests whose javadoc cites it, *Transcripts*",

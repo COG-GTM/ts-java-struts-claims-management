@@ -2,6 +2,8 @@
   "comment": "Approved differences between the legacy transcripts and the settlement service. A scenario listed here is judged against its 'expected' block instead of the transcript and is reported as CHANGED (<change>) by make parity; anything else is still a FAIL. Each entry must name a docs/changes/CHG-nnn record (ADR-001, 'Behaviour freeze').",
   "transcript_rules_comment": "Which SPEC-SETTLE-001 rules each settlement transcript is evidence for, taken from the 'Observed:' lines of the spec. tools/traceability.py reads this to put transcripts and their parity verdicts next to each rule. An entry without a version (SETTLE-R05) applies to every version of that rule; a version-qualified entry (SETTLE-R06 (v2)) applies to that version only.",
   "transcript_rules": {
+    "payment_history": ["PAY-R17"],
+    "payment_issue": ["PAY-R01"],
     "settlement_bad_deductible": ["SETTLE-R06 (v1)", "SETTLE-R06 (v2)"],
     "settlement_blank_deductible": ["SETTLE-R05", "SETTLE-R10", "SETTLE-R24"],
     "settlement_calculate": ["SETTLE-R01", "SETTLE-R11", "SETTLE-R13", "SETTLE-R20", "SETTLE-R22", "SETTLE-R24"],
