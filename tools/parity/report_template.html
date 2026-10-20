@@ -98,9 +98,10 @@ group("slice",[["all","All slices"]].concat(D.slices.map(function(s){return [s.s
 group("verdict",[["all","All verdicts"],["PASS","PASS"],["CHANGED","CHANGED"],["FAIL","FAIL"]]);
 group("mark",[["all","All marks"],["automated","Automated"],["reviewer","Reviewer"]]);
 var q=el("input",{type:"search",placeholder:"Filter by scenario, rule or text"});q.oninput=function(){state.q=q.value.toLowerCase();apply();};bar.appendChild(q);
-function checksTable(checks){var t=el("table",{},[el("tr",{},[el("th",{text:"Compared"}),el("th",{text:"Legacy (expected)"}),el("th",{text:"Service (actual)"}),el("th",{text:"Result"})])]);
-checks.forEach(function(c){t.appendChild(el("tr",{},[el("td",{},[c.what].concat(c.basis?[el("div",{cls:"note",text:"Reviewer basis: "+c.basis})]:[])),
-el("td",{},[el("pre",{text:j(c.expected)})]),el("td",{},[el("pre",{text:j(c.actual)})]),el("td",{cls:c.ok?"ok":"bad",text:c.ok?"match":"DIFFERENT"})]));});return t;}
+function checksTable(checks,label){var leg=checks.some(function(c){return c.legacy!==undefined;});
+var t=el("table",{},[el("tr",{},[el("th",{text:"Compared"})].concat(leg?[el("th",{text:"Legacy"})]:[],[el("th",{text:label||"Legacy (expected)"}),el("th",{text:"Service (actual)"}),el("th",{text:"Result"})]))]);
+checks.forEach(function(c){t.appendChild(el("tr",{},[el("td",{},[c.what].concat(c.basis?[el("div",{cls:"note",text:"Reviewer basis: "+c.basis})]:[]))].concat(leg?[el("td",{},c.legacy===undefined?["same"]:[el("pre",{text:j(c.legacy)})])]:[],[
+el("td",{},[el("pre",{text:j(c.expected)})]),el("td",{},[el("pre",{text:j(c.actual)})]),el("td",{cls:c.ok?"ok":"bad",text:c.ok?"match":"DIFFERENT"})])));});return t;}
 function reqText(r,actor){var s=r.method+" "+r.path;var qq=r.query||{};var keys=Object.keys(qq);if(keys.length)s+="?"+keys.map(function(k){return k+"="+qq[k];}).join("&");
 if(r.form&&Object.keys(r.form).length)s+="\nform: "+JSON.stringify(r.form);s+="\noperator: "+(actor||"(not signed in)");return s;}
 function body(r){var b=el("div",{cls:"body"});
@@ -116,10 +117,13 @@ var v=el("div",{},[el("span",{cls:"badge v-"+r.verdict.split(" ")[0],text:r.verd
 if(r.record){var href=D.changes[r.change]||r.record;b.appendChild(el("div",{},["Change record: ",el("a",{href:"../"+href,target:"_blank",text:r.record})]));}
 b.appendChild(el("h3",{text:"Requests: expected versus actual"}));
 r.steps.forEach(function(s){var st=el("div",{cls:"step"},[el("div",{cls:"ph",text:"Step "+s.n+(s.request.note?" — "+s.request.note:"")})]);var inn=el("div",{cls:"in"});
-inn.appendChild(el("pre",{text:reqText(s.request,s.actor)}));inn.appendChild(checksTable(s.checks));
+inn.appendChild(el("pre",{text:reqText(s.request,s.actor)}));
+if(s.approved){var lg=s.legacy||{};inn.appendChild(el("div",{cls:"note",text:"Approved difference ("+s.approved+"): the expected column is the service answer the change record approves. The legacy app answered:"}));
+inn.appendChild(el("pre",{text:j({status:lg.status,screen:lg.view||lg.result,fields:lg.fields})}));}
+inn.appendChild(checksTable(s.checks,s.approved?"Expected (approved "+s.approved+")":null));
 if(s.service==null)inn.appendChild(el("div",{cls:"note",text:"Settlement rows store the verdict only: make parity fails on any difference, so a PASS or CHANGED row means the service answer equalled the expected column."}));
 st.appendChild(inn);b.appendChild(st);});
-if(r.db&&r.db.length){b.appendChild(el("h3",{text:"Database afterwards"}));b.appendChild(checksTable(r.db.map(function(d){return {what:d.sql,expected:d.expected,actual:d.actual,ok:d.ok};})));}
+if(r.db&&r.db.length){b.appendChild(el("h3",{text:"Database afterwards"}));b.appendChild(checksTable(r.db.map(function(d){return {what:d.sql,expected:d.expected,actual:d.actual,ok:d.ok,legacy:d.legacy,basis:d.approved?"approved by "+d.approved:null};}),r.change?"Expected ("+r.change+" where approved, else legacy)":null));}
 return b;}
 var rowsEl=document.getElementById("rows");var items=[];
 D.slices.forEach(function(s){var rows=D.rows.filter(function(r){return r.slice===s.slice;});if(!rows.length)return;

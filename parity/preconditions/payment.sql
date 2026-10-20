@@ -83,3 +83,7 @@ INSERT INTO PAYMENT VALUES (400, 3, 3, 'Void Payee', 100, 'CHECK', 'CHK-400', '2
 
 -- scenario: adjuster-issue
 -- fresh seed
+
+-- scenario: chg-002-above-settlement
+-- claim 119 has a newer settlement 121 of 1000; the request pays 1000.01 (CHG-002)
+INSERT INTO SETTLEMENT VALUES (121, 119, 1500, 500, 0, FALSE, 1000, 'adjuster1', '2019-03-02');

@@ -52,6 +52,21 @@ class PaymentIssueEndpointTest {
         return jdbc.queryForMap("select * from PAYMENT where payment_id = ?", id);
     }
 
+    private int paymentRows() {
+        return jdbc.queryForObject("select count(*) from PAYMENT", Integer.class);
+    }
+
+    /**
+     * PAY-R15 (v2), CHG-002. The fixture settles claims 1, 119 and 120 at 0.00
+     * (src/main/resources/db/seed.sql:495, 613-614), so a test that proves another rule
+     * with a positive amount first raises that settlement's amount; the request and the
+     * rule it proves stay as the legacy evidence states them.
+     */
+    private void raiseSettlement(int settlementId, double amount) {
+        jdbc.update("UPDATE SETTLEMENT SET settlement_amount = ? WHERE settlement_id = ?",
+                amount, settlementId);
+    }
+
     /**
      * PAY-R01 (v1), PAY-R11 (v1). Transcript payment_issue;
      * live:issue-post#1: fields paymentAmount 1000.00, checkNumber CHK-61, paymentStatus
@@ -60,6 +75,7 @@ class PaymentIssueEndpointTest {
      */
     @Test
     void postIssuesPayment61ForClaim119() throws Exception {
+        raiseSettlement(119, 1000);
         mvc.perform(issue("119", "Reserved Claimant", "1000.00", "CHECK"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.screen").value("issue"))
@@ -80,6 +96,7 @@ class PaymentIssueEndpointTest {
     /** PAY-R02 (v1). live:issue-get#1: GET with query parameters also writes payment 61. */
     @Test
     void getAlsoIssues() throws Exception {
+        raiseSettlement(1, 10);
         mvc.perform(get("/payment/issue").header(OperatorFilter.HEADER, "supervisor")
                         .param("claimId", "1").param("payeeName", "Get Payee")
                         .param("amount", "10").param("paymentMethod", "CHECK"))
@@ -94,6 +111,7 @@ class PaymentIssueEndpointTest {
      */
     @Test
     void claimIdFallsBackTo119() throws Exception {
+        raiseSettlement(119, 7);
         mvc.perform(issue("abc", "Fallback A", "5", "CHECK")).andExpect(status().isOk());
         mvc.perform(issue(null, "Fallback B", "6", "CHECK")).andExpect(status().isOk());
         mvc.perform(issue("1.5", "Fallback C", "7", "CHECK")).andExpect(status().isOk());
@@ -141,6 +159,7 @@ class PaymentIssueEndpointTest {
                 .andExpect(jsonPath("$.fields.paymentAmount").value("0.00"));
         mvc.perform(issue("119", "Bad Amount", "1,000.00", "CHECK"))
                 .andExpect(jsonPath("$.fields.paymentAmount").value("0.00"));
+        raiseSettlement(119, 1000);
         mvc.perform(issue("119", "Reserved Claimant", "-50", "CHECK"))
                 .andExpect(jsonPath("$.fields.paymentAmount").value("-50.00"));
         mvc.perform(issue("119", "Reserved Claimant", "1.005", "CHECK"))
@@ -159,6 +178,7 @@ class PaymentIssueEndpointTest {
      */
     @Test
     void nextIdAndCheckNumber() throws Exception {
+        raiseSettlement(119, 1000);
         jdbc.update("INSERT INTO PAYMENT VALUES (500, 1, 1, 'Gap Payee', 1, 'CHECK', 'CHK-GAP',"
                 + " '2019-03-15', 'ISSUED')");
         mvc.perform(issue("119", "Reserved Claimant", "1000.00", "CHECK").param("checkNumber", "MINE"))
@@ -173,6 +193,7 @@ class PaymentIssueEndpointTest {
      */
     @Test
     void columnConstraintsFailTheInsert() throws Exception {
+        raiseSettlement(119, 1000);
         mvc.perform(issue("119", null, "10", "CHECK")).andExpect(status().is5xxServerError());
         mvc.perform(issue("119", "No Method", "10", null)).andExpect(status().is5xxServerError());
         mvc.perform(issue("119", "Reserved Claimant", "1000.00", "M".repeat(21)))
@@ -184,17 +205,103 @@ class PaymentIssueEndpointTest {
     }
 
     /**
-     * PAY-R12 (v1), PAY-R15 (v1). live:issue-raw-text#1, live:issue-no-business-checks#1-#3:
-     * payee and method stored as sent; a CLOSED claim, an already paid claim and an
-     * amount far above the settlement are all accepted.
+     * PAY-R12 (v1), PAY-R15 (v2). live:issue-raw-text#1, live:issue-no-business-checks#1-#3:
+     * payee and method stored as sent; within the CHG-002 cap a CLOSED claim and an
+     * already paid claim are still accepted, the same request twice writes twice.
      */
     @Test
-    void rawTextAndNoBusinessChecks() throws Exception {
+    void rawTextAndNoOtherBusinessChecks() throws Exception {
+        raiseSettlement(119, 1000);
+        raiseSettlement(120, 1000);
+        raiseSettlement(1, 999999);
         mvc.perform(issue("119", "<b>A&B</b> Payee", "1000.00", "wire")).andExpect(status().isOk());
         assertThat(payment(61).get("PAYEE_NAME")).isEqualTo("<b>A&B</b> Payee");
-        mvc.perform(issue("120", "Reserved Claimant", "1000.00", "CHECK")).andExpect(status().isOk());
+        mvc.perform(issue("120", "Reserved Claimant", "1000.00", "CHECK"))
+                .andExpect(jsonPath("$.fields.checkNumber").value("CHK-62"));
         mvc.perform(issue("1", "Reserved Claimant", "999999", "CHECK"))
                 .andExpect(jsonPath("$.fields.paymentAmount").value("999999.00"));
+        mvc.perform(issue("1", "Reserved Claimant", "999999", "CHECK"))
+                .andExpect(jsonPath("$.fields.checkNumber").value("CHK-64"));
+    }
+
+    /**
+     * PAY-R15 (v2), CHG-002. live:chg-002-above-settlement#1 is the legacy answer the
+     * change departs from: with settlement 121 of 1000 for claim 119, 1000.01 is answered
+     * on the issue screen with no fields and the single key payment.amount.aboveSettlement;
+     * no row is written and id 61 is not used, so 1000.00 (equal, accepted) gets CHK-61.
+     */
+    @Test
+    void amountAboveNewestSettlementIsRejectedAndWritesNothing() throws Exception {
+        jdbc.update("INSERT INTO SETTLEMENT VALUES (121, 119, 1500, 500, 0, FALSE, 1000,"
+                + " 'adjuster1', '2019-03-02')");
+        mvc.perform(issue("119", "Over Cap Claimant", "1000.01", "CHECK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.screen").value("issue"))
+                .andExpect(jsonPath("$.fields").isEmpty())
+                .andExpect(jsonPath("$.display").isEmpty())
+                .andExpect(jsonPath("$.links").isEmpty())
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0]").value("payment.amount.aboveSettlement"))
+                .andExpect(jsonPath("$.operator").value("supervisor"));
+        assertThat(paymentRows()).isEqualTo(60);
+        mvc.perform(issue("119", "Over Cap Claimant", "1000.00", "CHECK"))
+                .andExpect(jsonPath("$.errors").isEmpty())
+                .andExpect(jsonPath("$.fields.checkNumber").value("CHK-61"));
+        assertThat(payment(61).get("SETTLEMENT_ID")).isEqualTo(121);
+    }
+
+    /**
+     * PAY-R15 (v2), CHG-002. The cap is the newest settlement's amount
+     * (SettlementDAO.java:100-115), not an older, larger one: with settlement 119 raised
+     * to 5000 and newer settlement 121 of 1000, 2000 is rejected.
+     */
+    @Test
+    void capIsTheNewestSettlementAmount() throws Exception {
+        raiseSettlement(119, 5000);
+        jdbc.update("INSERT INTO SETTLEMENT VALUES (121, 119, 1500, 500, 0, FALSE, 1000,"
+                + " 'adjuster1', '2019-03-02')");
+        mvc.perform(issue("119", "Reserved Claimant", "2000", "CHECK"))
+                .andExpect(jsonPath("$.errors[0]").value("payment.amount.aboveSettlement"));
+        assertThat(paymentRows()).isEqualTo(60);
+    }
+
+    /**
+     * PAY-R15 (v2), CHG-002, with PAY-R07 (v1) and PAY-R08 (v1). On the fixture claim 119
+     * is settled at 0.00 (live:issue-amount-raw#1-#5 sent these values): the cap compares
+     * the parsed amount, so 1.005 and 1e3 are rejected while -50, NaN (never greater) and
+     * an unparsable amount (falls back to 0.00, equal) are still written as before.
+     */
+    @Test
+    void capComparesTheParsedAmount() throws Exception {
+        mvc.perform(issue("119", "Reserved Claimant", "1.005", "CHECK"))
+                .andExpect(jsonPath("$.errors[0]").value("payment.amount.aboveSettlement"));
+        mvc.perform(issue("119", "Reserved Claimant", "1e3", "CHECK"))
+                .andExpect(jsonPath("$.errors[0]").value("payment.amount.aboveSettlement"));
+        assertThat(paymentRows()).isEqualTo(60);
+        mvc.perform(issue("119", "Reserved Claimant", "-50", "CHECK"))
+                .andExpect(jsonPath("$.fields.paymentAmount").value("-50.00"));
+        mvc.perform(issue("119", "Reserved Claimant", "NaN", "CHECK"))
+                .andExpect(jsonPath("$.fields.paymentAmount").value("NaN"));
+        mvc.perform(issue("119", "Bad Amount", "1,000.00", "CHECK"))
+                .andExpect(jsonPath("$.fields.paymentAmount").value("0.00"));
+        assertThat(paymentRows()).isEqualTo(63);
+    }
+
+    /**
+     * PAY-R15 (v2), CHG-002. The cap runs after the settlement lookup and before the
+     * insert: a missing payee over the cap is the validation answer, not the insert
+     * failure of PAY-R13 (v1) (live:issue-required-columns#1 sent 10 to claim 119), and a
+     * claim with no settlement is still the error screen of PAY-R06 (v1).
+     */
+    @Test
+    void capRunsAfterTheSettlementLookupAndBeforeTheInsert() throws Exception {
+        mvc.perform(issue("119", null, "10", "CHECK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors[0]").value("payment.amount.aboveSettlement"));
+        mvc.perform(issue("9999", "Reserved Claimant", "1000.00", "CHECK"))
+                .andExpect(status().is5xxServerError())
+                .andExpect(jsonPath("$.screen").value("error"));
+        assertThat(paymentRows()).isEqualTo(60);
     }
 
     /**

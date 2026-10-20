@@ -30,7 +30,7 @@ OUTPUT = "docs/specs/SPEC-PAY-001.html"
 SPEC_ID = "SPEC-PAY-001"
 RULE_PREFIX = "PAY"
 
-HEADING = re.compile(r"^\*\*(%s-R\d+) \(v(\d+)\)\*\* — (.*)$" % RULE_PREFIX)
+HEADING = re.compile(r"^\*\*(%s-R\d+) \(v(\d+)(, superseded by v\d+)?\)\*\* — (.*)$" % RULE_PREFIX)
 SECTION = re.compile(r"^## (.*)$")
 CITE = re.compile(r"^(Read|Observed): (.*)$")
 SOURCE_REF = re.compile(r"^(\S+?):(\d+)(?:-(\d+))?$")
@@ -58,7 +58,8 @@ def parse_spec(text):
         match = HEADING.match(line)
         if match:
             current = {"id": match.group(1), "version": match.group(2),
-                       "section": section, "text": match.group(3),
+                       "superseded": (match.group(3) or "").lstrip(", "),
+                       "section": section, "text": match.group(4),
                        "read": [], "observed": []}
             rules.append(current)
             last_kind = None
@@ -312,7 +313,7 @@ function evidenceBlock(title,items,render,label){var wrap=el("div");wrap.appendC
 var host=document.getElementById("rules"),section=null,ruleEls=[];
 D.rules.forEach(function(r){if(r.section!==section){section=r.section;host.appendChild(el("h2",{cls:"sec",text:section}));}
  var d=el("details",{cls:"rule",id:r.id});d.dataset.status=r.status;d.dataset.text=(r.id+" "+r.text).toLowerCase();
- d.appendChild(el("summary",{},[el("span",{cls:"rid",text:r.id+" (v"+r.version+")"}),badge(r.status),md(r.text),el("span",{cls:"count",text:r.sources.length+" src · "+r.evidence.length+" req"})]));
+ d.appendChild(el("summary",{},[el("span",{cls:"rid",text:r.id+" (v"+r.version+(r.superseded?", "+r.superseded:"")+")"}),badge(r.status),md(r.text),el("span",{cls:"count",text:r.sources.length+" src · "+r.evidence.length+" req"})]));
  var body=el("div",{cls:"body"});var built=false;
  d.addEventListener("toggle",function(){if(d.open){if(!built){built=true;
    body.appendChild(evidenceBlock("Source lines (Read)",r.sources,sourcePanel,function(s){return s.ref.replace("src/main/java/com/northstar/claims/","…/").replace("src/main/webapp/WEB-INF/","WEB-INF/");}));

@@ -235,6 +235,39 @@ CASES = [
      "db": [PAYMENT_ROWS]},
 ]
 
+
+def route_cases():
+    """Scenarios no transcript covers, declared with their own request block in
+    parity/routes.json; their precondition is the section of the same name in
+    parity/preconditions/payment.sql, so parity and this proof share one copy."""
+    with open(os.path.join(ROOT, "parity", "routes.json"), encoding="utf-8") as stream:
+        declared = json.load(stream).get("payment_scenarios", {})
+    sections, current = {}, None
+    with open(os.path.join(ROOT, "parity", "preconditions", "payment.sql"), encoding="utf-8") as stream:
+        for line in stream:
+            line = line.strip()
+            if line.startswith("-- scenario: "):
+                current = line[len("-- scenario: "):]
+                sections[current] = {"name": None, "sql": []}
+            elif current and line.startswith("--") and sections[current]["name"] is None:
+                sections[current]["name"] = line[2:].strip()
+            elif current and line and not line.startswith("--"):
+                sections[current]["sql"].append(line.rstrip(";"))
+    cases = []
+    for name, entry in declared.items():
+        if "request" not in entry:
+            continue
+        request = entry["request"]
+        step = (post(request["path"], request["form"], request.get("note", ""))
+                if request["method"] == "POST"
+                else get(request["path"], request.get("query"), request.get("note", "")))
+        cases.append({"id": name, "title": entry["title"], "precondition": sections[name],
+                      "actor": entry["actor"], "steps": [step], "db": [PAYMENT_ROWS]})
+    return cases
+
+
+CASES += route_cases()
+
 PASSWORDS = {"supervisor": "supervisor", "adjuster7": "legacy7"}
 
 

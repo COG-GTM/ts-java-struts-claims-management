@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PaymentController {
     private static final String ISSUED_DATE = "2019-04-03";
     private static final String ISSUED = "ISSUED";
+    static final String AMOUNT_ABOVE_SETTLEMENT = "payment.amount.aboveSettlement";
 
     private final PaymentRepository payments;
     private final SettlementRepository settlements;
@@ -35,7 +36,11 @@ public class PaymentController {
         this.settlements = settlements;
     }
 
-    /** PaymentIssueAction.java:22-43; GET writes too, as the Struts mapping does. */
+    /**
+     * PaymentIssueAction.java:22-43; GET writes too, as the Struts mapping does. CHG-002: an
+     * amount above the newest settlement's amount is answered with one validation key and
+     * writes nothing; the check sits after the settlement lookup and before the id is read.
+     */
     @RequestMapping(value = "/issue", method = {RequestMethod.GET, RequestMethod.POST})
     public PaymentResponse issue(@RequestHeader(OperatorFilter.HEADER) String operator,
             @RequestParam(required = false) String claimId,
@@ -45,10 +50,14 @@ public class PaymentController {
         int claim = LegacyParameters.integer(claimId, 119);
         NewestSettlement settlement = settlements.findNewestByClaim(claim)
                 .orElseThrow(() -> new PaymentFailure("no settlement for claim " + claim));
+        double paymentAmount = LegacyParameters.decimal(amount, settlement.settlementAmount());
+        if (paymentAmount > settlement.settlementAmount()) {
+            return new PaymentResponse("issue", Map.of(), Map.of(), List.of(),
+                    List.of(AMOUNT_ABOVE_SETTLEMENT), operator);
+        }
         int paymentId = payments.nextId();
         StoredPayment payment = new StoredPayment(paymentId, claim, settlement.settlementId(),
-                payeeName, LegacyParameters.decimal(amount, settlement.settlementAmount()),
-                paymentMethod, "CHK-" + paymentId, ISSUED_DATE, ISSUED);
+                payeeName, paymentAmount, paymentMethod, "CHK-" + paymentId, ISSUED_DATE, ISSUED);
         payments.insert(payment);
         Map<String, String> fields = new LinkedHashMap<>();
         fields.put("paymentAmount", FieldFormatter.money(payment.amount()));

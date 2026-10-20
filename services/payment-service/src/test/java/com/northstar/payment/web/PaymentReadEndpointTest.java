@@ -35,6 +35,7 @@ class PaymentReadEndpointTest {
     /** PAY-R16 (v1). live:adjuster-issue#1: adjuster7 issues payment 61 and is shown as operator. */
     @Test
     void anyOperatorCanIssue() throws Exception {
+        jdbc.update("UPDATE SETTLEMENT SET settlement_amount = 1000 WHERE settlement_id = 119");
         mvc.perform(as("adjuster7", post("/payment/issue")).param("claimId", "119")
                         .param("payeeName", "Reserved Claimant").param("amount", "1000.00")
                         .param("paymentMethod", "CHECK"))
