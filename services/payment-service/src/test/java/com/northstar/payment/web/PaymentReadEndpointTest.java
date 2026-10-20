@@ -125,4 +125,12 @@ class PaymentReadEndpointTest {
                     .andExpect(header().string("Location", "/claims/login.do"));
         }
     }
+
+    /** PAY-R26 (v1). live:unauthenticated#3: the redirect also holds under a servlet context path. */
+    @Test
+    void redirectHoldsUnderAContextPath() throws Exception {
+        mvc.perform(get("/claims/payment/history").contextPath("/claims"))
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", "/claims/login.do"));
+    }
 }

@@ -128,6 +128,8 @@ rows.forEach(function(r){var d=el("details",{cls:"row",id:r.slice+"-"+r.scenario
 el("span",{cls:"badge v-"+r.verdict.split(" ")[0],text:r.verdict}),el("span",{cls:"badge m-"+r.check,text:r.check==="reviewer"?"Reviewer":"Automated",title:(r.basis||[]).join("\n")||"Exact match on every compared item"})])]);
 var built=false;d.addEventListener("toggle",function(){if(d.open&&!built){d.appendChild(body(r));built=true;}if(d.open)history.replaceState(null,"","#"+d.id);});
 rowsEl.appendChild(d);items.push({r:r,d:d,h:h,text:(r.scenario+" "+r.description+" "+r.rules.join(" ")+" "+r.difference).toLowerCase()});});});
+function reset(){state={slice:"all",verdict:"all",mark:"all",q:""};q.value="";
+Array.prototype.forEach.call(bar.querySelectorAll(".chip"),function(x){x.classList.toggle("on",x.getAttribute("data-v")==="all");});apply();}
 function apply(){var shown={};items.forEach(function(it){var r=it.r;var ok=(state.slice==="all"||r.slice===state.slice)&&(state.verdict==="all"||r.verdict.split(" ")[0]===state.verdict)&&
 (state.mark==="all"||r.check===state.mark)&&(!state.q||it.text.indexOf(state.q)>=0);it.d.classList.toggle("hidden",!ok);if(ok)shown[r.slice]=1;});
 items.forEach(function(it){it.h.classList.toggle("hidden",!shown[it.r.slice]);});}
@@ -135,7 +137,7 @@ var ct=document.getElementById("covtext");
 D.slices.forEach(function(s){var c=D.coverage[s.slice];if(!D.rows.some(function(r){return r.slice===s.slice;}))return;
 var t=el("table",{cls:"covtable"},[el("tr",{},[el("th",{text:s.prefix+" rule"}),el("th",{text:"Scenarios"})])]);
 c.rules.forEach(function(rule){var sc=c.scenarios[rule]||[];t.appendChild(el("tr",{},[el("td",{},[ruleLink(s.slice,rule)]),el("td",{},sc.length?sc.map(function(n,i){var a=el("a",{href:"#"+s.slice+"-"+n,text:n});
-a.onclick=function(){var d=document.getElementById(s.slice+"-"+n);if(d){d.open=true;}};return el("span",{},[i?", ":"",a]);}):["none"])]));});
+a.onclick=function(){var d=document.getElementById(s.slice+"-"+n);if(d){reset();d.open=true;}};return el("span",{},[i?", ":"",a]);}):["none"])]));});
 ct.appendChild(el("h3",{text:s.prefix+": "+c.covered.length+" / "+c.rules.length}));ct.appendChild(t);});
 if(location.hash){var t=document.getElementById(location.hash.slice(1));if(t&&t.tagName==="DETAILS"){t.open=true;t.scrollIntoView();}}
 })();

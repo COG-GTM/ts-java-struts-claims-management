@@ -22,7 +22,8 @@ public class OperatorFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getRequestURI().startsWith("/payment/");
+        return !request.getRequestURI().substring(request.getContextPath().length())
+                .startsWith("/payment/");
     }
 
     @Override
