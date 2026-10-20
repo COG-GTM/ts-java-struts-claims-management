@@ -27,7 +27,6 @@ import re
 import shutil
 import subprocess
 import sys
-import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -41,10 +40,12 @@ DB_PATH = os.path.join(DB_DIR, "northstar")
 PRISTINE = os.path.join(ROOT, "target", "spec-proof", "pristine")
 # Separate from the app's target/db/northstar so a proof run never touches local data.
 DB_PROPERTY = "-Dclaims.db.path=" + DB_PATH
-# jetty-env.xml's jdbc/ClaimsDB file. ConnectionPool tries it first and falls back
-# to claims.db.path when the lookup fails; if it ever resolves, the requests would
+# jetty-env.xml's jdbc/ClaimsDB file lives in java.io.tmpdir. Jetty gets its own
+# empty tmpdir per case; ConnectionPool tries that data source first and falls back
+# to claims.db.path when the lookup fails. If it ever resolves, the requests would
 # miss the proof database, so the run stops.
-CONTAINER_DB = os.path.join(tempfile.gettempdir(), "northstar-claims-db")
+JETTY_TMP = os.path.join(ROOT, "target", "spec-proof", "tmp")
+CONTAINER_DB = os.path.join(JETTY_TMP, "northstar-claims-db")
 EVIDENCE = os.path.join(ROOT, "docs", "specs", "SPEC-PAY-001-proof.json")
 SQL_RUNNER = os.path.join(ROOT, "tools", "spec", "SqlRunner.java")
 HSQLDB_JAR = os.environ.get("HSQLDB_JAR", os.path.expanduser(
@@ -338,7 +339,10 @@ def restore_pristine():
 
 
 def start_jetty():
-    process = subprocess.Popen(["mvn", "-q", DB_PROPERTY, "jetty:run"], cwd=ROOT,
+    shutil.rmtree(JETTY_TMP, ignore_errors=True)
+    os.makedirs(JETTY_TMP)
+    process = subprocess.Popen(["mvn", "-q", DB_PROPERTY, "-Djava.io.tmpdir=" + JETTY_TMP,
+                                "jetty:run"], cwd=ROOT,
                                stdout=subprocess.DEVNULL,
                                stderr=subprocess.STDOUT)
     deadline = time.time() + 180
