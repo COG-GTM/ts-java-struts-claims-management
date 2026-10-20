@@ -1,7 +1,11 @@
 # Open questions
 
-Questions raised while writing the settlement specs that need a business answer.
+Questions raised while writing the slice specs that need a business answer, or behaviour that could not be established by a request against the legacy app.
 
 | Id | Question | Blocks | Owner | Interim decision | Status |
 | --- | --- | --- | --- | --- | --- |
 | OQ-01 | Is the 10000 policy-limit fallback used when a claim or its policy cannot be found (SPEC-SETTLE-001 SETTLE-R08 v2) a business rule, or a leftover default in the code? | SPEC-SETTLE-001 SETTLE-R08 | Claims operations SME | Keep the 10000 fallback in the new service and record it in the quirks register. | Open |
+| OQ-02 | What happens when two payments are issued at the same moment (SPEC-PAY-001 PAY-R09)? The next id is read as `max(payment_id)+1` on its own connection before the insert, so two requests can pick the same id. Whether the second one then fails, and what the operator sees, was not observed: the proof runs requests one at a time. | SPEC-PAY-001 PAY-R09 | Claims engineering | Do not assume ids are unique under load; a new service must allocate ids atomically only with a CHG record. | Open |
+| OQ-03 | Are amounts printed the same way on a server whose default locale is not English (SPEC-PAY-001 PAY-R24)? `String.format("%.2f")` uses the JVM default locale, and every proof ran on an English-locale host, so a decimal comma was never observed. | SPEC-PAY-001 PAY-R24 | Claims operations SME | Treat the observed `1000.00` form as the behaviour; record the deployment locale before relying on it. | Open |
+| OQ-04 | How do payment statuses other than `ISSUED` arise, and should a `VOID` payment count in "Total issued" (SPEC-PAY-001 PAY-R11, PAY-R23)? No code in the payment slice writes another status; the remittance proof had to insert a `VOID` row directly to show that the total includes it. | SPEC-PAY-001 PAY-R23 | Claims operations SME | Keep summing every row, as legacy does. | Open |
+| OQ-05 | Are issuing on GET, issuing against `DENIED` or `CLOSED` claims, issuing above the settlement amount and issuing the same request twice business rules or defects (SPEC-PAY-001 PAY-R02, PAY-R15)? The behaviour is proved; the intent is not known. | SPEC-PAY-001 PAY-R02, PAY-R15 | Claims operations SME | Keep the legacy behaviour; any check added later needs a CHG record. | Open |

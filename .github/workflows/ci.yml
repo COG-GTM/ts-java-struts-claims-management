@@ -25,7 +25,11 @@ jobs:
         run: make capture
       - name: Verify transcript stability
         run: git diff --exit-code transcripts/
+      - name: Re-run the SPEC-PAY-001 proof against the legacy app
+        run: make payment-spec-check
+      - name: Regenerate the SPEC-PAY-001 view
+        run: make payment-spec-html
       - name: Regenerate the traceability matrix
         run: make traceability
       - name: Verify the parity report and the traceability matrix are current
-        run: git diff --exit-code parity/report.md parity/report.json docs/TRACEABILITY.md
+        run: git diff --exit-code parity/report.md parity/report.json docs/TRACEABILITY.md docs/specs/SPEC-PAY-001.html
