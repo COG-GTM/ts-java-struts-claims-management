@@ -5,7 +5,8 @@ every cell is read out of the spec, the git history, the tests,
 `parity/routes.json` and `parity/report.json`, and the file is rewritten
 byte for byte on every run.
 
-One row per rule version of `docs/specs/SPEC-SETTLE-001.md`. *Spec version*
+One row per rule version of every `docs/specs/SPEC-<SLICE>-001.md`
+(`SPEC-SETTLE-001`, `SPEC-PAY-001`). *Spec version*
 is the version of the spec that last changed the rule, from its Rule
 history row. *Last commit* is the last commit whose changed lines mention
 that rule version. *Tests* are the tests whose javadoc cites it, *Transcripts*
@@ -47,6 +48,32 @@ the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in
 | SETTLE-R29 (v1) | 0.1 | `46337e5` Generate the traceability matrix from the repository, and report parity as JSON | `SettlementSaveEndpointTest#saveRecomputesAndInsertsOneRowForClaim119` | `settlement_save` | settlement_save: PASS | - |
 | SETTLE-R30 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `SettlementDetailEndpointTest#detailForAClaimWithNoSettlementIsEmpty`, `SettlementDetailEndpointTest#detailShowsTheSeededSettlementForClaim119`, `SettlementDetailEndpointTest#detailTakesTheHighestSettlementIdForTheClaim`, `SettlementDetailEndpointTest#detailWithoutAClaimIdDefaultsTo119` | - | - | - |
 | SETTLE-R31 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `LegacyParametersTest#fieldFormattingMatchesTheFieldTag`, `SettlementDetailEndpointTest#detailShowsTheSeededSettlementForClaim119` | - | - | - |
+| PAY-R01 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | `payment_issue` | payment_issue: not replayed | - |
+| PAY-R02 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R03 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R04 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R05 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R06 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R07 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R08 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R09 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R10 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R11 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R12 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R13 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R14 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R15 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R16 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R17 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | `payment_history` | payment_history: not replayed | - |
+| PAY-R18 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R19 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R20 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R21 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R22 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R23 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R24 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R25 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R26 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
 
 ## Rule history
 
@@ -85,3 +112,29 @@ the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in
 | SETTLE-R29 (v1) | Initial rule, version 0.1 |
 | SETTLE-R30 (v1) | Initial rule, version 0.1 |
 | SETTLE-R31 (v1) | Initial rule, version 0.1 |
+| PAY-R01 (v1) | Initial rule, version 0.1 |
+| PAY-R02 (v1) | Initial rule, version 0.1 |
+| PAY-R03 (v1) | Initial rule, version 0.1 |
+| PAY-R04 (v1) | Initial rule, version 0.1 |
+| PAY-R05 (v1) | Initial rule, version 0.1 |
+| PAY-R06 (v1) | Initial rule, version 0.1 |
+| PAY-R07 (v1) | Initial rule, version 0.1 |
+| PAY-R08 (v1) | Initial rule, version 0.1 |
+| PAY-R09 (v1) | Initial rule, version 0.1 |
+| PAY-R10 (v1) | Initial rule, version 0.1 |
+| PAY-R11 (v1) | Initial rule, version 0.1 |
+| PAY-R12 (v1) | Initial rule, version 0.1 |
+| PAY-R13 (v1) | Initial rule, version 0.1 |
+| PAY-R14 (v1) | Initial rule, version 0.1 |
+| PAY-R15 (v1) | Initial rule, version 0.1 |
+| PAY-R16 (v1) | Initial rule, version 0.1 |
+| PAY-R17 (v1) | Initial rule, version 0.1 |
+| PAY-R18 (v1) | Initial rule, version 0.1 |
+| PAY-R19 (v1) | Initial rule, version 0.1 |
+| PAY-R20 (v1) | Initial rule, version 0.1 |
+| PAY-R21 (v1) | Initial rule, version 0.1 |
+| PAY-R22 (v1) | Initial rule, version 0.1 |
+| PAY-R23 (v1) | Initial rule, version 0.1 |
+| PAY-R24 (v1) | Initial rule, version 0.1 |
+| PAY-R25 (v1) | Initial rule, version 0.1 |
+| PAY-R26 (v1) | Initial rule, version 0.1 |
