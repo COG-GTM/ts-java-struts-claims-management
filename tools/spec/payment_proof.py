@@ -27,6 +27,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -40,6 +41,10 @@ DB_PATH = os.path.join(DB_DIR, "northstar")
 PRISTINE = os.path.join(ROOT, "target", "spec-proof", "pristine")
 # Separate from the app's target/db/northstar so a proof run never touches local data.
 DB_PROPERTY = "-Dclaims.db.path=" + DB_PATH
+# jetty-env.xml's jdbc/ClaimsDB file. ConnectionPool tries it first and falls back
+# to claims.db.path when the lookup fails; if it ever resolves, the requests would
+# miss the proof database, so the run stops.
+CONTAINER_DB = os.path.join(tempfile.gettempdir(), "northstar-claims-db")
 EVIDENCE = os.path.join(ROOT, "docs", "specs", "SPEC-PAY-001-proof.json")
 SQL_RUNNER = os.path.join(ROOT, "tools", "spec", "SqlRunner.java")
 HSQLDB_JAR = os.environ.get("HSQLDB_JAR", os.path.expanduser(
@@ -388,6 +393,9 @@ def run_case(case):
                               "response": observe(*send(opener, step))})
     finally:
         stop_jetty(process)
+    if glob.glob(CONTAINER_DB + ".*"):
+        raise RuntimeError("Jetty used the container data source %s, not %s; "
+                           "the evidence would not match the requests" % (CONTAINER_DB, DB_PATH))
     return {
         "id": case["id"],
         "title": case["title"],
