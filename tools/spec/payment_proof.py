@@ -2,7 +2,9 @@
 """Re-runnable live proof for docs/specs/SPEC-PAY-001.md.
 
 Every case runs against the real legacy app (mvn jetty:run, port 8080) on
-its own database: the freshly seeded database (make seed), plus the case's
+its own database under target/spec-proof/db (claims.db.path), never the
+app's target/db/northstar: the freshly seeded database (same seed as make
+seed), plus the case's
 precondition SQL, applied while Jetty is stopped. The case then logs in as
 its actor, sends its requests, stops Jetty and reads the PAYMENT rows it
 names straight from the HSQLDB file. Nothing depends on the order the cases
@@ -33,9 +35,11 @@ import urllib.request
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 BASE = "http://localhost:8080"
 CONTEXT = "/claims"
-DB_DIR = os.path.join(ROOT, "target", "db")
+DB_DIR = os.path.join(ROOT, "target", "spec-proof", "db")
 DB_PATH = os.path.join(DB_DIR, "northstar")
 PRISTINE = os.path.join(ROOT, "target", "spec-proof", "pristine")
+# Separate from the app's target/db/northstar so a proof run never touches local data.
+DB_PROPERTY = "-Dclaims.db.path=" + DB_PATH
 EVIDENCE = os.path.join(ROOT, "docs", "specs", "SPEC-PAY-001-proof.json")
 SQL_RUNNER = os.path.join(ROOT, "tools", "spec", "SqlRunner.java")
 HSQLDB_JAR = os.environ.get("HSQLDB_JAR", os.path.expanduser(
@@ -313,7 +317,7 @@ def remove_db():
 def build_pristine():
     remove_db()
     subprocess.run(["mvn", "-q", "compile"], cwd=ROOT, check=True)
-    subprocess.run(["mvn", "-q", "org.codehaus.mojo:exec-maven-plugin:3.3.0:java"],
+    subprocess.run(["mvn", "-q", DB_PROPERTY, "org.codehaus.mojo:exec-maven-plugin:3.3.0:java"],
                    cwd=ROOT, check=True)
     shutil.rmtree(PRISTINE, ignore_errors=True)
     os.makedirs(PRISTINE)
@@ -329,7 +333,7 @@ def restore_pristine():
 
 
 def start_jetty():
-    process = subprocess.Popen(["mvn", "-q", "jetty:run"], cwd=ROOT,
+    process = subprocess.Popen(["mvn", "-q", DB_PROPERTY, "jetty:run"], cwd=ROOT,
                                stdout=subprocess.DEVNULL,
                                stderr=subprocess.STDOUT)
     deadline = time.time() + 180
@@ -418,8 +422,6 @@ def main():
             print("%-28s %5.1fs" % (case["id"], time.time() - started), flush=True)
     finally:
         remove_db()
-        for path in glob.glob(os.path.join(PRISTINE, "*")):
-            shutil.copy2(path, DB_DIR)
     if args.case:
         print(dump(results[0]))
         return
@@ -427,11 +429,12 @@ def main():
         "spec": "SPEC-PAY-001",
         "generated_by": "tools/spec/payment_proof.py",
         "legacy": BASE + CONTEXT,
-        "method": ("Each case: fresh `make seed` database plus its precondition SQL "
+        "method": ("Each case: freshly seeded database (same seed as `make seed`, at "
+                   "target/spec-proof/db/northstar via -Dclaims.db.path) plus its precondition SQL "
                    "(applied with Jetty stopped), mvn jetty:run, login as the actor, "
                    "the listed HTTP requests with curl-equivalent urllib calls "
                    "(issue.jsp is a confirmation page, not a form), then Jetty "
-                   "stopped and the listed SQL read from target/db/northstar."),
+                   "stopped and the listed SQL read from that database."),
         "cases": results,
     }
     text = dump(evidence)

@@ -3374,6 +3374,6 @@
   ],
   "generated_by": "tools/spec/payment_proof.py",
   "legacy": "http://localhost:8080/claims",
-  "method": "Each case: fresh `make seed` database plus its precondition SQL (applied with Jetty stopped), mvn jetty:run, login as the actor, the listed HTTP requests with curl-equivalent urllib calls (issue.jsp is a confirmation page, not a form), then Jetty stopped and the listed SQL read from target/db/northstar.",
+  "method": "Each case: freshly seeded database (same seed as `make seed`, at target/spec-proof/db/northstar via -Dclaims.db.path) plus its precondition SQL (applied with Jetty stopped), mvn jetty:run, login as the actor, the listed HTTP requests with curl-equivalent urllib calls (issue.jsp is a confirmation page, not a form), then Jetty stopped and the listed SQL read from that database.",
   "spec": "SPEC-PAY-001"
 }
