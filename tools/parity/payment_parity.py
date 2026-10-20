@@ -259,7 +259,7 @@ def cap_applies(base, request):
 def approved_checks(expected, actual, actor, change):
     """Checks of one step against the answer an approval states for it."""
     if "cap" in expected:
-        if expected != {"cap": True}:
+        if list(expected) != ["cap"] or expected["cap"] is not True:
             raise SystemExit("a cap approval is exactly {\"cap\": true}, got %s" % json.dumps(expected))
         expected = {"status": 200, "screen": "issue", "fields": [], "payee/method text": [],
                     "links": [], "operator": actor, "validation keys": [CAP_KEY]}
