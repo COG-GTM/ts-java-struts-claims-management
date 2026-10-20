@@ -80,8 +80,9 @@ class Snippets:
         k = self.key(path, spec)
         if k in self.cache:
             return self.cache[k]
-        full = os.path.join(ROOT, path)
-        if path in NO_EMBED or not os.path.isfile(full):
+        full = os.path.realpath(os.path.join(ROOT, path))
+        inside = full.startswith(os.path.realpath(ROOT) + os.sep)
+        if path in NO_EMBED or not inside or not os.path.isfile(full):
             self.cache[k] = None
             return None
         with open(full, encoding="utf-8") as fh:
@@ -117,7 +118,7 @@ def lives_in(text):
     return seen
 
 
-def render_live(step):
+def render_live(step, anchor=False):
     req = step["request"]
     resp = step["response"]
     form = req.get("form") or {}
@@ -126,15 +127,22 @@ def render_live(step):
         lines.append("  " + "&".join("%s=%s" % (k, v) for k, v in form.items()))
     if req.get("note"):
         lines.append("  (" + req["note"] + ")")
-    out = ['<div class="live" id="live-%s"><div class="live-head"><span class="tag tag-observed">Observed</span> '
-           '<strong>%s</strong> %s</div>' % (step["id"], step["id"], esc(step["purpose"]))]
+    id_attr = ' id="live-%s"' % step["id"] if anchor else ""
+    out = ['<div class="live"%s><div class="live-head"><span class="tag tag-observed">Observed</span> '
+           '<strong>%s</strong> %s</div>' % (id_attr, step["id"], esc(step["purpose"]))]
     out.append('<div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>%s</code></pre></div>'
                % esc("\n".join(lines)))
     if "summary" in resp:
         s = resp["summary"]
-        body = "issued: %s\nerror pages: %d\nper request: %s" % (
-            ", ".join(s["issued"]), s["error_pages"],
-            ", ".join("error" if r["error_page"] else r["fields"].get("checkNumber", "?") for r in resp["responses"]))
+        rl = ["issued: %s" % ", ".join(s["issued"]), "error pages: %d" % s["error_pages"], "per request:"]
+        for i, r in enumerate(resp["responses"], 1):
+            line = "  #%d HTTP %s ns:view %s" % (i, r["status"], r.get("forward"))
+            if r["error_page"]:
+                line += ", Claims System Error page, Reference status: %s" % r.get("error_reference_status")
+            else:
+                line += ", checkNumber %s" % r["fields"].get("checkNumber", "?")
+            rl.append(line)
+        body = "\n".join(rl)
     else:
         rl = ["HTTP %s" % resp["status"]]
         if resp.get("location"):
@@ -351,7 +359,7 @@ def build():
         "@@NNV@@": str(vcounts["Not verifiable"]), "@@NLIVE@@": str(len(live_steps)),
         "@@SVG@@": "".join(svg), "@@FLOWTEXT@@": "".join(t_html),
         "@@DOCROWS@@": "".join(d_html), "@@FINDINGS@@": "".join(f_html),
-        "@@LIVE@@": "".join(render_live(s) for s in live["steps"]),
+        "@@LIVE@@": "".join(render_live(s, anchor=True) for s in live["steps"]),
         "@@NODEDATA@@": json.dumps(node_data, sort_keys=True).replace("</", "<\\/"),
         "@@TEMPLATES@@": live_html,
     }.items():
@@ -530,7 +538,7 @@ pre.code code{background:none;padding:0;font-size:1em}
     });
     var pl = panel.querySelector('.pl');
     n.live.forEach(function(lid){
-      var t = document.getElementById('tpl-'+lid); if(t){ var c=t.content.cloneNode(true); c.firstChild.removeAttribute('id'); pl.appendChild(c);} });
+      var t = document.getElementById('tpl-'+lid); if(t){ var c=t.content.cloneNode(true); pl.appendChild(c);} });
     panel.querySelector('.closebtn').addEventListener('click', function(){
       panel.hidden=true; svg.classList.remove('has-sel');
       svg.querySelectorAll('.node').forEach(function(g){g.classList.remove('sel','near');});
