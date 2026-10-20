@@ -15,8 +15,10 @@ The impact of CHG-nnn is computed, not written by hand:
   any other is "reclassified";
 * tests: every ``@Test`` method under ``services/*/src/test`` whose javadoc
   names the record;
-* files changed: the files of every commit whose message names the record,
-  plus uncommitted changes in the working tree when run before committing.
+* files changed: the record, its HTML view, and the files of every commit
+  whose message names the record (still present in the tree). Uncommitted
+  changes are not counted, so run it again after the commit that names the
+  record and commit the refreshed block.
 
 Usage: python3 tools/changes.py   (make changes). The output has no timestamp
 and no commit ids, so a clean checkout regenerates the same bytes.
@@ -117,10 +119,6 @@ def files_changed(change, own):
     files = set(own)
     log = git("log", "--all", "--grep=" + change, "--name-only", "--format=")
     files.update(line for line in log.splitlines() if line.strip() and "__pycache__" not in line)
-    for line in git("status", "--porcelain", "--untracked-files=all").splitlines():
-        path = line[3:].split(" -> ")[-1]
-        if "/target/" not in "/" + path and "__pycache__" not in path:
-            files.add(path)
     return sorted(f for f in files if os.path.exists(os.path.join(ROOT, f)) or f in own)
 
 
