@@ -152,8 +152,9 @@ ids quoted below only hold for that starting state.
     number and status; payee, method and claim are not shown
     (`src/main/java/com/northstar/claims/web/PaymentIssueAction.java:37-43`,
     `src/main/webapp/WEB-INF/jsp/payment/issue.jsp:16-25`).
-33. **Observed** — Eight simultaneous issues for claim 2 produced five payments (`CHK-71` …
-    `CHK-75`) and three error pages (`L28`, `L29`). This is consistent with two requests
+33. **Observed** — Eight simultaneous issues for claim 2 produced six payments (`CHK-71` …
+    `CHK-76`) and two error pages (`L28`, `L29`); an earlier run of the same script on a
+    fresh seed gave five payments and three error pages, so the loss varies run to run. This is consistent with two requests
     reading the same `max+1` id and the primary key rejecting the second insert
     (`src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:61-75`,
     `src/main/resources/db/schema.sql:116`); the error page does not say why.
@@ -225,7 +226,7 @@ ids quoted below only hold for that starting state.
 
 51. **Read** — Any exception in an action forwards to `error.jsp` through the global
     exception handler (`src/main/webapp/WEB-INF/struts-config.xml:59-60`).
-52. **Observed** — Every failure above (`L05`, `L06`, `L17`, `L18`, `L19`, three of `L28`)
+52. **Observed** — Every failure above (`L05`, `L06`, `L17`, `L18`, `L19`, the error pages of `L28`)
     answers HTTP `200` with "Reference status: null": `error.jsp` prints
     `javax.servlet.error.status_code`, which only the container's error-page mechanism sets
     (`src/main/webapp/WEB-INF/jsp/error.jsp:9`). A client cannot tell a failed issue from a
@@ -333,7 +334,7 @@ slice, checked against the code and the live run.
 | D08 | "The custom NorthStar tag library supplies field spans used by screen tests and operations support scripts." | `docs/ARCHITECTURE.txt:25-26` | Confirmed | `FieldTag` writes `<span id="f_...">` and `capture.py` reads exactly that (`src/main/java/com/northstar/claims/web/tag/FieldTag.java:34-46`, `tools/capture/capture.py:21-23`). Payee and method have no span (finding 41). |
 | D09 | "The default Struts module contains ... settlement, payment, and reporting screens." | `README.md:11-12` | Confirmed | Four payment screens exist (`src/main/webapp/WEB-INF/struts-config.xml:223-238`, `src/main/webapp/WEB-INF/struts-config.xml:340-355`), but none is an input screen for issuing (finding 5). |
 | D10 | "Data access is split between raw JDBC DAOs and several direct-JDBC workflow actions." | `README.md:13-14` | Confirmed | The issue path uses both: `PaymentDAO`/`SettlementDAO` and the action's own `nextId` query (`src/main/java/com/northstar/claims/web/PaymentIssueAction.java:23-36`). |
-| D11 | "The application declares a container-managed JNDI datasource but retains a DriverManager fallback"; "DriverManager fallback is expected when the binding is not available." | `README.md:45-47`, `docs/RUNBOOK.txt:85-86` | Confirmed | Observed: every pool connection under `make run` came from the fallback (finding 53; `src/main/java/com/northstar/claims/dao/ConnectionPool.java:44-48`). |
+| D11 | "The application declares a container-managed JNDI datasource but retains a DriverManager fallback"; "DriverManager fallback is expected when the binding is not available." | `README.md:45-47`, `docs/RUNBOOK.txt:55-56` | Confirmed | Observed: every pool connection under `make run` came from the fallback (finding 53; `src/main/java/com/northstar/claims/dao/ConnectionPool.java:44-48`). |
 | D12 | Tomcat: configure `jdbc/ClaimsDB` as an HSQLDB data source "user SA, and an empty password"; WebSphere keeps "a file JDBC fallback". | `docs/RUNBOOK.txt:40-42`, `docs/RUNBOOK.txt:52-53` | Not verifiable | No Tomcat or WebSphere here. The Jetty equivalent sets no password and fails (`src/main/webapp/WEB-INF/jetty-env.xml:15-21`). |
 | D13 | "Form bean for the PaymentForm screen. String properties preserve the request-bound behavior of the original UI." | `src/main/java/com/northstar/claims/web/form/PaymentForm.java:7-10` | Contradicted | There is no payment input screen, the action never reads the bean, and its `checkNumber` property has no effect (L11) (`src/main/java/com/northstar/claims/web/PaymentIssueAction.java:22-33`). Findings 5, 8, 25, 26. |
 | D14 | "Handles the PaymentIssueAction request ... The action loads screen data and completes the configured request workflow." | `src/main/java/com/northstar/claims/web/PaymentIssueAction.java:13-16` | Contradicted | Its effect is an insert into `PAYMENT`, on GET as well as POST (L10) (`src/main/java/com/northstar/claims/web/PaymentIssueAction.java:36`). Finding 7. |
@@ -343,7 +344,7 @@ slice, checked against the code and the live run.
 | D18 | "The settlement is available for payment review." | `src/main/resources/ApplicationResources.properties:95` | Contradicted | Payments do not need a reviewed or newly saved settlement: claim 119's seeded `0` settlement was paid before any save (L10, L11), and there is no payment review step. Findings 19, 27. |
 | D19 | "Loads the latest settlement for a claim." | `src/main/java/com/northstar/claims/dao/SettlementDAO.java:99` | Confirmed | `order by settlement_id desc`, first row; after the save, the issue referenced settlement 121 (L23) (`src/main/java/com/northstar/claims/dao/SettlementDAO.java:106-109`). |
 | D20 | Nav link "Payment History". | `src/main/webapp/WEB-INF/jsp/nav.jsp:6`, `src/main/resources/ApplicationResources.properties:38` | Contradicted | It shows one claim's history, always claim 119, with no way to choose another on screen (L03) (`src/main/java/com/northstar/claims/web/PaymentHistoryAction.java:20`). |
-| D21 | "Payment history is displayed in issue order." | `src/main/resources/ApplicationResources.properties:102` | Confirmed | Rows are ordered by `payment_id`, which is assigned at issue; the race rows appear as 71–75 (L29) (`src/main/java/com/northstar/claims/dao/PaymentDAO.java:107`). |
+| D21 | "Payment history is displayed in issue order." | `src/main/resources/ApplicationResources.properties:102` | Confirmed | Rows are ordered by `payment_id`, which is assigned at issue; the race rows appear as 71–76 (L29) (`src/main/java/com/northstar/claims/dao/PaymentDAO.java:107`). |
 | D22 | History link "Payment detail". | `src/main/webapp/WEB-INF/jsp/payment/history.jsp:16-19`, `src/main/resources/ApplicationResources.properties:278` | Contradicted | Always payment 61, whatever claim is listed, printed twice; on a fresh seed it opens the error page (L05). Findings 37, 38. |
 | D23 | "Loads the paymentDetail screen data and selects its configured forward." | `src/main/java/com/northstar/claims/web/PaymentDetailAction.java:11` | Confirmed | Read-only lookup by id (L07), default id 61 (`src/main/java/com/northstar/claims/web/PaymentDetailAction.java:17-24`). |
 | D24 | "Calculates total issued money for a claim" / "Total issued". | `src/main/java/com/northstar/claims/dao/PaymentDAO.java:121`, `src/main/resources/ApplicationResources.properties:240` | Confirmed | It sums every payment row for the claim (all are `ISSUED`); negative rows reduce it and the raw `1.005` is included (L27) (`src/main/java/com/northstar/claims/dao/PaymentDAO.java:128`). Finding 45. |

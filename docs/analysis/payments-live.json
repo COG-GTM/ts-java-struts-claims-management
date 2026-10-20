@@ -794,26 +794,6 @@
    "response": {
     "responses": [
      {
-      "error_page": true,
-      "error_reference_status": "null",
-      "fields": {},
-      "forward": "/WEB-INF/jsp/error.jsp",
-      "link_count_detail61": 0,
-      "links": [],
-      "location": null,
-      "status": 200
-     },
-     {
-      "error_page": true,
-      "error_reference_status": "null",
-      "fields": {},
-      "forward": "/WEB-INF/jsp/error.jsp",
-      "link_count_detail61": 0,
-      "links": [],
-      "location": null,
-      "status": 200
-     },
-     {
       "error_page": false,
       "error_reference_status": null,
       "fields": {
@@ -833,7 +813,7 @@
       "error_page": false,
       "error_reference_status": null,
       "fields": {
-       "checkNumber": "CHK-73",
+       "checkNumber": "CHK-76",
        "paymentAmount": "1.00",
        "paymentStatus": "ISSUED"
       },
@@ -842,32 +822,6 @@
       "links": [
        "/claims/payment/history.do"
       ],
-      "location": null,
-      "status": 200
-     },
-     {
-      "error_page": false,
-      "error_reference_status": null,
-      "fields": {
-       "checkNumber": "CHK-75",
-       "paymentAmount": "1.00",
-       "paymentStatus": "ISSUED"
-      },
-      "forward": "/WEB-INF/jsp/payment/issue.jsp",
-      "link_count_detail61": 0,
-      "links": [
-       "/claims/payment/history.do"
-      ],
-      "location": null,
-      "status": 200
-     },
-     {
-      "error_page": true,
-      "error_reference_status": "null",
-      "fields": {},
-      "forward": "/WEB-INF/jsp/error.jsp",
-      "link_count_detail61": 0,
-      "links": [],
       "location": null,
       "status": 200
      },
@@ -902,16 +856,69 @@
       ],
       "location": null,
       "status": 200
+     },
+     {
+      "error_page": true,
+      "error_reference_status": "null",
+      "fields": {},
+      "forward": "/WEB-INF/jsp/error.jsp",
+      "link_count_detail61": 0,
+      "links": [],
+      "location": null,
+      "status": 200
+     },
+     {
+      "error_page": false,
+      "error_reference_status": null,
+      "fields": {
+       "checkNumber": "CHK-75",
+       "paymentAmount": "1.00",
+       "paymentStatus": "ISSUED"
+      },
+      "forward": "/WEB-INF/jsp/payment/issue.jsp",
+      "link_count_detail61": 0,
+      "links": [
+       "/claims/payment/history.do"
+      ],
+      "location": null,
+      "status": 200
+     },
+     {
+      "error_page": false,
+      "error_reference_status": null,
+      "fields": {
+       "checkNumber": "CHK-73",
+       "paymentAmount": "1.00",
+       "paymentStatus": "ISSUED"
+      },
+      "forward": "/WEB-INF/jsp/payment/issue.jsp",
+      "link_count_detail61": 0,
+      "links": [
+       "/claims/payment/history.do"
+      ],
+      "location": null,
+      "status": 200
+     },
+     {
+      "error_page": true,
+      "error_reference_status": "null",
+      "fields": {},
+      "forward": "/WEB-INF/jsp/error.jsp",
+      "link_count_detail61": 0,
+      "links": [],
+      "location": null,
+      "status": 200
      }
     ],
     "summary": {
-     "error_pages": 3,
+     "error_pages": 2,
      "issued": [
       "CHK-71",
       "CHK-72",
       "CHK-73",
       "CHK-74",
-      "CHK-75"
+      "CHK-75",
+      "CHK-76"
      ]
     }
    }
@@ -934,18 +941,21 @@
      "checkNumber_73": "CHK-73",
      "checkNumber_74": "CHK-74",
      "checkNumber_75": "CHK-75",
+     "checkNumber_76": "CHK-76",
      "paymentAmount_2": "250.00",
      "paymentAmount_71": "1.00",
      "paymentAmount_72": "1.00",
      "paymentAmount_73": "1.00",
      "paymentAmount_74": "1.00",
      "paymentAmount_75": "1.00",
+     "paymentAmount_76": "1.00",
      "paymentStatus_2": "ISSUED",
      "paymentStatus_71": "ISSUED",
      "paymentStatus_72": "ISSUED",
      "paymentStatus_73": "ISSUED",
      "paymentStatus_74": "ISSUED",
-     "paymentStatus_75": "ISSUED"
+     "paymentStatus_75": "ISSUED",
+     "paymentStatus_76": "ISSUED"
     },
     "forward": "/WEB-INF/jsp/payment/history.jsp",
     "link_count_detail61": 2,

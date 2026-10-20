@@ -214,12 +214,13 @@ pre.code code{background:none;padding:0;font-size:1em}
 <span class="ln">8</span>68|119|119|Default|5.0|CHECK|CHK-68|2019-04-03|ISSUED
 <span class="ln">9</span>69|120|120|Closed claim|75.0|CHECK|CHK-69|2019-04-03|ISSUED
 <span class="ln">10</span>70|119|121|After save|1000.0|CHECK|CHK-70|2019-04-03|ISSUED
-<span class="ln">11</span>71|2|2|Race 6|1.0|CHECK|CHK-71|2019-04-03|ISSUED
-<span class="ln">12</span>72|2|2|Race 2|1.0|CHECK|CHK-72|2019-04-03|ISSUED
-<span class="ln">13</span>73|2|2|Race 3|1.0|CHECK|CHK-73|2019-04-03|ISSUED
-<span class="ln">14</span>74|2|2|Race 7|1.0|CHECK|CHK-74|2019-04-03|ISSUED
-<span class="ln">15</span>75|2|2|Race 4|1.0|CHECK|CHK-75|2019-04-03|ISSUED
-<span class="ln">16</span>settlement.claim119.max=121 count=2
+<span class="ln">11</span>71|2|2|Race 2|1.0|CHECK|CHK-71|2019-04-03|ISSUED
+<span class="ln">12</span>72|2|2|Race 0|1.0|CHECK|CHK-72|2019-04-03|ISSUED
+<span class="ln">13</span>73|2|2|Race 6|1.0|CHECK|CHK-73|2019-04-03|ISSUED
+<span class="ln">14</span>74|2|2|Race 3|1.0|CHECK|CHK-74|2019-04-03|ISSUED
+<span class="ln">15</span>75|2|2|Race 5|1.0|CHECK|CHK-75|2019-04-03|ISSUED
+<span class="ln">16</span>76|2|2|Race 1|1.0|CHECK|CHK-76|2019-04-03|ISSUED
+<span class="ln">17</span>settlement.claim119.max=121 count=2
 </code></pre></details></div></details></td></tr><tr id="D07" data-verdict="contradicted"><th scope="row">D07</th><td class="claim">&quot;JSPs ... use include files for the operator header, navigation, and footer.&quot;<div class="src"><code>docs/ARCHITECTURE.txt:24-25</code></div></td><td><span class="badge badge-contradicted">&#10007; Contradicted</span></td><td class="ev"><details><summary><code>history.jsp</code> and <code>issue.jsp</code> inline their own banner table instead of including <code>header.jsp</code>; only <code>detail.jsp</code> and <code>remittance.jsp</code> include it (<code>src/main/webapp/WEB-INF/jsp/payment/history.jsp:8-15</code>, <code>src/main/webapp/WEB-INF/jsp/payment/issue.jsp:8-15</code>, <code>src/main/webapp/WEB-INF/jsp/payment/detail.jsp:5-6</code>, <code>src/main/webapp/WEB-INF/jsp/payment/remittance.jsp:6-7</code>).</summary><div class="evidence"><details class="cite" open><summary><span class="tag tag-read">Read</span> <code>docs/ARCHITECTURE.txt:24-25</code></summary><pre class="code"><code><span class="ln">24</span>JSPs are under WEB-INF/jsp and use include files for the operator header,
 <span class="ln">25</span>navigation, and footer. The custom NorthStar tag library supplies field spans
 </code></pre></details><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/webapp/WEB-INF/jsp/payment/history.jsp:8-15</code></summary><pre class="code"><code><span class="ln">8</span>&lt;table class=&quot;page&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;&gt;
@@ -310,10 +311,12 @@ pre.code code{background:none;padding:0;font-size:1em}
 <span class="ln">34</span>        payment.setIssuedDate(&quot;2019-04-03&quot;);
 <span class="ln">35</span>        payment.setStatus(&quot;ISSUED&quot;);
 <span class="ln">36</span>        new PaymentDAO().insert(payment);
-</code></pre></details></div></details></td></tr><tr id="D11" data-verdict="confirmed"><th scope="row">D11</th><td class="claim">&quot;The application declares a container-managed JNDI datasource but retains a DriverManager fallback&quot;; &quot;DriverManager fallback is expected when the binding is not available.&quot;<div class="src"><code>README.md:45-47</code>, <code>docs/RUNBOOK.txt:85-86</code></div></td><td><span class="badge badge-confirmed">&#10003; Confirmed</span></td><td class="ev"><details><summary>Observed: every pool connection under <code>make run</code> came from the fallback (finding <a class="f-ref" href="#finding-53">53</a>; <code>src/main/java/com/northstar/claims/dao/ConnectionPool.java:44-48</code>).</summary><div class="evidence"><details class="cite" open><summary><span class="tag tag-read">Read</span> <code>README.md:45-47</code></summary><pre class="code"><code><span class="ln">45</span>The application declares a container-managed JNDI datasource but retains a
+</code></pre></details></div></details></td></tr><tr id="D11" data-verdict="confirmed"><th scope="row">D11</th><td class="claim">&quot;The application declares a container-managed JNDI datasource but retains a DriverManager fallback&quot;; &quot;DriverManager fallback is expected when the binding is not available.&quot;<div class="src"><code>README.md:45-47</code>, <code>docs/RUNBOOK.txt:55-56</code></div></td><td><span class="badge badge-confirmed">&#10003; Confirmed</span></td><td class="ev"><details><summary>Observed: every pool connection under <code>make run</code> came from the fallback (finding <a class="f-ref" href="#finding-53">53</a>; <code>src/main/java/com/northstar/claims/dao/ConnectionPool.java:44-48</code>).</summary><div class="evidence"><details class="cite" open><summary><span class="tag tag-read">Read</span> <code>README.md:45-47</code></summary><pre class="code"><code><span class="ln">45</span>The application declares a container-managed JNDI datasource but retains a
 <span class="ln">46</span>DriverManager fallback because deployment environments differ. Several
 <span class="ln">47</span>actions contain direct SQL, SQL construction is inconsistent, and the
-</code></pre></details><details class="cite" open><summary><span class="tag tag-read">Read</span> <code>docs/RUNBOOK.txt:85-86</code></summary><pre class="code"><code></code></pre></details><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/java/com/northstar/claims/dao/ConnectionPool.java:44-48</code></summary><pre class="code"><code><span class="ln">44</span>        } catch (Exception namingFailure) {
+</code></pre></details><details class="cite" open><summary><span class="tag tag-read">Read</span> <code>docs/RUNBOOK.txt:55-56</code></summary><pre class="code"><code><span class="ln">55</span>* JNDI lookup warning: confirm the resource reference and server datasource.
+<span class="ln">56</span>  DriverManager fallback is expected when the binding is not available.
+</code></pre></details><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/java/com/northstar/claims/dao/ConnectionPool.java:44-48</code></summary><pre class="code"><code><span class="ln">44</span>        } catch (Exception namingFailure) {
 <span class="ln">45</span>            log.warn(&quot;Container data source unavailable; using DriverManager&quot;, namingFailure);
 <span class="ln">46</span>            System.out.println(&quot;DataSource lookup failed: &quot; + namingFailure.getClass().getName());
 <span class="ln">47</span>            return DriverManager.getConnection(url, &quot;SA&quot;, &quot;&quot;);
@@ -400,12 +403,13 @@ f_ spans:
 <span class="ln">8</span>68|119|119|Default|5.0|CHECK|CHK-68|2019-04-03|ISSUED
 <span class="ln">9</span>69|120|120|Closed claim|75.0|CHECK|CHK-69|2019-04-03|ISSUED
 <span class="ln">10</span>70|119|121|After save|1000.0|CHECK|CHK-70|2019-04-03|ISSUED
-<span class="ln">11</span>71|2|2|Race 6|1.0|CHECK|CHK-71|2019-04-03|ISSUED
-<span class="ln">12</span>72|2|2|Race 2|1.0|CHECK|CHK-72|2019-04-03|ISSUED
-<span class="ln">13</span>73|2|2|Race 3|1.0|CHECK|CHK-73|2019-04-03|ISSUED
-<span class="ln">14</span>74|2|2|Race 7|1.0|CHECK|CHK-74|2019-04-03|ISSUED
-<span class="ln">15</span>75|2|2|Race 4|1.0|CHECK|CHK-75|2019-04-03|ISSUED
-<span class="ln">16</span>settlement.claim119.max=121 count=2
+<span class="ln">11</span>71|2|2|Race 2|1.0|CHECK|CHK-71|2019-04-03|ISSUED
+<span class="ln">12</span>72|2|2|Race 0|1.0|CHECK|CHK-72|2019-04-03|ISSUED
+<span class="ln">13</span>73|2|2|Race 6|1.0|CHECK|CHK-73|2019-04-03|ISSUED
+<span class="ln">14</span>74|2|2|Race 3|1.0|CHECK|CHK-74|2019-04-03|ISSUED
+<span class="ln">15</span>75|2|2|Race 5|1.0|CHECK|CHK-75|2019-04-03|ISSUED
+<span class="ln">16</span>76|2|2|Race 1|1.0|CHECK|CHK-76|2019-04-03|ISSUED
+<span class="ln">17</span>settlement.claim119.max=121 count=2
 </code></pre></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L11</code> Issue by POST, transcript inputs plus a checkNumber</summary><div class="live" id="live-L11"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L11</strong> Issue by POST, transcript inputs plus a checkNumber</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>POST /claims/payment/issue.do
   amount=1000.00&amp;checkNumber=MY-CHECK-1&amp;claimId=119&amp;payeeName=Reserved Claimant&amp;paymentMethod=CHECK</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
 ns:view /WEB-INF/jsp/payment/issue.jsp
@@ -441,7 +445,7 @@ f_ spans:
 </code></pre></details><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/java/com/northstar/claims/web/PaymentHistoryAction.java:20</code></summary><pre class="code"><code><span class="ln">20</span>        int claimId = integer(request.getParameter(&quot;claimId&quot;), 119);
 </code></pre></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L03</code> Nav link: history with no claimId (fresh seed)</summary><div class="live" id="live-L03"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L03</strong> Nav link: history with no claimId (fresh seed)</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/history.do</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
 ns:view /WEB-INF/jsp/payment/history.jsp
-links to detail.do?paymentId=61: 2</code></pre></div></div></div></details></div></details></td></tr><tr id="D21" data-verdict="confirmed"><th scope="row">D21</th><td class="claim">&quot;Payment history is displayed in issue order.&quot;<div class="src"><code>src/main/resources/ApplicationResources.properties:102</code></div></td><td><span class="badge badge-confirmed">&#10003; Confirmed</span></td><td class="ev"><details><summary>Rows are ordered by <code>payment_id</code>, which is assigned at issue; the race rows appear as 71–75 (<a class="live-ref" href="#live-L29">L29</a>) (<code>src/main/java/com/northstar/claims/dao/PaymentDAO.java:107</code>).</summary><div class="evidence"><details class="cite" open><summary><span class="tag tag-read">Read</span> <code>src/main/resources/ApplicationResources.properties:102</code></summary><pre class="code"><code><span class="ln">102</span>payment.history.instruction=Payment history is displayed in issue order.
+links to detail.do?paymentId=61: 2</code></pre></div></div></div></details></div></details></td></tr><tr id="D21" data-verdict="confirmed"><th scope="row">D21</th><td class="claim">&quot;Payment history is displayed in issue order.&quot;<div class="src"><code>src/main/resources/ApplicationResources.properties:102</code></div></td><td><span class="badge badge-confirmed">&#10003; Confirmed</span></td><td class="ev"><details><summary>Rows are ordered by <code>payment_id</code>, which is assigned at issue; the race rows appear as 71–76 (<a class="live-ref" href="#live-L29">L29</a>) (<code>src/main/java/com/northstar/claims/dao/PaymentDAO.java:107</code>).</summary><div class="evidence"><details class="cite" open><summary><span class="tag tag-read">Read</span> <code>src/main/resources/ApplicationResources.properties:102</code></summary><pre class="code"><code><span class="ln">102</span>payment.history.instruction=Payment history is displayed in issue order.
 </code></pre></details><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/java/com/northstar/claims/dao/PaymentDAO.java:107</code></summary><pre class="code"><code><span class="ln">107</span>            ps = conn.prepareStatement(&quot;select * from PAYMENT where claim_id = ? order by payment_id&quot;);
 </code></pre></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L29</code> History for claim 2 after the race</summary><div class="live" id="live-L29"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L29</strong> History for claim 2 after the race</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/history.do?claimId=2</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
 ns:view /WEB-INF/jsp/payment/history.jsp
@@ -453,18 +457,21 @@ f_ spans:
   checkNumber_73 = CHK-73
   checkNumber_74 = CHK-74
   checkNumber_75 = CHK-75
+  checkNumber_76 = CHK-76
   paymentAmount_2 = 250.00
   paymentAmount_71 = 1.00
   paymentAmount_72 = 1.00
   paymentAmount_73 = 1.00
   paymentAmount_74 = 1.00
   paymentAmount_75 = 1.00
+  paymentAmount_76 = 1.00
   paymentStatus_2 = ISSUED
   paymentStatus_71 = ISSUED
   paymentStatus_72 = ISSUED
   paymentStatus_73 = ISSUED
   paymentStatus_74 = ISSUED
-  paymentStatus_75 = ISSUED</code></pre></div></div></div></details></div></details></td></tr><tr id="D22" data-verdict="contradicted"><th scope="row">D22</th><td class="claim">History link &quot;Payment detail&quot;.<div class="src"><code>src/main/webapp/WEB-INF/jsp/payment/history.jsp:16-19</code>, <code>src/main/resources/ApplicationResources.properties:278</code></div></td><td><span class="badge badge-contradicted">&#10007; Contradicted</span></td><td class="ev"><details><summary>Always payment 61, whatever claim is listed, printed twice; on a fresh seed it opens the error page (<a class="live-ref" href="#live-L05">L05</a>). Findings <a class="f-ref" href="#finding-37">37</a>, <a class="f-ref" href="#finding-38">38</a>.</summary><div class="evidence"><details class="cite" open><summary><span class="tag tag-read">Read</span> <code>src/main/webapp/WEB-INF/jsp/payment/history.jsp:16-19</code></summary><pre class="code"><code><span class="ln">16</span>&lt;p&gt;&lt;a href=&quot;detail.do?paymentId=61&quot;&gt;&lt;bean:message key=&quot;payment.detailLink&quot;/&gt;&lt;/a&gt; |
+  paymentStatus_75 = ISSUED
+  paymentStatus_76 = ISSUED</code></pre></div></div></div></details></div></details></td></tr><tr id="D22" data-verdict="contradicted"><th scope="row">D22</th><td class="claim">History link &quot;Payment detail&quot;.<div class="src"><code>src/main/webapp/WEB-INF/jsp/payment/history.jsp:16-19</code>, <code>src/main/resources/ApplicationResources.properties:278</code></div></td><td><span class="badge badge-contradicted">&#10007; Contradicted</span></td><td class="ev"><details><summary>Always payment 61, whatever claim is listed, printed twice; on a fresh seed it opens the error page (<a class="live-ref" href="#live-L05">L05</a>). Findings <a class="f-ref" href="#finding-37">37</a>, <a class="f-ref" href="#finding-38">38</a>.</summary><div class="evidence"><details class="cite" open><summary><span class="tag tag-read">Read</span> <code>src/main/webapp/WEB-INF/jsp/payment/history.jsp:16-19</code></summary><pre class="code"><code><span class="ln">16</span>&lt;p&gt;&lt;a href=&quot;detail.do?paymentId=61&quot;&gt;&lt;bean:message key=&quot;payment.detailLink&quot;/&gt;&lt;/a&gt; |
 <span class="ln">17</span>&lt;a href=&quot;remittance.do?claimId=${claimId}&quot;&gt;&lt;bean:message key=&quot;payment.remittanceLink&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
 <span class="ln">18</span>&lt;p&gt;&lt;a href=&quot;detail.do?paymentId=61&quot;&gt;&lt;bean:message key=&quot;payment.detailLink&quot;/&gt;&lt;/a&gt; |
 <span class="ln">19</span>&lt;a href=&quot;remittance.do?claimId=${claimId}&quot;&gt;&lt;bean:message key=&quot;payment.remittanceLink&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
@@ -739,12 +746,13 @@ Location: http://localhost:8080/claims/login.do</code></pre></div></div></div></
 <span class="ln">8</span>68|119|119|Default|5.0|CHECK|CHK-68|2019-04-03|ISSUED
 <span class="ln">9</span>69|120|120|Closed claim|75.0|CHECK|CHK-69|2019-04-03|ISSUED
 <span class="ln">10</span>70|119|121|After save|1000.0|CHECK|CHK-70|2019-04-03|ISSUED
-<span class="ln">11</span>71|2|2|Race 6|1.0|CHECK|CHK-71|2019-04-03|ISSUED
-<span class="ln">12</span>72|2|2|Race 2|1.0|CHECK|CHK-72|2019-04-03|ISSUED
-<span class="ln">13</span>73|2|2|Race 3|1.0|CHECK|CHK-73|2019-04-03|ISSUED
-<span class="ln">14</span>74|2|2|Race 7|1.0|CHECK|CHK-74|2019-04-03|ISSUED
-<span class="ln">15</span>75|2|2|Race 4|1.0|CHECK|CHK-75|2019-04-03|ISSUED
-<span class="ln">16</span>settlement.claim119.max=121 count=2
+<span class="ln">11</span>71|2|2|Race 2|1.0|CHECK|CHK-71|2019-04-03|ISSUED
+<span class="ln">12</span>72|2|2|Race 0|1.0|CHECK|CHK-72|2019-04-03|ISSUED
+<span class="ln">13</span>73|2|2|Race 6|1.0|CHECK|CHK-73|2019-04-03|ISSUED
+<span class="ln">14</span>74|2|2|Race 3|1.0|CHECK|CHK-74|2019-04-03|ISSUED
+<span class="ln">15</span>75|2|2|Race 5|1.0|CHECK|CHK-75|2019-04-03|ISSUED
+<span class="ln">16</span>76|2|2|Race 1|1.0|CHECK|CHK-76|2019-04-03|ISSUED
+<span class="ln">17</span>settlement.claim119.max=121 count=2
 </code></pre></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L10</code> Issue by GET, no amount: falls back to seeded settlement 119 amount</summary><div class="live" id="live-L10"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L10</strong> Issue by GET, no amount: falls back to seeded settlement 119 amount</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/issue.do
   claimId=119&amp;payeeName=Get Payee&amp;paymentMethod=CHECK</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
 ns:view /WEB-INF/jsp/payment/issue.jsp
@@ -784,12 +792,13 @@ f_ spans:
 <span class="ln">8</span>68|119|119|Default|5.0|CHECK|CHK-68|2019-04-03|ISSUED
 <span class="ln">9</span>69|120|120|Closed claim|75.0|CHECK|CHK-69|2019-04-03|ISSUED
 <span class="ln">10</span>70|119|121|After save|1000.0|CHECK|CHK-70|2019-04-03|ISSUED
-<span class="ln">11</span>71|2|2|Race 6|1.0|CHECK|CHK-71|2019-04-03|ISSUED
-<span class="ln">12</span>72|2|2|Race 2|1.0|CHECK|CHK-72|2019-04-03|ISSUED
-<span class="ln">13</span>73|2|2|Race 3|1.0|CHECK|CHK-73|2019-04-03|ISSUED
-<span class="ln">14</span>74|2|2|Race 7|1.0|CHECK|CHK-74|2019-04-03|ISSUED
-<span class="ln">15</span>75|2|2|Race 4|1.0|CHECK|CHK-75|2019-04-03|ISSUED
-<span class="ln">16</span>settlement.claim119.max=121 count=2
+<span class="ln">11</span>71|2|2|Race 2|1.0|CHECK|CHK-71|2019-04-03|ISSUED
+<span class="ln">12</span>72|2|2|Race 0|1.0|CHECK|CHK-72|2019-04-03|ISSUED
+<span class="ln">13</span>73|2|2|Race 6|1.0|CHECK|CHK-73|2019-04-03|ISSUED
+<span class="ln">14</span>74|2|2|Race 3|1.0|CHECK|CHK-74|2019-04-03|ISSUED
+<span class="ln">15</span>75|2|2|Race 5|1.0|CHECK|CHK-75|2019-04-03|ISSUED
+<span class="ln">16</span>76|2|2|Race 1|1.0|CHECK|CHK-76|2019-04-03|ISSUED
+<span class="ln">17</span>settlement.claim119.max=121 count=2
 </code></pre></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L20</code> Unparsable claimId</summary><div class="live" id="live-L20"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L20</strong> Unparsable claimId</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>POST /claims/payment/issue.do
   amount=5&amp;claimId=abc&amp;payeeName=Default&amp;paymentMethod=CHECK</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
 ns:view /WEB-INF/jsp/payment/issue.jsp
@@ -870,12 +879,13 @@ f_ spans:
 <span class="ln">8</span>68|119|119|Default|5.0|CHECK|CHK-68|2019-04-03|ISSUED
 <span class="ln">9</span>69|120|120|Closed claim|75.0|CHECK|CHK-69|2019-04-03|ISSUED
 <span class="ln">10</span>70|119|121|After save|1000.0|CHECK|CHK-70|2019-04-03|ISSUED
-<span class="ln">11</span>71|2|2|Race 6|1.0|CHECK|CHK-71|2019-04-03|ISSUED
-<span class="ln">12</span>72|2|2|Race 2|1.0|CHECK|CHK-72|2019-04-03|ISSUED
-<span class="ln">13</span>73|2|2|Race 3|1.0|CHECK|CHK-73|2019-04-03|ISSUED
-<span class="ln">14</span>74|2|2|Race 7|1.0|CHECK|CHK-74|2019-04-03|ISSUED
-<span class="ln">15</span>75|2|2|Race 4|1.0|CHECK|CHK-75|2019-04-03|ISSUED
-<span class="ln">16</span>settlement.claim119.max=121 count=2
+<span class="ln">11</span>71|2|2|Race 2|1.0|CHECK|CHK-71|2019-04-03|ISSUED
+<span class="ln">12</span>72|2|2|Race 0|1.0|CHECK|CHK-72|2019-04-03|ISSUED
+<span class="ln">13</span>73|2|2|Race 6|1.0|CHECK|CHK-73|2019-04-03|ISSUED
+<span class="ln">14</span>74|2|2|Race 3|1.0|CHECK|CHK-74|2019-04-03|ISSUED
+<span class="ln">15</span>75|2|2|Race 5|1.0|CHECK|CHK-75|2019-04-03|ISSUED
+<span class="ln">16</span>76|2|2|Race 1|1.0|CHECK|CHK-76|2019-04-03|ISSUED
+<span class="ln">17</span>settlement.claim119.max=121 count=2
 </code></pre></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L16</code> Free-text lower-case payment method</summary><div class="live" id="live-L16"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L16</strong> Free-text lower-case payment method</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>POST /claims/payment/issue.do
   amount=10&amp;claimId=119&amp;payeeName=Wire&amp;paymentMethod=wire</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
 ns:view /WEB-INF/jsp/payment/issue.jsp
@@ -922,12 +932,13 @@ f_ spans:
 <span class="ln">8</span>68|119|119|Default|5.0|CHECK|CHK-68|2019-04-03|ISSUED
 <span class="ln">9</span>69|120|120|Closed claim|75.0|CHECK|CHK-69|2019-04-03|ISSUED
 <span class="ln">10</span>70|119|121|After save|1000.0|CHECK|CHK-70|2019-04-03|ISSUED
-<span class="ln">11</span>71|2|2|Race 6|1.0|CHECK|CHK-71|2019-04-03|ISSUED
-<span class="ln">12</span>72|2|2|Race 2|1.0|CHECK|CHK-72|2019-04-03|ISSUED
-<span class="ln">13</span>73|2|2|Race 3|1.0|CHECK|CHK-73|2019-04-03|ISSUED
-<span class="ln">14</span>74|2|2|Race 7|1.0|CHECK|CHK-74|2019-04-03|ISSUED
-<span class="ln">15</span>75|2|2|Race 4|1.0|CHECK|CHK-75|2019-04-03|ISSUED
-<span class="ln">16</span>settlement.claim119.max=121 count=2
+<span class="ln">11</span>71|2|2|Race 2|1.0|CHECK|CHK-71|2019-04-03|ISSUED
+<span class="ln">12</span>72|2|2|Race 0|1.0|CHECK|CHK-72|2019-04-03|ISSUED
+<span class="ln">13</span>73|2|2|Race 6|1.0|CHECK|CHK-73|2019-04-03|ISSUED
+<span class="ln">14</span>74|2|2|Race 3|1.0|CHECK|CHK-74|2019-04-03|ISSUED
+<span class="ln">15</span>75|2|2|Race 5|1.0|CHECK|CHK-75|2019-04-03|ISSUED
+<span class="ln">16</span>76|2|2|Race 1|1.0|CHECK|CHK-76|2019-04-03|ISSUED
+<span class="ln">17</span>settlement.claim119.max=121 count=2
 </code></pre></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L22</code> Save a new settlement for claim 119 (1000.00)</summary><div class="live" id="live-L22"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L22</strong> Save a new settlement for claim 119 (1000.00)</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>POST /claims/settlement/save.do
   claimId=119&amp;coveredAmount=5000.00&amp;deductible=500.00&amp;depreciation=0.00</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
 ns:view /WEB-INF/jsp/settlement/save.jsp
@@ -968,12 +979,13 @@ f_ spans:
 <span class="ln">8</span>68|119|119|Default|5.0|CHECK|CHK-68|2019-04-03|ISSUED
 <span class="ln">9</span>69|120|120|Closed claim|75.0|CHECK|CHK-69|2019-04-03|ISSUED
 <span class="ln">10</span>70|119|121|After save|1000.0|CHECK|CHK-70|2019-04-03|ISSUED
-<span class="ln">11</span>71|2|2|Race 6|1.0|CHECK|CHK-71|2019-04-03|ISSUED
-<span class="ln">12</span>72|2|2|Race 2|1.0|CHECK|CHK-72|2019-04-03|ISSUED
-<span class="ln">13</span>73|2|2|Race 3|1.0|CHECK|CHK-73|2019-04-03|ISSUED
-<span class="ln">14</span>74|2|2|Race 7|1.0|CHECK|CHK-74|2019-04-03|ISSUED
-<span class="ln">15</span>75|2|2|Race 4|1.0|CHECK|CHK-75|2019-04-03|ISSUED
-<span class="ln">16</span>settlement.claim119.max=121 count=2
+<span class="ln">11</span>71|2|2|Race 2|1.0|CHECK|CHK-71|2019-04-03|ISSUED
+<span class="ln">12</span>72|2|2|Race 0|1.0|CHECK|CHK-72|2019-04-03|ISSUED
+<span class="ln">13</span>73|2|2|Race 6|1.0|CHECK|CHK-73|2019-04-03|ISSUED
+<span class="ln">14</span>74|2|2|Race 3|1.0|CHECK|CHK-74|2019-04-03|ISSUED
+<span class="ln">15</span>75|2|2|Race 5|1.0|CHECK|CHK-75|2019-04-03|ISSUED
+<span class="ln">16</span>76|2|2|Race 1|1.0|CHECK|CHK-76|2019-04-03|ISSUED
+<span class="ln">17</span>settlement.claim119.max=121 count=2
 </code></pre></details><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/resources/db/schema.sql:111</code></summary><pre class="code"><code><span class="ln">111</span>    amount DOUBLE NOT NULL,
 </code></pre></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L13</code> Sub-cent amount</summary><div class="live" id="live-L13"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L13</strong> Sub-cent amount</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>POST /claims/payment/issue.do
   amount=1.005&amp;claimId=119&amp;payeeName=Half&amp;paymentMethod=CHECK</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
@@ -1023,12 +1035,13 @@ f_ spans:
 <span class="ln">8</span>68|119|119|Default|5.0|CHECK|CHK-68|2019-04-03|ISSUED
 <span class="ln">9</span>69|120|120|Closed claim|75.0|CHECK|CHK-69|2019-04-03|ISSUED
 <span class="ln">10</span>70|119|121|After save|1000.0|CHECK|CHK-70|2019-04-03|ISSUED
-<span class="ln">11</span>71|2|2|Race 6|1.0|CHECK|CHK-71|2019-04-03|ISSUED
-<span class="ln">12</span>72|2|2|Race 2|1.0|CHECK|CHK-72|2019-04-03|ISSUED
-<span class="ln">13</span>73|2|2|Race 3|1.0|CHECK|CHK-73|2019-04-03|ISSUED
-<span class="ln">14</span>74|2|2|Race 7|1.0|CHECK|CHK-74|2019-04-03|ISSUED
-<span class="ln">15</span>75|2|2|Race 4|1.0|CHECK|CHK-75|2019-04-03|ISSUED
-<span class="ln">16</span>settlement.claim119.max=121 count=2
+<span class="ln">11</span>71|2|2|Race 2|1.0|CHECK|CHK-71|2019-04-03|ISSUED
+<span class="ln">12</span>72|2|2|Race 0|1.0|CHECK|CHK-72|2019-04-03|ISSUED
+<span class="ln">13</span>73|2|2|Race 6|1.0|CHECK|CHK-73|2019-04-03|ISSUED
+<span class="ln">14</span>74|2|2|Race 3|1.0|CHECK|CHK-74|2019-04-03|ISSUED
+<span class="ln">15</span>75|2|2|Race 5|1.0|CHECK|CHK-75|2019-04-03|ISSUED
+<span class="ln">16</span>76|2|2|Race 1|1.0|CHECK|CHK-76|2019-04-03|ISSUED
+<span class="ln">17</span>settlement.claim119.max=121 count=2
 </code></pre></details><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/resources/db/seed.sql:615-674</code></summary><pre class="code"><code><span class="ln">615</span>INSERT INTO PAYMENT VALUES (1, 1, 1, &#x27;Claimant 1&#x27;, 500, &#x27;CHECK&#x27;, &#x27;CHK-00001&#x27;, &#x27;2019-03-15&#x27;, &#x27;ISSUED&#x27;);
 <span class="ln">616</span>INSERT INTO PAYMENT VALUES (2, 2, 2, &#x27;Claimant 2&#x27;, 250, &#x27;CHECK&#x27;, &#x27;CHK-00002&#x27;, &#x27;2019-03-15&#x27;, &#x27;ISSUED&#x27;);
 <span class="ln">617</span>INSERT INTO PAYMENT VALUES (3, 3, 3, &#x27;Claimant 3&#x27;, 500, &#x27;CHECK&#x27;, &#x27;CHK-00003&#x27;, &#x27;2019-03-15&#x27;, &#x27;ISSUED&#x27;);
@@ -1186,7 +1199,7 @@ f_ spans:
 <span class="ln">23</span>&lt;th&gt;&lt;bean:message key=&quot;payment.status&quot;/&gt;&lt;/th&gt;&lt;td&gt;&lt;ns:field name=&quot;paymentStatus&quot; value=&quot;${paymentStatus}&quot; type=&quot;text&quot;/&gt;&lt;/td&gt;&lt;/tr&gt;
 <span class="ln">24</span>&lt;/table&gt;
 <span class="ln">25</span>&lt;p&gt;&lt;bean:message key=&quot;payment.issue.message&quot;/&gt;&lt;/p&gt;
-</code></pre></details></div></article><article class="finding" id="finding-33" data-tag="observed"><div class="f-head"><span class="num">33</span><span class="tag tag-observed">Observed</span></div><p>Eight simultaneous issues for claim 2 produced five payments (<code>CHK-71</code> … <code>CHK-75</code>) and three error pages (<code>L28</code>, <code>L29</code>). This is consistent with two requests reading the same <code>max+1</code> id and the primary key rejecting the second insert (<code>src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:61-75</code>, <code>src/main/resources/db/schema.sql:116</code>); the error page does not say why.</p><div class="evidence"><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:61-75</code></summary><pre class="code"><code><span class="ln">61</span>    protected int nextId(String table) throws Exception {
+</code></pre></details></div></article><article class="finding" id="finding-33" data-tag="observed"><div class="f-head"><span class="num">33</span><span class="tag tag-observed">Observed</span></div><p>Eight simultaneous issues for claim 2 produced six payments (<code>CHK-71</code> … <code>CHK-76</code>) and two error pages (<code>L28</code>, <code>L29</code>); an earlier run of the same script on a fresh seed gave five payments and three error pages, so the loss varies run to run. This is consistent with two requests reading the same <code>max+1</code> id and the primary key rejecting the second insert (<code>src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:61-75</code>, <code>src/main/resources/db/schema.sql:116</code>); the error page does not say why.</p><div class="evidence"><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:61-75</code></summary><pre class="code"><code><span class="ln">61</span>    protected int nextId(String table) throws Exception {
 <span class="ln">62</span>        Connection connection = openConnection();
 <span class="ln">63</span>        Statement statement = null;
 <span class="ln">64</span>        ResultSet results = null;
@@ -1204,9 +1217,9 @@ f_ spans:
 </code></pre></details><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/resources/db/schema.sql:116</code></summary><pre class="code"><code><span class="ln">116</span>    CONSTRAINT pk_payment PRIMARY KEY (payment_id),
 </code></pre></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L28</code> Eight concurrent issues for claim 2</summary><div class="live" id="live-L28"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L28</strong> Eight concurrent issues for claim 2</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>POST /claims/payment/issue.do
   amount=1&amp;claimId=2&amp;payeeName=Race 0&amp;paymentMethod=CHECK
-  (8 parallel requests, payeeName Race 0..7)</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>issued: CHK-71, CHK-72, CHK-73, CHK-74, CHK-75
-error pages: 3
-per request: error, error, CHK-72, CHK-73, CHK-75, error, CHK-71, CHK-74</code></pre></div></div></div></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L29</code> History for claim 2 after the race</summary><div class="live" id="live-L29"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L29</strong> History for claim 2 after the race</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/history.do?claimId=2</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
+  (8 parallel requests, payeeName Race 0..7)</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>issued: CHK-71, CHK-72, CHK-73, CHK-74, CHK-75, CHK-76
+error pages: 2
+per request: CHK-72, CHK-76, CHK-71, CHK-74, error, CHK-75, CHK-73, error</code></pre></div></div></div></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L29</code> History for claim 2 after the race</summary><div class="live" id="live-L29"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L29</strong> History for claim 2 after the race</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/history.do?claimId=2</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
 ns:view /WEB-INF/jsp/payment/history.jsp
 links to detail.do?paymentId=61: 2
 f_ spans:
@@ -1216,18 +1229,21 @@ f_ spans:
   checkNumber_73 = CHK-73
   checkNumber_74 = CHK-74
   checkNumber_75 = CHK-75
+  checkNumber_76 = CHK-76
   paymentAmount_2 = 250.00
   paymentAmount_71 = 1.00
   paymentAmount_72 = 1.00
   paymentAmount_73 = 1.00
   paymentAmount_74 = 1.00
   paymentAmount_75 = 1.00
+  paymentAmount_76 = 1.00
   paymentStatus_2 = ISSUED
   paymentStatus_71 = ISSUED
   paymentStatus_72 = ISSUED
   paymentStatus_73 = ISSUED
   paymentStatus_74 = ISSUED
-  paymentStatus_75 = ISSUED</code></pre></div></div></div></details></div></article><article class="finding" id="finding-34" data-tag="read"><div class="f-head"><span class="num">34</span><span class="tag tag-read">Read</span></div><p>Two connection mechanisms serve one issue request: the id from a raw <code>DriverManager</code> connection, the settlement read and the insert from <code>ConnectionPool</code>, which reuses a released connection, else tries JNDI <code>java:comp/env/jdbc/ClaimsDB</code>, else opens <code>DriverManager</code> (<code>src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:24-29</code>, <code>src/main/java/com/northstar/claims/dao/ConnectionPool.java:35-49</code>).</p><div class="evidence"><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:24-29</code></summary><pre class="code"><code><span class="ln">24</span>    protected Connection openConnection() throws Exception {
+  paymentStatus_75 = ISSUED
+  paymentStatus_76 = ISSUED</code></pre></div></div></div></details></div></article><article class="finding" id="finding-34" data-tag="read"><div class="f-head"><span class="num">34</span><span class="tag tag-read">Read</span></div><p>Two connection mechanisms serve one issue request: the id from a raw <code>DriverManager</code> connection, the settlement read and the insert from <code>ConnectionPool</code>, which reuses a released connection, else tries JNDI <code>java:comp/env/jdbc/ClaimsDB</code>, else opens <code>DriverManager</code> (<code>src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:24-29</code>, <code>src/main/java/com/northstar/claims/dao/ConnectionPool.java:35-49</code>).</p><div class="evidence"><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:24-29</code></summary><pre class="code"><code><span class="ln">24</span>    protected Connection openConnection() throws Exception {
 <span class="ln">25</span>        String path = System.getProperty(&quot;claims.db.path&quot;,
 <span class="ln">26</span>                &quot;target/db/northstar&quot;);
 <span class="ln">27</span>        return DriverManager.getConnection(&quot;jdbc:hsqldb:file:&quot; + path,
@@ -1349,18 +1365,21 @@ f_ spans:
   checkNumber_73 = CHK-73
   checkNumber_74 = CHK-74
   checkNumber_75 = CHK-75
+  checkNumber_76 = CHK-76
   paymentAmount_2 = 250.00
   paymentAmount_71 = 1.00
   paymentAmount_72 = 1.00
   paymentAmount_73 = 1.00
   paymentAmount_74 = 1.00
   paymentAmount_75 = 1.00
+  paymentAmount_76 = 1.00
   paymentStatus_2 = ISSUED
   paymentStatus_71 = ISSUED
   paymentStatus_72 = ISSUED
   paymentStatus_73 = ISSUED
   paymentStatus_74 = ISSUED
-  paymentStatus_75 = ISSUED</code></pre></div></div></div></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L05</code> History detail link target with no row 61 yet</summary><div class="live" id="live-L05"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L05</strong> History detail link target with no row 61 yet</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/detail.do?paymentId=61</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
+  paymentStatus_75 = ISSUED
+  paymentStatus_76 = ISSUED</code></pre></div></div></div></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L05</code> History detail link target with no row 61 yet</summary><div class="live" id="live-L05"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L05</strong> History detail link target with no row 61 yet</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/detail.do?paymentId=61</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
 ns:view /WEB-INF/jsp/error.jsp
 Claims System Error page, Reference status: null</code></pre></div></div></div></details></div></article><article class="finding" id="finding-39" data-tag="read"><div class="f-head"><span class="num">39</span><span class="tag tag-read">Read</span></div><p>Detail: <code>paymentId</code> defaults to 61; SQL <code>select * from PAYMENT where payment_id = ?</code>. The action guards a missing row when it sets <code>claimId</code> (falls back to 119), but the JSP then calls <code>&lt;bean:write name=&quot;payment&quot; ...&gt;</code> on that missing bean (<code>src/main/java/com/northstar/claims/web/PaymentDetailAction.java:17-24</code>, <code>src/main/java/com/northstar/claims/dao/PaymentDAO.java:25-44</code>, <code>src/main/webapp/WEB-INF/jsp/payment/detail.jsp:14</code>).</p><div class="evidence"><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/java/com/northstar/claims/web/PaymentDetailAction.java:17-24</code></summary><pre class="code"><code><span class="ln">17</span>        int id = integer(request.getParameter(&quot;paymentId&quot;), 61);
 <span class="ln">18</span>        Payment payment = new PaymentDAO().findById(id);
@@ -1486,12 +1505,13 @@ f_ spans:
 <span class="ln">8</span>68|119|119|Default|5.0|CHECK|CHK-68|2019-04-03|ISSUED
 <span class="ln">9</span>69|120|120|Closed claim|75.0|CHECK|CHK-69|2019-04-03|ISSUED
 <span class="ln">10</span>70|119|121|After save|1000.0|CHECK|CHK-70|2019-04-03|ISSUED
-<span class="ln">11</span>71|2|2|Race 6|1.0|CHECK|CHK-71|2019-04-03|ISSUED
-<span class="ln">12</span>72|2|2|Race 2|1.0|CHECK|CHK-72|2019-04-03|ISSUED
-<span class="ln">13</span>73|2|2|Race 3|1.0|CHECK|CHK-73|2019-04-03|ISSUED
-<span class="ln">14</span>74|2|2|Race 7|1.0|CHECK|CHK-74|2019-04-03|ISSUED
-<span class="ln">15</span>75|2|2|Race 4|1.0|CHECK|CHK-75|2019-04-03|ISSUED
-<span class="ln">16</span>settlement.claim119.max=121 count=2
+<span class="ln">11</span>71|2|2|Race 2|1.0|CHECK|CHK-71|2019-04-03|ISSUED
+<span class="ln">12</span>72|2|2|Race 0|1.0|CHECK|CHK-72|2019-04-03|ISSUED
+<span class="ln">13</span>73|2|2|Race 6|1.0|CHECK|CHK-73|2019-04-03|ISSUED
+<span class="ln">14</span>74|2|2|Race 3|1.0|CHECK|CHK-74|2019-04-03|ISSUED
+<span class="ln">15</span>75|2|2|Race 5|1.0|CHECK|CHK-75|2019-04-03|ISSUED
+<span class="ln">16</span>76|2|2|Race 1|1.0|CHECK|CHK-76|2019-04-03|ISSUED
+<span class="ln">17</span>settlement.claim119.max=121 count=2
 </code></pre></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L27</code> Remittance for claim 119 after the issues</summary><div class="live" id="live-L27"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L27</strong> Remittance for claim 119 after the issues</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/remittance.do?claimId=119</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
 ns:view /WEB-INF/jsp/payment/remittance.jsp
 f_ spans:
@@ -1681,7 +1701,7 @@ f_ spans:
 <span class="ln">87</span>    }
 </code></pre></details></div></article><h3 class="fsec" data-fsec>5. Errors</h3><article class="finding" id="finding-51" data-tag="read"><div class="f-head"><span class="num">51</span><span class="tag tag-read">Read</span></div><p>Any exception in an action forwards to <code>error.jsp</code> through the global exception handler (<code>src/main/webapp/WEB-INF/struts-config.xml:59-60</code>).</p><div class="evidence"><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/webapp/WEB-INF/struts-config.xml:59-60</code></summary><pre class="code"><code><span class="ln">59</span>&lt;global-exceptions&gt;&lt;exception key=&quot;errors.system&quot; type=&quot;java.lang.Exception&quot;
 <span class="ln">60</span>                path=&quot;/WEB-INF/jsp/error.jsp&quot;/&gt;&lt;/global-exceptions&gt;
-</code></pre></details></div></article><article class="finding" id="finding-52" data-tag="observed"><div class="f-head"><span class="num">52</span><span class="tag tag-observed">Observed</span></div><p>Every failure above (<code>L05</code>, <code>L06</code>, <code>L17</code>, <code>L18</code>, <code>L19</code>, three of <code>L28</code>) answers HTTP <code>200</code> with &quot;Reference status: null&quot;: <code>error.jsp</code> prints <code>javax.servlet.error.status_code</code>, which only the container&#x27;s error-page mechanism sets (<code>src/main/webapp/WEB-INF/jsp/error.jsp:9</code>). A client cannot tell a failed issue from a successful one by status code.</p><div class="evidence"><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/webapp/WEB-INF/jsp/error.jsp:9</code></summary><pre class="code"><code><span class="ln">9</span>&lt;tr&gt;&lt;td&gt;&lt;bean:message key=&quot;errors.reference&quot;/&gt;: &lt;%= request.getAttribute(&quot;javax.servlet.error.status_code&quot;) %&gt;&lt;/td&gt;&lt;/tr&gt;
+</code></pre></details></div></article><article class="finding" id="finding-52" data-tag="observed"><div class="f-head"><span class="num">52</span><span class="tag tag-observed">Observed</span></div><p>Every failure above (<code>L05</code>, <code>L06</code>, <code>L17</code>, <code>L18</code>, <code>L19</code>, the error pages of <code>L28</code>) answers HTTP <code>200</code> with &quot;Reference status: null&quot;: <code>error.jsp</code> prints <code>javax.servlet.error.status_code</code>, which only the container&#x27;s error-page mechanism sets (<code>src/main/webapp/WEB-INF/jsp/error.jsp:9</code>). A client cannot tell a failed issue from a successful one by status code.</p><div class="evidence"><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/webapp/WEB-INF/jsp/error.jsp:9</code></summary><pre class="code"><code><span class="ln">9</span>&lt;tr&gt;&lt;td&gt;&lt;bean:message key=&quot;errors.reference&quot;/&gt;: &lt;%= request.getAttribute(&quot;javax.servlet.error.status_code&quot;) %&gt;&lt;/td&gt;&lt;/tr&gt;
 </code></pre></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L05</code> History detail link target with no row 61 yet</summary><div class="live" id="live-L05"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L05</strong> History detail link target with no row 61 yet</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/detail.do?paymentId=61</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
 ns:view /WEB-INF/jsp/error.jsp
 Claims System Error page, Reference status: null</code></pre></div></div></div></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L06</code> Detail with no paymentId (fresh seed)</summary><div class="live" id="live-L06"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L06</strong> Detail with no paymentId (fresh seed)</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/detail.do</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
@@ -1697,9 +1717,9 @@ Claims System Error page, Reference status: null</code></pre></div></div></div><
 ns:view /WEB-INF/jsp/error.jsp
 Claims System Error page, Reference status: null</code></pre></div></div></div></details><details class="cite"><summary><span class="tag tag-observed">Live</span> <code>L28</code> Eight concurrent issues for claim 2</summary><div class="live" id="live-L28"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L28</strong> Eight concurrent issues for claim 2</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>POST /claims/payment/issue.do
   amount=1&amp;claimId=2&amp;payeeName=Race 0&amp;paymentMethod=CHECK
-  (8 parallel requests, payeeName Race 0..7)</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>issued: CHK-71, CHK-72, CHK-73, CHK-74, CHK-75
-error pages: 3
-per request: error, error, CHK-72, CHK-73, CHK-75, error, CHK-71, CHK-74</code></pre></div></div></div></details></div></article><article class="finding" id="finding-53" data-tag="observed"><div class="f-head"><span class="num">53</span><span class="tag tag-observed">Observed</span></div><p>Under <code>make run</code> the JNDI lookup always fails (<code>invalid RefAddr: password</code>), and the pool falls back to <code>DriverManager</code> on <code>target/db/northstar</code>. The Jetty datasource omits a password and points at <code>${java.io.tmpdir}</code>, not at the seeded file (<code>src/main/webapp/WEB-INF/jetty-env.xml:15-21</code>, <code>src/main/java/com/northstar/claims/dao/ConnectionPool.java:39-48</code>, <code>docs/analysis/payments-jetty-console.txt</code>).</p><div class="evidence"><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/webapp/WEB-INF/jetty-env.xml:15-21</code></summary><pre class="code"><code><span class="ln">15</span>        &lt;Arg&gt;
+  (8 parallel requests, payeeName Race 0..7)</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>issued: CHK-71, CHK-72, CHK-73, CHK-74, CHK-75, CHK-76
+error pages: 2
+per request: CHK-72, CHK-76, CHK-71, CHK-74, error, CHK-75, CHK-73, error</code></pre></div></div></div></details></div></article><article class="finding" id="finding-53" data-tag="observed"><div class="f-head"><span class="num">53</span><span class="tag tag-observed">Observed</span></div><p>Under <code>make run</code> the JNDI lookup always fails (<code>invalid RefAddr: password</code>), and the pool falls back to <code>DriverManager</code> on <code>target/db/northstar</code>. The Jetty datasource omits a password and points at <code>${java.io.tmpdir}</code>, not at the seeded file (<code>src/main/webapp/WEB-INF/jetty-env.xml:15-21</code>, <code>src/main/java/com/northstar/claims/dao/ConnectionPool.java:39-48</code>, <code>docs/analysis/payments-jetty-console.txt</code>).</p><div class="evidence"><details class="cite"><summary><span class="tag tag-read">Read</span> <code>src/main/webapp/WEB-INF/jetty-env.xml:15-21</code></summary><pre class="code"><code><span class="ln">15</span>        &lt;Arg&gt;
 <span class="ln">16</span>            &lt;New class=&quot;org.hsqldb.jdbc.JDBCDataSource&quot;&gt;
 <span class="ln">17</span>                &lt;Set name=&quot;Database&quot;&gt;
 <span class="ln">18</span>                    jdbc:hsqldb:file:${java.io.tmpdir}/northstar-claims-db
@@ -2144,9 +2164,9 @@ f_ spans:
   remitStatus_70 = ISSUED
   remitTotal = 251966.01</code></pre></div></div></div><div class="live" id="live-L28"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L28</strong> Eight concurrent issues for claim 2</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>POST /claims/payment/issue.do
   amount=1&amp;claimId=2&amp;payeeName=Race 0&amp;paymentMethod=CHECK
-  (8 parallel requests, payeeName Race 0..7)</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>issued: CHK-71, CHK-72, CHK-73, CHK-74, CHK-75
-error pages: 3
-per request: error, error, CHK-72, CHK-73, CHK-75, error, CHK-71, CHK-74</code></pre></div></div></div><div class="live" id="live-L29"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L29</strong> History for claim 2 after the race</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/history.do?claimId=2</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
+  (8 parallel requests, payeeName Race 0..7)</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>issued: CHK-71, CHK-72, CHK-73, CHK-74, CHK-75, CHK-76
+error pages: 2
+per request: CHK-72, CHK-76, CHK-71, CHK-74, error, CHK-75, CHK-73, error</code></pre></div></div></div><div class="live" id="live-L29"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L29</strong> History for claim 2 after the race</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/history.do?claimId=2</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
 ns:view /WEB-INF/jsp/payment/history.jsp
 links to detail.do?paymentId=61: 2
 f_ spans:
@@ -2156,18 +2176,21 @@ f_ spans:
   checkNumber_73 = CHK-73
   checkNumber_74 = CHK-74
   checkNumber_75 = CHK-75
+  checkNumber_76 = CHK-76
   paymentAmount_2 = 250.00
   paymentAmount_71 = 1.00
   paymentAmount_72 = 1.00
   paymentAmount_73 = 1.00
   paymentAmount_74 = 1.00
   paymentAmount_75 = 1.00
+  paymentAmount_76 = 1.00
   paymentStatus_2 = ISSUED
   paymentStatus_71 = ISSUED
   paymentStatus_72 = ISSUED
   paymentStatus_73 = ISSUED
   paymentStatus_74 = ISSUED
-  paymentStatus_75 = ISSUED</code></pre></div></div></div>
+  paymentStatus_75 = ISSUED
+  paymentStatus_76 = ISSUED</code></pre></div></div></div>
 </section>
 </main>
 <template id="tpl-L01"><div class="live" id="live-L01"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L01</strong> Unauthenticated request is redirected</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/history.do</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 302
@@ -2372,9 +2395,9 @@ f_ spans:
   remitStatus_70 = ISSUED
   remitTotal = 251966.01</code></pre></div></div></div></template><template id="tpl-L28"><div class="live" id="live-L28"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L28</strong> Eight concurrent issues for claim 2</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>POST /claims/payment/issue.do
   amount=1&amp;claimId=2&amp;payeeName=Race 0&amp;paymentMethod=CHECK
-  (8 parallel requests, payeeName Race 0..7)</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>issued: CHK-71, CHK-72, CHK-73, CHK-74, CHK-75
-error pages: 3
-per request: error, error, CHK-72, CHK-73, CHK-75, error, CHK-71, CHK-74</code></pre></div></div></div></template><template id="tpl-L29"><div class="live" id="live-L29"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L29</strong> History for claim 2 after the race</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/history.do?claimId=2</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
+  (8 parallel requests, payeeName Race 0..7)</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>issued: CHK-71, CHK-72, CHK-73, CHK-74, CHK-75, CHK-76
+error pages: 2
+per request: CHK-72, CHK-76, CHK-71, CHK-74, error, CHK-75, CHK-73, error</code></pre></div></div></div></template><template id="tpl-L29"><div class="live" id="live-L29"><div class="live-head"><span class="tag tag-observed">Observed</span> <strong>L29</strong> History for claim 2 after the race</div><div class="live-grid"><div><div class="mini">Request</div><pre class="code"><code>GET /claims/payment/history.do?claimId=2</code></pre></div><div><div class="mini">Response</div><pre class="code"><code>HTTP 200
 ns:view /WEB-INF/jsp/payment/history.jsp
 links to detail.do?paymentId=61: 2
 f_ spans:
@@ -2384,18 +2407,21 @@ f_ spans:
   checkNumber_73 = CHK-73
   checkNumber_74 = CHK-74
   checkNumber_75 = CHK-75
+  checkNumber_76 = CHK-76
   paymentAmount_2 = 250.00
   paymentAmount_71 = 1.00
   paymentAmount_72 = 1.00
   paymentAmount_73 = 1.00
   paymentAmount_74 = 1.00
   paymentAmount_75 = 1.00
+  paymentAmount_76 = 1.00
   paymentStatus_2 = ISSUED
   paymentStatus_71 = ISSUED
   paymentStatus_72 = ISSUED
   paymentStatus_73 = ISSUED
   paymentStatus_74 = ISSUED
-  paymentStatus_75 = ISSUED</code></pre></div></div></div></template>
+  paymentStatus_75 = ISSUED
+  paymentStatus_76 = ISSUED</code></pre></div></div></div></template>
 <script type="application/json" id="node-data">{"auth": {"col": "Actions", "edges": [], "findings": [2, 3], "label": "AuthFilter", "live": ["L01"], "sub": "every *.do"}, "detail": {"col": "Actions", "edges": [{"dir": "in", "label": "detail.do?paymentId=61", "other": "history.jsp"}, {"dir": "out", "label": "read", "other": "PaymentDAO.findById"}, {"dir": "out", "label": "forward", "other": "detail.jsp"}, {"dir": "out", "label": "exception", "other": "error.jsp"}], "findings": [39, 40], "label": "PaymentDetailAction", "live": ["L06", "L25"], "sub": "/payment/detail.do"}, "detailJsp": {"col": "Screens", "edges": [{"dir": "in", "label": "forward", "other": "PaymentDetailAction"}], "findings": [39, 40, 41], "label": "detail.jsp", "live": ["L07", "L25"], "sub": "one payment"}, "errorJsp": {"col": "Screens", "edges": [{"dir": "in", "label": "exception", "other": "PaymentIssueAction"}, {"dir": "in", "label": "exception", "other": "PaymentDetailAction"}], "findings": [51, 52], "label": "error.jsp", "live": ["L05", "L17", "L19"], "sub": "HTTP 200, status null"}, "history": {"col": "Actions", "edges": [{"dir": "in", "label": "GET, no claimId", "other": "nav.jsp quick link"}, {"dir": "out", "label": "read", "other": "PaymentDAO.findByClaim"}, {"dir": "out", "label": "forward", "other": "history.jsp"}], "findings": [35, 36], "label": "PaymentHistoryAction", "live": ["L03", "L04"], "sub": "/payment/history.do"}, "historyJsp": {"col": "Screens", "edges": [{"dir": "out", "label": "detail.do?paymentId=61", "other": "PaymentDetailAction"}, {"dir": "out", "label": "remittance.do?claimId=", "other": "PaymentRemittanceAction"}, {"dir": "in", "label": "forward", "other": "PaymentHistoryAction"}], "findings": [35, 37, 38], "label": "history.jsp", "live": ["L03", "L24"], "sub": "rows + detail link =61 x2"}, "http": {"col": "Screens", "edges": [{"dir": "out", "label": "GET or POST", "other": "PaymentIssueAction"}], "findings": [5, 6, 7], "label": "Direct HTTP only", "live": ["L10", "L11"], "sub": "no screen posts to issue.do"}, "issue": {"col": "Actions", "edges": [{"dir": "in", "label": "GET or POST", "other": "Direct HTTP only"}, {"dir": "out", "label": "1", "other": "SettlementDAO.findByClaim"}, {"dir": "out", "label": "2", "other": "nextId(\"PAYMENT\")"}, {"dir": "out", "label": "3", "other": "PaymentDAO.insert"}, {"dir": "out", "label": "forward", "other": "issue.jsp"}, {"dir": "out", "label": "exception", "other": "error.jsp"}], "findings": [8, 9, 13, 15, 18, 21, 25, 27, 30], "label": "PaymentIssueAction", "live": ["L10", "L12", "L14", "L20"], "sub": "/payment/issue.do"}, "issueJsp": {"col": "Screens", "edges": [{"dir": "in", "label": "forward", "other": "PaymentIssueAction"}], "findings": [32], "label": "issue.jsp", "live": ["L11"], "sub": "confirmation, 3 fields"}, "nav": {"col": "Screens", "edges": [{"dir": "out", "label": "GET, no claimId", "other": "PaymentHistoryAction"}], "findings": [4, 36], "label": "nav.jsp quick link", "live": ["L03"], "sub": "Payment History, no claimId"}, "qByClaim": {"col": "SQL", "edges": [{"dir": "in", "label": "read", "other": "PaymentHistoryAction"}, {"dir": "in", "label": "read", "other": "PaymentRemittanceAction"}, {"dir": "out", "label": "select", "other": "PAYMENT"}], "findings": [35], "label": "PaymentDAO.findByClaim", "live": ["L24"], "sub": "where claim_id = ? order by id"}, "qById": {"col": "SQL", "edges": [{"dir": "in", "label": "read", "other": "PaymentDetailAction"}, {"dir": "out", "label": "select", "other": "PAYMENT"}], "findings": [39], "label": "PaymentDAO.findById", "live": ["L25"], "sub": "where payment_id = ?"}, "qInsert": {"col": "SQL", "edges": [{"dir": "in", "label": "3", "other": "PaymentIssueAction"}, {"dir": "out", "label": "insert", "other": "PAYMENT"}, {"dir": "out", "label": "FK", "other": "CLAIM"}], "findings": [29, 17, 23], "label": "PaymentDAO.insert", "live": ["L11", "L17"], "sub": "9-column insert"}, "qNextId": {"col": "SQL", "edges": [{"dir": "in", "label": "2", "other": "PaymentIssueAction"}, {"dir": "out", "label": "select max", "other": "PAYMENT"}], "findings": [12, 33, 34], "label": "nextId(\"PAYMENT\")", "live": ["L28"], "sub": "max(payment_id)+1, DriverManager"}, "qSettle": {"col": "SQL", "edges": [{"dir": "in", "label": "1", "other": "PaymentIssueAction"}, {"dir": "out", "label": "select", "other": "SETTLEMENT"}], "findings": [11, 19, 20], "label": "SettlementDAO.findByClaim", "live": ["L10", "L23"], "sub": "newest settlement by id"}, "qTotal": {"col": "SQL", "edges": [{"dir": "in", "label": "read", "other": "PaymentRemittanceAction"}, {"dir": "out", "label": "sum", "other": "PAYMENT"}], "findings": [43, 45], "label": "PaymentDAO.totalIssued", "live": ["L27"], "sub": "coalesce(sum(amount),0)"}, "remit": {"col": "Actions", "edges": [{"dir": "in", "label": "remittance.do?claimId=", "other": "history.jsp"}, {"dir": "out", "label": "read", "other": "PaymentDAO.findByClaim"}, {"dir": "out", "label": "read", "other": "PaymentDAO.totalIssued"}, {"dir": "out", "label": "forward", "other": "remittance.jsp"}], "findings": [43, 44], "label": "PaymentRemittanceAction", "live": ["L09"], "sub": "/payment/remittance.do"}, "remitJsp": {"col": "Screens", "edges": [{"dir": "in", "label": "forward", "other": "PaymentRemittanceAction"}], "findings": [43, 44, 45], "label": "remittance.jsp", "live": ["L08", "L27"], "sub": "rows, count, total"}, "tClaim": {"col": "Tables", "edges": [{"dir": "in", "label": "FK", "other": "PaymentDAO.insert"}], "findings": [48, 31], "label": "CLAIM", "live": ["L21"], "sub": "foreign key only"}, "tPayment": {"col": "Tables", "edges": [{"dir": "in", "label": "select max", "other": "nextId(\"PAYMENT\")"}, {"dir": "in", "label": "insert", "other": "PaymentDAO.insert"}, {"dir": "in", "label": "select", "other": "PaymentDAO.findByClaim"}, {"dir": "in", "label": "select", "other": "PaymentDAO.findById"}, {"dir": "in", "label": "sum", "other": "PaymentDAO.totalIssued"}], "findings": [47, 49], "label": "PAYMENT", "live": ["L29"], "sub": "the only table written"}, "tSettlement": {"col": "Tables", "edges": [{"dir": "in", "label": "select", "other": "SettlementDAO.findByClaim"}], "findings": [11, 20], "label": "SETTLEMENT", "live": ["L22"], "sub": "read only"}}</script>
 <script>
 (function(){
