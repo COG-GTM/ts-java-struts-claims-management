@@ -312,13 +312,13 @@ function evidenceBlock(title,items,render,label){var wrap=el("div");wrap.appendC
 
 var host=document.getElementById("rules"),section=null,ruleEls=[];
 D.rules.forEach(function(r){if(r.section!==section){section=r.section;host.appendChild(el("h2",{cls:"sec",text:section}));}
- var d=el("details",{cls:"rule",id:r.id});d.dataset.status=r.status;d.dataset.text=(r.id+" "+r.text).toLowerCase();
+ var rid=r.superseded?r.id+"-v"+r.version:r.id;var d=el("details",{cls:"rule",id:rid});d.dataset.status=r.status;d.dataset.text=(r.id+" "+r.text).toLowerCase();
  d.appendChild(el("summary",{},[el("span",{cls:"rid",text:r.id+" (v"+r.version+(r.superseded?", "+r.superseded:"")+")"}),badge(r.status),md(r.text),el("span",{cls:"count",text:r.sources.length+" src · "+r.evidence.length+" req"})]));
  var body=el("div",{cls:"body"});var built=false;
  d.addEventListener("toggle",function(){if(d.open){if(!built){built=true;
    body.appendChild(evidenceBlock("Source lines (Read)",r.sources,sourcePanel,function(s){return s.ref.replace("src/main/java/com/northstar/claims/","…/").replace("src/main/webapp/WEB-INF/","WEB-INF/");}));
    body.appendChild(evidenceBlock("Request and response (Observed)",r.evidence,function(e){return e.kind==="live"?livePanel(e):transcriptPanel(e);},function(e){return e.kind==="live"?e.case+" step "+e.step:"transcript "+e.ref;}));}
-  if(location.hash!=="#"+r.id)history.replaceState(null,"","#"+r.id);}});
+  if(location.hash!=="#"+rid)history.replaceState(null,"","#"+rid);}});
  d.appendChild(body);host.appendChild(d);ruleEls.push(d);});
 
 var qhost=document.getElementById("questions");
@@ -346,7 +346,7 @@ var search=el("input",{type:"search",placeholder:"Search rules, e.g. NaN, 119, C
 search.addEventListener("input",function(){query=search.value.toLowerCase();apply();});bar.appendChild(search);
 var expand=el("button",{text:"Open all"});expand.addEventListener("click",function(){var open=expand.textContent==="Open all";
  ruleEls.forEach(function(e){if(!e.classList.contains("hidden"))e.open=open;});expand.textContent=open?"Close all":"Open all";});bar.appendChild(expand);
-if(location.hash){var t=document.getElementById(location.hash.slice(1));if(t&&t.tagName==="DETAILS"){t.open=true;t.scrollIntoView();}}
+if(location.hash){var h=location.hash.slice(1),t=document.getElementById(h)||document.getElementById(h.replace(/-v\d+$/,""));if(t&&t.tagName==="DETAILS"){t.open=true;t.scrollIntoView();}}
 })();
 </script>
 </body></html>

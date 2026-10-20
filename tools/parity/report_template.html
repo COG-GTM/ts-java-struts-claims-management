@@ -77,7 +77,7 @@ function el(t,a,c){var e=document.createElement(t);if(a)for(var k in a){if(k==="
 function j(v){return typeof v==="string"?v:JSON.stringify(v,null,1);}
 var specOf={};D.slices.forEach(function(s){specOf[s.slice]=s;});
 function specHtml(s){return "../"+s.spec.replace(/\.md$/,".html");}
-function ruleLink(slice,r){var id=r.split(" ")[0];var s=specOf[slice];var href=s.slice==="payment"?specHtml(s)+"#"+id:"../"+s.spec;
+function ruleLink(slice,r){var id=r.split(" ")[0];var v=(r.match(/\(v(\d+)\)/)||[])[1];var s=specOf[slice];var href=s.slice==="payment"?specHtml(s)+"#"+id+(v?"-v"+v:""):"../"+s.spec;
 return el("a",{href:href,target:"_blank",title:"Open "+id+" in "+s.spec},[r]);}
 var cov=document.getElementById("cov");
 D.slices.forEach(function(s){var c=D.coverage[s.slice];var rows=D.rows.filter(function(r){return r.slice===s.slice;});

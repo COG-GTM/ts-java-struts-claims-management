@@ -47,12 +47,13 @@ var D={"change": "CHG-002", "impact": {"files": [".github/workflows/ci.yml", ".g
 function el(t,a,k){var e=document.createElement(t);for(var x in a||{}){if(x==="text")e.textContent=a[x];else if(x==="cls")e.className=a[x];else e.setAttribute(x,a[x]);}
 (k||[]).forEach(function(c){if(c!=null)e.appendChild(typeof c==="string"?document.createTextNode(c):c);});return e;}
 var up="../../";var V=document.getElementById("impact-view");var I=D.impact;
-function specView(r){return up+r.spec.replace(/\.md$/,".html")+"#"+r.id;}
+function anchor(r){return r.superseded_by?r.id+"-v"+r.version:r.id;}
+function specView(r){return up+r.spec.replace(/\.md$/,".html")+"#"+anchor(r);}
 V.appendChild(el("h3",{text:"Rule versions touched ("+I.rules.length+")"}));
 var byId={};I.rules.forEach(function(r){(byId[r.id]=byId[r.id]||[]).push(r);});
 Object.keys(byId).forEach(function(id){var vs=byId[id];var d=el("details",{open:"open"},[el("summary",{},[id+" — "+vs.map(function(r){return "v"+r.version+" "+r.effect;}).join(" · ")])]);
-d.appendChild(el("div",{},["Open in the spec view: ",el("a",{href:specView(vs[0]),target:"_blank",text:vs[0].spec+"#"+id})," · tests: ",
- el("span",{text:I.tests.filter(function(t){return t.rules.some(function(x){return x.indexOf(id+" ")===0;});}).map(function(t){return t.test;}).join(", ")||"none"})," · record: ",el("a",{href:"#",text:D.record})]));
+d.appendChild(el("div",{},["Open in the spec view: "].concat(vs.map(function(r,i){return el("span",{},[i?", ":"",el("a",{href:specView(r),target:"_blank",text:id+" (v"+r.version+")"})]);})).concat([" · tests: ",
+ el("span",{text:I.tests.filter(function(t){return t.rules.some(function(x){return x.indexOf(id+" ")===0;});}).map(function(t){return t.test;}).join(", ")||"none"})," · record: ",el("a",{href:"#",text:D.record})])));
 var tb=el("table",{},[el("tr",{},vs.map(function(r){return el("th",{},[el("span",{cls:"badge e-"+r.effect.split(" ")[0],text:"v"+r.version+" "+r.effect})]);}))]);
 tb.appendChild(el("tr",{},vs.map(function(r){return el("td",{},[el("pre",{text:r.text})]);})));d.appendChild(tb);V.appendChild(d);});
 var state="all";var rows=[];
