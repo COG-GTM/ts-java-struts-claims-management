@@ -43,7 +43,8 @@ OUTPUT = os.path.join("docs", "TRACEABILITY.md")
 GENERATED = [OUTPUT, os.path.join("parity", "report.md"),
              os.path.join("parity", "report.json"),
              os.path.join("docs", "specs", "SPEC-PAY-001-proof.json"),
-             os.path.join("docs", "specs", "SPEC-PAY-001.html")]
+             os.path.join("docs", "specs", "SPEC-PAY-001.html"),
+             os.path.join("parity", "report.html")]
 SEARCHED = ["docs", "parity", "services", "src", "tools", "Makefile"]
 
 # "SETTLE-R06", "SETTLE-R06 (v2)", "SETTLE-R06 (v1, superseded by v2)",
@@ -189,6 +190,9 @@ def transcripts_for(rule, routes):
     found = []
     for scenario, cited in sorted(routes.get("transcript_rules", {}).items()):
         if any(refers_to(entry, rule) for entry in cited):
+            found.append(scenario)
+    for scenario, entry in routes.get("payment_scenarios", {}).items():
+        if scenario not in found and any(refers_to(cited, rule) for cited in entry["rules"]):
             found.append(scenario)
     return found
 

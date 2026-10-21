@@ -48,32 +48,32 @@ the scenarios `parity/routes.json` maps to it, and *Parity* their verdicts in
 | SETTLE-R29 (v1) | 0.1 | `46337e5` Generate the traceability matrix from the repository, and report parity as JSON | `SettlementSaveEndpointTest#saveRecomputesAndInsertsOneRowForClaim119` | `settlement_save` | settlement_save: PASS | - |
 | SETTLE-R30 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `SettlementDetailEndpointTest#detailForAClaimWithNoSettlementIsEmpty`, `SettlementDetailEndpointTest#detailShowsTheSeededSettlementForClaim119`, `SettlementDetailEndpointTest#detailTakesTheHighestSettlementIdForTheClaim`, `SettlementDetailEndpointTest#detailWithoutAClaimIdDefaultsTo119` | - | - | - |
 | SETTLE-R31 (v1) | 0.1 | `0c8568c` Extract the settlement slice into services/settlement-service (ADR-001) | `LegacyParametersTest#fieldFormattingMatchesTheFieldTag`, `SettlementDetailEndpointTest#detailShowsTheSeededSettlementForClaim119` | - | - | - |
-| PAY-R01 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | `payment_issue` | payment_issue: not replayed | - |
-| PAY-R02 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R03 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R04 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R05 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R06 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R07 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R08 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R09 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R10 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R11 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R12 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R13 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R14 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R15 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R16 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R17 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | `payment_history` | payment_history: not replayed | - |
-| PAY-R18 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R19 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R20 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R21 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R22 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R23 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R24 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R25 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
-| PAY-R26 (v1) | 0.1 | `993b2ff` SPEC-PAY-001 v0.1: payment slice rules PAY-R01..PAY-R26 with re-runnable live proof and HTML view | - | - | - | - |
+| PAY-R01 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#postIssuesPayment61ForClaim119` | `payment_issue`, `issue-post` | payment_issue: PASS, issue-post: PASS | - |
+| PAY-R02 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#getAlsoIssues` | `issue-get` | issue-get: PASS | - |
+| PAY-R03 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#claimIdFallsBackTo119` | `issue-claim-fallback`, `issue-amount-raw` | issue-claim-fallback: PASS, issue-amount-raw: PASS | - |
+| PAY-R04 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#claimIdFallsBackTo119` | `issue-claim-fallback` | issue-claim-fallback: PASS | - |
+| PAY-R05 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#newestSettlementSuppliesIdAndAmount` | `issue-post`, `issue-newest-settlement` | issue-post: PASS, issue-newest-settlement: PASS | - |
+| PAY-R06 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#noSettlementIsErrorAndWritesNothing` | `issue-no-settlement` | issue-no-settlement: PASS | - |
+| PAY-R07 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#amountFallbackAndRawValues` | `issue-amount-fallback-seed`, `issue-newest-settlement` | issue-amount-fallback-seed: PASS, issue-newest-settlement: PASS | - |
+| PAY-R08 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#amountFallbackAndRawValues` | `issue-amount-raw` | issue-amount-raw: PASS | - |
+| PAY-R09 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#nextIdAndCheckNumber` | `issue-post`, `issue-next-id` | issue-post: PASS, issue-next-id: PASS | - |
+| PAY-R10 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#nextIdAndCheckNumber` | `issue-check-number`, `issue-next-id` | issue-check-number: PASS, issue-next-id: PASS | - |
+| PAY-R11 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#postIssuesPayment61ForClaim119` | `issue-post` | issue-post: PASS | - |
+| PAY-R12 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#rawTextAndNoBusinessChecks` | `issue-raw-text` | issue-raw-text: PASS | - |
+| PAY-R13 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#columnConstraintsFailTheInsert` | `issue-required-columns`, `issue-column-limits` | issue-required-columns: PASS, issue-column-limits: PASS | - |
+| PAY-R14 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#columnConstraintsFailTheInsert` | `issue-required-columns` | issue-required-columns: PASS | - |
+| PAY-R15 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#rawTextAndNoBusinessChecks` | `issue-post`, `issue-no-business-checks` | issue-post: PASS, issue-no-business-checks: PASS | - |
+| PAY-R16 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentReadEndpointTest#anyOperatorCanIssue` | `adjuster-issue` | adjuster-issue: PASS | - |
+| PAY-R17 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentReadEndpointTest#historyOrderAndFixedLinks` | `payment_history`, `history`, `history-order` | payment_history: PASS, history: PASS, history-order: PASS | - |
+| PAY-R18 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentReadEndpointTest#historyOrderAndFixedLinks` | `history`, `detail-default-61` | history: PASS, detail-default-61: PASS | - |
+| PAY-R19 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentReadEndpointTest#detailShowsOnePayment` | `issue-post`, `detail` | issue-post: PASS, detail: PASS | - |
+| PAY-R20 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentReadEndpointTest#detailFallsBackTo61AndErrorsWhenMissing` | `detail`, `detail-default-61` | detail: PASS, detail-default-61: PASS | - |
+| PAY-R21 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentReadEndpointTest#detailFallsBackTo61AndErrorsWhenMissing` | `detail` | detail: PASS | - |
+| PAY-R22 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentReadEndpointTest#remittanceCountAndTotal` | `history-order`, `remittance` | history-order: PASS, remittance: PASS | - |
+| PAY-R23 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentReadEndpointTest#remittanceCountAndTotal` | `issue-amount-raw`, `remittance`, `remittance-total` | issue-amount-raw: PASS, remittance: PASS, remittance-total: PASS | - |
+| PAY-R24 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentIssueEndpointTest#amountFallbackAndRawValues` | `issue-amount-raw`, `detail` | issue-amount-raw: PASS, detail: PASS | - |
+| PAY-R25 (v1) | 0.1 | `361cdff` PAY-R01..PAY-R26: payment parity with explicit preconditions and an interactive report | `PaymentReadEndpointTest#detailShowsOnePayment` | `issue-raw-text` | issue-raw-text: PASS | - |
+| PAY-R26 (v1) | 0.1 | `82afa58` PAY-R26: operator redirect holds under a servlet context path; report coverage links clear filters | `PaymentIssueEndpointTest#noOperatorRedirectsToLoginAndWritesNothing`, `PaymentReadEndpointTest#readsRedirectWithoutOperator`, `PaymentReadEndpointTest#redirectHoldsUnderAContextPath` | `unauthenticated` | unauthenticated: PASS | - |
 
 ## Rule history
 
