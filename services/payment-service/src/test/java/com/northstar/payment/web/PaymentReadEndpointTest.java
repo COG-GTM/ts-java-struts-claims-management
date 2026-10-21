@@ -140,5 +140,11 @@ class PaymentReadEndpointTest {
         mvc.perform(get("/ui/index.html"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", org.hamcrest.Matchers.startsWith("text/html")));
+        mvc.perform(get("/ui/"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl("/ui/index.html"));
+        mvc.perform(get("/ui"))
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", "/ui/"));
     }
 }
