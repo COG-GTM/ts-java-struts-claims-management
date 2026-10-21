@@ -29,7 +29,7 @@ function q(){var h=location.hash.slice(1).split("?");var p={};(h[1]||"").split("
 function call(method,path,params){var my=seq;var body=new URLSearchParams(params);var url=path+(method==="GET"&&body.toString()?"?"+body:"");
 return fetch(url,{method:method,headers:op()?{"X-NorthStar-Operator":op()}:{},body:method==="POST"?body:undefined,redirect:"manual"})
 .then(function(r){if(r.type==="opaqueredirect"||r.status===302){return {signin:true};}return r.json().then(function(j){j.status=r.status;return j;});})
-.then(function(j){return my===seq?j:new Promise(function(){});});}
+.then(function(j){return method!=="GET"||my===seq?j:new Promise(function(){});});}
 function rows(fields,prefix){var ids=[];Object.keys(fields).forEach(function(k){var m=k.match(new RegExp("^"+prefix+"_(\\d+)$"));if(m)ids.push(m[1]);});return ids;}
 function error(j){return '<div class="msg err">The request could not be completed (error screen, status '+j.status+').</div>';}
 function signin(){main.innerHTML='<div class="card"><h2>Sign in</h2><p class="muted">Payment screens need an operator. Without one the service answers 302 to /claims/login.do.</p><label>Operator</label><input id="opname" value="supervisor"><br><button id="go">Sign in</button></div>';
@@ -37,7 +37,7 @@ document.getElementById("go").onclick=function(){sessionStorage.setItem("operato
 var views={
 issue:function(p){main.innerHTML='<div id="res"></div><div class="card"><h2>Issue payment</h2><form id="f"><label>Claim id</label><input name="claimId" value="119"><label>Payee name</label><input name="payeeName" value="Reserved Claimant"><label>Amount</label><input name="amount" value="1000.00"><label>Payment method</label><input name="paymentMethod" value="CHECK"><br><button>Issue payment</button></form></div>';
 document.getElementById("f").onsubmit=function(e){e.preventDefault();var data={};new FormData(e.target).forEach(function(v,k){data[k]=v;});
-call("POST","/payment/issue",data).then(function(j){if(j.signin)return signin();var r=document.getElementById("res");
+call("POST","/payment/issue",data).then(function(j){if(j.signin)return signin();var r=document.getElementById("res");if(!r){r=document.createElement("div");main.insertBefore(r,main.firstChild);}
 if(j.screen==="error"){r.innerHTML=error(j);return;}var f=j.fields;
 r.innerHTML='<div class="msg ok">Payment issued.</div><div class="card"><h2>Payment issued</h2><dl><dt>Amount</dt><dd id="f_paymentAmount">'+esc(f.paymentAmount)+'</dd><dt>Check number</dt><dd id="f_checkNumber">'+esc(f.checkNumber)+'</dd><dt>Status</dt><dd id="f_paymentStatus">'+esc(f.paymentStatus)+'</dd></dl><p class="links"><a href="#history?claimId='+encodeURIComponent(data.claimId)+'">Payment history</a></p></div>';});};},
 history:function(p){var claim=p.claimId||"119";form("history","Payment history","claimId",claim,function(){call("GET","/payment/history",{claimId:claim}).then(function(j){if(j.signin)return signin();var f=j.fields;var ids=rows(f,"checkNumber");
