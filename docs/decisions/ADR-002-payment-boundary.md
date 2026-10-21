@@ -107,6 +107,10 @@ Legacy behaviour is reproduced as-is. A difference is allowed only when a
 this ADR approves none. Kept oddities are listed in
 `docs/KNOWN_LEGACY_QUIRKS.md`.
 
+### Payment UI
+
+The service also serves one static page at `/ui/` (`src/main/resources/static/ui/index.html`) with issue, history, detail and remittance screens. It is a thin view: it calls only the four `/payment/*` endpoints above, sends the operator name in `X-NorthStar-Operator`, and shows the returned `fields` and `display` values unchanged. It holds no business rules, so parity is still judged on the JSON endpoints. The page is a stand-in for the gateway screen; the operator name it asks for is not authentication.
+
 ## Consequences
 
 * The service keeps: GET writes; claim 119 and payment 61 fallbacks; amounts

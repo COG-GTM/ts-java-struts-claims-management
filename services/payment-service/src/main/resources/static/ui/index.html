@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NorthStar Payments</title>
+<!-- Thin screen over the payment-service JSON endpoints (ADR-002, "Payment UI"). No business logic: every value shown comes from /payment/*. -->
+<style>
+*{box-sizing:border-box}body{margin:0;font:18px/1.5 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:#f5f6f8;color:#1d2330}
+header{background:#123a6b;color:#fff;padding:14px 32px;display:flex;align-items:center;gap:28px}
+header h1{font-size:22px;margin:0}header nav a{color:#cfe0ff;margin-right:18px;text-decoration:none;font-weight:600}
+header nav a.on{color:#fff;border-bottom:2px solid #fff}header .who{margin-left:auto;font-size:16px}
+main{max-width:1000px;margin:24px auto;padding:0 24px}
+.card{background:#fff;border:1px solid #d9dce3;border-radius:10px;padding:20px 24px;margin-bottom:18px}
+h2{margin:0 0 14px;font-size:22px}label{display:block;font-weight:600;margin:10px 0 4px}
+input,select{font:inherit;padding:7px 10px;border:1px solid #c4c9d4;border-radius:6px;width:320px}
+button{font:inherit;padding:8px 18px;border:0;border-radius:6px;background:#1f5fbf;color:#fff;cursor:pointer;margin-top:14px}
+table{border-collapse:collapse;width:100%}th,td{border:1px solid #d9dce3;padding:7px 10px;text-align:left}th{background:#f0f2f6}
+dl{display:grid;grid-template-columns:220px 1fr;gap:6px 14px;margin:0}dt{color:#5d6472}dd{margin:0;font-weight:600}
+.msg{padding:12px 16px;border-radius:8px;margin-bottom:16px}.ok{background:#e3f4ea;color:#17663a}.err{background:#fbe3e0;color:#a1251b}
+.links a{margin-right:16px}.muted{color:#5d6472;font-size:15px}
+</style></head><body>
+<header><h1>NorthStar Payments</h1><nav id="nav"><a href="#issue">Issue</a><a href="#history">History</a><a href="#detail">Detail</a><a href="#remittance">Remittance</a></nav><span class="who" id="who"></span></header>
+<main id="main"></main>
+<script>
+(function(){
+var main=document.getElementById("main");
+function op(){return sessionStorage.getItem("operator")||"";}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];});}
+function q(){var h=location.hash.slice(1).split("?");var p={};(h[1]||"").split("&").forEach(function(kv){if(kv){var a=kv.split("=");p[decodeURIComponent(a[0])]=decodeURIComponent(a[1]||"");}});return {view:h[0]||"issue",params:p};}
+function call(method,path,params){var body=new URLSearchParams(params);var url=path+(method==="GET"&&body.toString()?"?"+body:"");
+return fetch(url,{method:method,headers:op()?{"X-NorthStar-Operator":op()}:{},body:method==="POST"?body:undefined,redirect:"manual"})
+.then(function(r){if(r.type==="opaqueredirect"||r.status===302){return {signin:true};}return r.json().then(function(j){j.status=r.status;return j;});});}
+function rows(fields,prefix){var ids=[];Object.keys(fields).forEach(function(k){var m=k.match(new RegExp("^"+prefix+"_(\\d+)$"));if(m)ids.push(m[1]);});return ids;}
+function error(j){return '<div class="msg err">The request could not be completed (error screen, status '+j.status+').</div>';}
+function signin(){main.innerHTML='<div class="card"><h2>Sign in</h2><p class="muted">Not signed in: the service answered 302 to /claims/login.do.</p><label>Operator</label><input id="opname" value="supervisor"><br><button id="go">Sign in</button></div>';
+document.getElementById("go").onclick=function(){sessionStorage.setItem("operator",document.getElementById("opname").value);render();};}
+var views={
+issue:function(p){main.innerHTML='<div id="res"></div><div class="card"><h2>Issue payment</h2><form id="f"><label>Claim id</label><input name="claimId" value="119"><label>Payee name</label><input name="payeeName" value="Reserved Claimant"><label>Amount</label><input name="amount" value="1000.00"><label>Payment method</label><input name="paymentMethod" value="CHECK"><br><button>Issue payment</button></form></div>';
+document.getElementById("f").onsubmit=function(e){e.preventDefault();var data={};new FormData(e.target).forEach(function(v,k){data[k]=v;});
+call("POST","/payment/issue",data).then(function(j){if(j.signin)return signin();var r=document.getElementById("res");
+if(j.screen==="error"){r.innerHTML=error(j);return;}var f=j.fields;
+r.innerHTML='<div class="msg ok">Payment issued.</div><div class="card"><h2>Payment issued</h2><dl><dt>Amount</dt><dd id="f_paymentAmount">'+esc(f.paymentAmount)+'</dd><dt>Check number</dt><dd id="f_checkNumber">'+esc(f.checkNumber)+'</dd><dt>Status</dt><dd id="f_paymentStatus">'+esc(f.paymentStatus)+'</dd></dl><p class="links"><a href="#history?claimId='+encodeURIComponent(data.claimId)+'">Payment history</a></p></div>';});};},
+history:function(p){var claim=p.claimId||"119";form("history","Payment history","claimId",claim,function(){call("GET","/payment/history",{claimId:claim}).then(function(j){if(j.signin)return signin();var f=j.fields;var ids=rows(f,"checkNumber");
+var t='<table><tr><th>Check number</th><th>Amount</th><th>Status</th></tr>'+ids.map(function(id){return '<tr><td>'+esc(f["checkNumber_"+id])+'</td><td>'+esc(f["paymentAmount_"+id])+'</td><td>'+esc(f["paymentStatus_"+id])+'</td></tr>';}).join("")+'</table>';
+var links=j.links.slice(0,2).map(function(l){var m=l.match(/^(detail|remittance)\.do\?(.*)$/);return '<a href="#'+m[1]+'?'+m[2]+'">'+(m[1]==="detail"?"Payment detail":"Remittance")+'</a>';}).join("");
+out(ids.length?t:'<p class="muted">No payments for this claim.</p>','<p class="links">'+links+'</p>');});});},
+detail:function(p){form("detail","Payment detail","paymentId",p.paymentId||"",function(){var a=p.paymentId?{paymentId:p.paymentId}:{};call("GET","/payment/detail",a).then(function(j){if(j.signin)return signin();if(j.screen==="error")return out(error(j),"");var f=j.fields,d=j.display;
+out('<dl><dt>Payment id</dt><dd>'+esc(f.detailPaymentId)+'</dd><dt>Claim</dt><dd>'+esc(f.detailPaymentClaim)+'</dd><dt>Payee</dt><dd>'+esc(d.payeeName)+'</dd><dt>Amount</dt><dd>'+esc(f.detailPaymentAmount)+'</dd><dt>Method</dt><dd>'+esc(d.paymentMethod)+'</dd><dt>Check number</dt><dd>'+esc(f.detailPaymentCheck)+'</dd><dt>Issued</dt><dd>'+esc(f.detailPaymentDate)+'</dd><dt>Status</dt><dd>'+esc(f.detailPaymentStatus)+'</dd></dl>',"");});});},
+remittance:function(p){var claim=p.claimId||"119";form("remittance","Remittance","claimId",claim,function(){call("GET","/payment/remittance",{claimId:claim}).then(function(j){if(j.signin)return signin();var f=j.fields,d=j.display;var ids=rows(f,"remitCheck");
+var t='<table><tr><th>Payee</th><th>Check</th><th>Issued</th><th>Amount</th><th>Status</th></tr>'+ids.map(function(id){return '<tr><td>'+esc(d["remitPayee_"+id])+'</td><td>'+esc(f["remitCheck_"+id])+'</td><td>'+esc(f["remitDate_"+id])+'</td><td>'+esc(f["remitAmount_"+id])+'</td><td>'+esc(f["remitStatus_"+id])+'</td></tr>';}).join("")+'</table>';
+out('<p>Claim <b>'+esc(f.remitClaimId)+'</b></p>'+(ids.length?t:""),'<dl><dt>Payments</dt><dd>'+esc(f.remitCount)+'</dd><dt>Total issued</dt><dd>'+esc(f.remitTotal)+'</dd></dl>');});});}};
+function form(view,title,name,value,load){main.innerHTML='<div class="card"><h2>'+title+'</h2><form id="f"><label>'+(name==="claimId"?"Claim id":"Payment id")+'</label><input name="'+name+'" value="'+esc(value)+'"> <button>Show</button></form></div><div class="card" id="out"></div>';
+document.getElementById("f").onsubmit=function(e){e.preventDefault();var v=e.target[name].value;location.hash=view+(v?"?"+name+"="+encodeURIComponent(v):"");};load();}
+function out(a,b){document.getElementById("out").innerHTML=a+b;}
+function render(){var r=q();Array.prototype.forEach.call(document.querySelectorAll("#nav a"),function(a){a.classList.toggle("on",a.getAttribute("href")==="#"+r.view);});
+document.getElementById("who").innerHTML=op()?'Operator: <b>'+esc(op())+'</b> · <a href="#" id="out1" style="color:#cfe0ff">Sign out</a>':"Not signed in";
+var o=document.getElementById("out1");if(o)o.onclick=function(e){e.preventDefault();sessionStorage.removeItem("operator");render();};
+(views[r.view]||views.issue)(r.params);}
+window.addEventListener("hashchange",render);render();
+})();
+</script></body></html>

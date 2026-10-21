@@ -133,4 +133,12 @@ class PaymentReadEndpointTest {
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", "/claims/login.do"));
     }
+
+    /** ADR-002 "Payment UI": the static screen loads without an operator; only /payment/* is guarded. */
+    @Test
+    void paymentUiIsServedOutsideTheOperatorRule() throws Exception {
+        mvc.perform(get("/ui/index.html"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", org.hamcrest.Matchers.startsWith("text/html")));
+    }
 }
