@@ -3370,6 +3370,94 @@
         "sql": []
       },
       "title": "Any logged-in operator, including an adjuster, can issue a payment"
+    },
+    {
+      "actor": "supervisor",
+      "db_after": [
+        {
+          "columns": [
+            "PAYMENT_ID",
+            "CLAIM_ID",
+            "SETTLEMENT_ID",
+            "PAYEE_NAME",
+            "AMOUNT",
+            "PAYMENT_METHOD",
+            "CHECK_NUMBER",
+            "ISSUED_DATE",
+            "STATUS"
+          ],
+          "rows": [
+            [
+              "61",
+              "119",
+              "121",
+              "Over Cap Claimant",
+              "1000.01E0",
+              "CHECK",
+              "CHK-61",
+              "2019-04-03",
+              "ISSUED"
+            ]
+          ],
+          "sql": "select payment_id, claim_id, settlement_id, payee_name, amount, payment_method, check_number, issued_date, status from PAYMENT where payment_id > 60 order by payment_id"
+        }
+      ],
+      "exchanges": [
+        {
+          "request": {
+            "form": {
+              "amount": "1000.01",
+              "claimId": "119",
+              "payeeName": "Over Cap Claimant",
+              "paymentMethod": "CHECK"
+            },
+            "method": "POST",
+            "note": "settlement 121 for claim 119 is 1000.00",
+            "path": "/claims/payment/issue.do"
+          },
+          "response": {
+            "audit": {
+              "As of date": "2019-04-01",
+              "Operator": "supervisor",
+              "Screen context": "Operational record view"
+            },
+            "body": "<!-- ns:view /WEB-INF/jsp/payment/issue.jsp -->\n<table class=\"page\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n<tr><td class=\"banner\"><h1>NorthStar Claims</h1></td></tr>\n<tr><td class=\"navigation\"><a href=\"/claims/policy/list.do\">Policies</a> |\n<a href=\"/claims/workbench/list.do\">Workbench</a> |\n<a href=\"/claims/report/openByAdjuster.do\">Reports</a> |\n<a href=\"/claims/logout.do\">Logout</a></td></tr>\n<tr><td class=\"content\">\n<table class=\"menu\" cellpadding=\"2\" cellspacing=\"0\" border=\"0\">\n<tr><td>Quick Links</td></tr>\n<tr><td><a href=\"/claims/intake/new.do\">New FNOL</a></td></tr>\n<tr><td><a href=\"/claims/payment/history.do\">Payment History</a></td></tr>\n<tr><td><a href=\"/claims/report/openByAdjuster.do\">Reports</a></td></tr>\n<tr><td><a href=\"/claims/policy/search.do\">Policy search</a></td></tr>\n<tr><td><a href=\"/claims/logout.do\">Logout</a></td></tr>\n<tr><td>Operator: supervisor</td></tr>\n<tr><td>Application version: 3.4.1 (build 20081117)</td></tr>\n<tr><td>Claims operations environment: Production claims desk</td></tr>\n<tr><td>Service desk: Claims support</td></tr>\n<tr><td>Session: Authenticated</td></tr>\n</table>\n<h2>Issue Payment</h2>\n<table class=\"details\" cellpadding=\"3\" cellspacing=\"0\" border=\"1\">\n<tr>\n<th>Payment Amount</th><td><span id=\"f_paymentAmount\">1000.01</span></td></tr>\n<tr>\n<th>Check Number</th><td><span id=\"f_checkNumber\">CHK-61</span></td></tr>\n<tr>\n<th>Payment Status</th><td><span id=\"f_paymentStatus\">ISSUED</span></td></tr>\n</table>\n<p>The check is ready for issue control review.</p>\n<table class=\"screen-audit\" cellpadding=\"3\" cellspacing=\"0\" border=\"1\">\n<tr>\n<th>Screen context</th>\n<td>Operational record view</td>\n</tr>\n<tr>\n<th>Operator</th>\n<td>supervisor</td>\n</tr>\n<tr>\n<th>As of date</th>\n<td>2019-04-01</td>\n</tr>\n</table>\n</td></tr>\n<tr><td class=\"footer\">NorthStar Claims Operations</td></tr>\n</table>\n<table class=\"footer-links\" cellpadding=\"2\" cellspacing=\"0\" border=\"0\">\n<tr>\n<td><a href=\"/claims/home.do\">Home</a></td>\n<td><a href=\"/claims/policy/list.do\">Policies</a></td>\n</tr>\n<tr>\n<td><a href=\"/claims/workbench/list.do\">Workbench</a></td>\n<td><a href=\"/claims/logout.do\">Logout</a></td>\n</tr>\n</table>",
+            "fields": [
+              [
+                "paymentAmount",
+                "1000.01"
+              ],
+              [
+                "checkNumber",
+                "CHK-61"
+              ],
+              [
+                "paymentStatus",
+                "ISSUED"
+              ]
+            ],
+            "links": [
+              "/claims/payment/history.do"
+            ],
+            "location": null,
+            "status": 200,
+            "text_cells": [
+              "Operational record view",
+              "supervisor",
+              "2019-04-01"
+            ],
+            "view": "/WEB-INF/jsp/payment/issue.jsp"
+          }
+        }
+      ],
+      "id": "chg-002-above-settlement",
+      "precondition": {
+        "name": "claim 119 has a newer settlement 121 of 1000; the request pays 1000.01 (CHG-002)",
+        "sql": [
+          "INSERT INTO SETTLEMENT VALUES (121, 119, 1500, 500, 0, FALSE, 1000, 'adjuster1', '2019-03-02')"
+        ]
+      },
+      "title": "CHG-002: a payment one cent above the newest settlement amount"
     }
   ],
   "generated_by": "tools/spec/payment_proof.py",

@@ -36,7 +36,7 @@ and compares what ADR-002 calls parity: status and redirect, screen,
 field values in screen order, payee and method texts, links, operator,
 validation keys and the database rows read afterwards.
 
-Rule coverage: 26 of 26 SPEC-PAY-001 rule versions have a scenario.
+Rule coverage: 27 of 27 SPEC-PAY-001 rule versions have a scenario.
 
 Check: *automated* means the service matched the legacy answer on every
 compared item; *reviewer* means the verdict also rests on a recorded human
@@ -44,21 +44,21 @@ decision (a CHG record, or ADR-002's error-status equivalence).
 
 | Scenario | Legacy behaviour | Rules | Precondition | Verdict | Check | Difference |
 | --- | --- | --- | --- | --- | --- | --- |
-| `payment_issue` | Issue a settlement payment | PAY-R01 | fresh seed (transcripts/payment_issue.json: first payment of claim 119) | PASS | automated | - |
+| `payment_issue` | Issue a settlement payment | PAY-R01 | fresh seed (transcripts/payment_issue.json: first payment of claim 119) | CHANGED (CHG-002) | reviewer | 1000.00 for claim 119, whose newest settlement is 0.00 under the declared fresh-seed precondition, is rejected with payment.amount.aboveSettlement; payment 61 is not written |
 | `payment_history` | Review payment history | PAY-R17 | payment 61 issued by payment_issue, which make capture replays first | PASS | automated | - |
-| `issue-post` | POST issue.do for seeded claim 119 inserts payment 61 and shows the confirmation page | PAY-R01, PAY-R05, PAY-R09, PAY-R11, PAY-R15, PAY-R19 | fresh seed | PASS | automated | - |
-| `issue-get` | GET issue.do with query parameters also inserts a payment | PAY-R02 | fresh seed | PASS | automated | - |
-| `issue-claim-fallback` | Missing or non-numeric claimId falls back to claim 119 | PAY-R03, PAY-R04 | fresh seed | PASS | automated | - |
+| `issue-post` | POST issue.do for seeded claim 119 inserts payment 61 and shows the confirmation page | PAY-R01, PAY-R05, PAY-R09, PAY-R11, PAY-R15, PAY-R19 | fresh seed | CHANGED (CHG-002) | reviewer | 1000.00 for claim 119 (settlement 0.00) is rejected and payment 61 is not written, so the follow-up detail of payment 61 is the error screen |
+| `issue-get` | GET issue.do with query parameters also inserts a payment | PAY-R02 | fresh seed | CHANGED (CHG-002) | reviewer | The GET of 10 for claim 1 (settlement 0.00) is rejected; nothing is written |
+| `issue-claim-fallback` | Missing or non-numeric claimId falls back to claim 119 | PAY-R03, PAY-R04 | fresh seed | CHANGED (CHG-002) | reviewer | 5, 6 and 7 for the fallback claim 119 (settlement 0.00) are rejected; nothing is written |
 | `issue-amount-fallback-seed` | Missing or non-numeric amount falls back to the settlement amount (0 for seeded claim 119) | PAY-R07 | fresh seed | PASS | automated | - |
 | `issue-newest-settlement` | The newest settlement (highest settlement_id) supplies settlement_id and the amount fallback | PAY-R05, PAY-R07 | claim 119 has a second, newer settlement 121 of 1000 | PASS | automated | - |
-| `issue-amount-raw` | Any value Double.parseDouble accepts is stored as sent; screens print it with %.2f | PAY-R03, PAY-R08, PAY-R23, PAY-R24 | fresh seed | PASS | automated | - |
-| `issue-check-number` | A submitted checkNumber is ignored; the check number is CHK- plus the payment id | PAY-R10 | fresh seed | PASS | automated | - |
-| `issue-next-id` | The payment id is the highest existing payment_id plus 1, gaps are not filled | PAY-R09, PAY-R10 | payment 500 exists for claim 1 (gap after 60) | PASS | automated | - |
-| `issue-required-columns` | Missing payeeName or paymentMethod fails the insert: error page, no row, id not consumed | PAY-R13, PAY-R14 | fresh seed | PASS | reviewer | - |
-| `issue-column-limits` | paymentMethod over 20 characters or payeeName over 100 characters fails the insert | PAY-R13 | fresh seed | PASS | reviewer | - |
+| `issue-amount-raw` | Any value Double.parseDouble accepts is stored as sent; screens print it with %.2f | PAY-R03, PAY-R08, PAY-R23, PAY-R24 | fresh seed | CHANGED (CHG-002) | reviewer | 1.005 and 1e3 for claim 119 (settlement 0.00) are rejected; -50 and NaN are not above it and are still written, as payments 61 and 62, so the remittances list only those |
+| `issue-check-number` | A submitted checkNumber is ignored; the check number is CHK- plus the payment id | PAY-R10 | fresh seed | CHANGED (CHG-002) | reviewer | 1000.00 for claim 119 (settlement 0.00) is rejected before any check number is made; nothing is written |
+| `issue-next-id` | The payment id is the highest existing payment_id plus 1, gaps are not filled | PAY-R09, PAY-R10 | payment 500 exists for claim 1 (gap after 60) | CHANGED (CHG-002) | reviewer | 1000.00 for claim 119 (settlement 0.00) is rejected; id 501 is not used and only the gap row 500 remains |
+| `issue-required-columns` | Missing payeeName or paymentMethod fails the insert: error page, no row, id not consumed | PAY-R13, PAY-R14 | fresh seed | CHANGED (CHG-002) | reviewer | The cap runs before the insert: a missing payee or method with 10, and the complete 1000.00 request, for claim 119 (settlement 0.00) get the validation answer instead of the error screen or payment 61; nothing is written |
+| `issue-column-limits` | paymentMethod over 20 characters or payeeName over 100 characters fails the insert | PAY-R13 | fresh seed | CHANGED (CHG-002) | reviewer | The cap runs before the insert: the over-long and the maximum-length payee and method with 1000.00 for claim 119 (settlement 0.00) get the validation answer instead of the error screen or payment 61; nothing is written |
 | `issue-no-settlement` | A claim with no settlement row gets the error page and no payment | PAY-R06 | settlement 120 deleted, so claim 120 exists without a settlement | PASS | reviewer | - |
-| `issue-raw-text` | payeeName and paymentMethod are stored exactly as sent and HTML-escaped on screen | PAY-R12, PAY-R25 | fresh seed | PASS | automated | - |
-| `issue-no-business-checks` | Closed claims, claims already paid and amounts above the settlement are all accepted | PAY-R15 | fresh seed | PASS | automated | - |
+| `issue-raw-text` | payeeName and paymentMethod are stored exactly as sent and HTML-escaped on screen | PAY-R12, PAY-R25 | fresh seed | CHANGED (CHG-002) | reviewer | 1000.00 for claim 119 (settlement 0.00) is rejected; payment 61 does not exist, so its detail is the error screen and the remittance of claim 119 is empty |
+| `issue-no-business-checks` | Closed claims, claims already paid and amounts above the settlement are all accepted | PAY-R15 | fresh seed | CHANGED (CHG-002) | reviewer | 1000.00 for CLOSED claim 120 and 999999 twice for claim 1 (both settled at 0.00) are rejected; the history of claim 1 shows only payment 1 |
 | `history` | history.do lists the claim's payments; claimId falls back to 119; links are fixed | PAY-R17, PAY-R18 | fresh seed | PASS | automated | - |
 | `history-order` | history.do and remittance.do order rows by payment_id, not by insert order | PAY-R17, PAY-R22 | payments 300 then 200 inserted for claim 2 | PASS | automated | - |
 | `detail` | detail.do shows one payment; paymentId falls back to 61; a missing payment shows the error page | PAY-R19, PAY-R20, PAY-R21, PAY-R24 | fresh seed | PASS | reviewer | - |
@@ -66,4 +66,5 @@ decision (a CHG record, or ADR-002's error-status equivalence).
 | `remittance` | remittance.do lists the claim's payments with count and total; claimId falls back to 119 | PAY-R22, PAY-R23 | fresh seed | PASS | automated | - |
 | `remittance-total` | Total issued sums every payment row of the claim whatever its status | PAY-R23 | claim 3 also has a VOID payment of 100 | PASS | automated | - |
 | `unauthenticated` | Without a logged-in session every payment URL redirects to login and nothing is written | PAY-R26 | fresh seed | PASS | automated | - |
-| `adjuster-issue` | Any logged-in operator, including an adjuster, can issue a payment | PAY-R16 | fresh seed | PASS | automated | - |
+| `adjuster-issue` | Any logged-in operator, including an adjuster, can issue a payment | PAY-R16 | fresh seed | CHANGED (CHG-002) | reviewer | adjuster7's 1000.00 for claim 119 (settlement 0.00) is rejected, with adjuster7 still the operator; nothing is written |
+| `chg-002-above-settlement` | CHG-002: a payment one cent above the newest settlement amount | PAY-R15 | claim 119 has a newer settlement 121 of 1000; the request pays 1000.01 (CHG-002) | CHANGED (CHG-002) | reviewer | 1000.01 for claim 119, one cent above its newest settlement 121 of 1000.00, is rejected with payment.amount.aboveSettlement and writes nothing; the legacy app writes payment 61 |

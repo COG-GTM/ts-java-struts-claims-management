@@ -17,7 +17,15 @@ legacy case read afterwards.
 Scenario-to-rule mapping: ``payment_scenarios`` in ``parity/routes.json``. It
 must equal the ``Observed:`` citations of docs/specs/SPEC-PAY-001.md; the script
 fails when they drift. A scenario in ``approved_differences`` is judged
-against its CHG record; any other difference is a FAIL.
+against its CHG record; any other difference is a FAIL. An approval lists, per
+step number, the answer the service must give instead of the legacy one
+(``{"cap": true}`` is CHG-002's rejection: status 200, screen issue, no
+fields, one key ``payment.amount.aboveSettlement``), and the database rows or
+transcript keys it must leave instead; every unlisted step and query is still
+judged against legacy. A ``cap`` step also fails unless CHG-002's condition
+holds before it is sent: the parsed amount, with the legacy fallbacks, is
+greater than the newest settlement amount of the claim in the service's
+database (docs/changes/CHG-002-payment-amount-cap.md).
 
 Every verdict carries a mark: ``automated`` when the service answer equals the
 legacy answer on every compared item, ``reviewer`` when the verdict also rests
@@ -212,6 +220,86 @@ def compare_live_step(response, actual):
     return checks, reviewer
 
 
+ISSUE_PATH = "/claims/payment/issue.do"
+CAP_KEY = "payment.amount.aboveSettlement"
+JAVA_INT = re.compile(r"^[+-]?\d+$")
+JAVA_DOUBLE = re.compile(r"^[+-]?(NaN|Infinity|(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?)[fFdD]?$")
+
+
+def java_int(value, fallback):
+    """LegacyParameters.integer: Integer.parseInt or the fallback."""
+    if value is None or not JAVA_INT.match(value) or not -2 ** 31 <= int(value) < 2 ** 31:
+        return fallback
+    return int(value)
+
+
+def java_double(value, fallback):
+    """LegacyParameters.decimal: Double.parseDouble (which trims) or the fallback.
+    Hexadecimal literals are not modelled; none is sent by any scenario."""
+    text = (value or "").strip(" \t\n\r\x00")
+    if not JAVA_DOUBLE.match(text):
+        return fallback
+    return float(text.rstrip("fFdD"))
+
+
+def cap_applies(base, request):
+    """CHG-002's condition for an issue request, read from the service database
+    as it stands just before the request is sent."""
+    params = dict(request.get("query") or {}, **(request.get("form") or {}))
+    claim = java_int(params.get("claimId"), 119)
+    rows = parity_call(base, "/parity/query", (
+        "select settlement_amount from SETTLEMENT where claim_id = %d "
+        "order by settlement_id desc limit 1" % claim).encode())["rows"]
+    if not rows:
+        return False
+    settlement = float(rows[0][0])
+    return java_double(params.get("amount"), settlement) > settlement
+
+
+def approved_checks(expected, actual, actor, change):
+    """Checks of one step against the answer an approval states for it."""
+    if "cap" in expected:
+        if list(expected) != ["cap"] or expected["cap"] is not True:
+            raise SystemExit("a cap approval is exactly {\"cap\": true}, got %s" % json.dumps(expected))
+        expected = {"status": 200, "screen": "issue", "fields": [], "payee/method text": [],
+                    "links": [], "operator": actor, "validation keys": [CAP_KEY]}
+    unknown = set(expected) - {"status", "screen", "fields", "payee/method text", "links",
+                               "operator", "validation keys"}
+    if unknown:
+        raise SystemExit("approved step names unknown items %s" % sorted(unknown))
+    body = actual["body"]
+    got = {"status": actual["status"], "screen": body.get("screen"),
+           "fields": [list(p) for p in body.get("fields", {}).items()],
+           "payee/method text": list(body.get("display", {}).values()),
+           "links": body.get("links", []), "operator": body.get("operator"),
+           "validation keys": body.get("errors", [])}
+    checks = []
+    for what in ("status", "screen", "fields", "payee/method text", "links", "operator",
+                 "validation keys"):
+        if what in expected:
+            check(checks, what, expected[what], got[what], "approved by " + change)
+    return checks
+
+
+def approved_step(base, n, request, actor, approval):
+    """The approved answer for step n, or None; sends nothing."""
+    if not approval:
+        return None
+    return approval.get("expected", {}).get("steps", {}).get(str(n))
+
+
+def cap_check(base, request, approved, change):
+    """Before a step the approval marks as CHG-002's rejection, check that the
+    condition holds; return the check list (empty when not a cap step)."""
+    if not (approved and approved.get("cap")):
+        return []
+    checks = []
+    holds = request["path"] == ISSUE_PATH and cap_applies(base, request)
+    check(checks, "CHG-002 condition (amount > newest settlement amount)", True, holds,
+          "approved by " + change)
+    return checks
+
+
 def service_summary(actual):
     """What the report keeps of the service answer besides the checks."""
     return {"status": actual["status"], "location": actual["location"],
@@ -232,51 +320,78 @@ def transcript_db(base, key):
     raise SystemExit("unknown db_state key %s" % key)
 
 
-def replay_transcript(base, name):
+def replay_transcript(base, name, approval=None):
     transcript = json.loads(read(os.path.join("transcripts", name + ".json")))
     expected = transcript["expected"]
     request = transcript["request"]
     if request["method"] == "GET" and request.get("form"):
         request = dict(request, query=request["form"], form={})
+    approved = approved_step(base, 1, request, transcript.get("actor"), approval)
+    pre = cap_check(base, request, approved, approval and approval["change"])
     actual = service_request(base, request, transcript.get("actor"))
     body = actual["body"]
     checks = []
     reviewer = False
-    if expected["result"].endswith("error.jsp"):
+    if approved:
+        checks = pre + approved_checks(approved, actual, transcript.get("actor"),
+                                       approval["change"])
+    elif expected["result"].endswith("error.jsp"):
         reviewer = True
         check(checks, "status class", "5xx", "%dxx" % (actual["status"] // 100), EQUIVALENCE)
     else:
         check(checks, "status", expected["status"], actual["status"])
-    check(checks, "screen", legacy_screen(expected["result"].split(":", 1)[1]), body.get("screen"))
-    check(checks, "business fields", expected["business_fields"], body.get("fields", {}))
-    check(checks, "validation keys", expected["validation_errors"], body.get("errors", []))
+    if not approved:
+        check(checks, "screen", legacy_screen(expected["result"].split(":", 1)[1]), body.get("screen"))
+        check(checks, "business fields", expected["business_fields"], body.get("fields", {}))
+        check(checks, "validation keys", expected["validation_errors"], body.get("errors", []))
+    approved_db = (approval or {}).get("expected", {}).get("db_state", {})
     db = []
     for key, value in sorted(expected["db_state"].items()):
         got = transcript_db(base, key)
-        db.append({"sql": key, "expected": value, "actual": got, "ok": got == value})
+        entry = {"sql": key, "expected": approved_db.get(key, value), "actual": got}
+        if key in approved_db:
+            entry["legacy"] = value
+            entry["approved"] = approval["change"]
+        entry["ok"] = got == entry["expected"]
+        db.append(entry)
     step = {"n": 1, "request": request, "actor": transcript.get("actor"),
             "legacy": {"status": expected["status"], "result": expected["result"],
                        "fields": expected["business_fields"]},
             "service": service_summary(actual), "checks": checks}
+    if approved:
+        step["approved"] = approval["change"]
     return transcript["description"], [step], db, reviewer, "transcripts/%s.json" % name
 
 
-def replay_case(base, case):
+def replay_case(base, case, approval=None):
     steps = []
     reviewer = False
     for n, exchange in enumerate(case["exchanges"], 1):
+        approved = approved_step(base, n, exchange["request"], case["actor"], approval)
+        pre = cap_check(base, exchange["request"], approved, approval and approval["change"])
         actual = service_request(base, exchange["request"], case["actor"])
-        checks, needs_review = compare_live_step(exchange["response"], actual)
-        reviewer = reviewer or needs_review
+        if approved:
+            checks = pre + approved_checks(approved, actual, case["actor"], approval["change"])
+        else:
+            checks, needs_review = compare_live_step(exchange["response"], actual)
+            reviewer = reviewer or needs_review
         legacy = {k: v for k, v in exchange["response"].items() if k not in ("body", "text_cells")}
         steps.append({"n": n, "request": exchange["request"], "actor": case["actor"],
                       "legacy": legacy, "service": service_summary(actual), "checks": checks})
+        if approved:
+            steps[-1]["approved"] = approval["change"]
+    approved_db = {q["sql"]: q["rows"] for q in
+                   (approval or {}).get("expected", {}).get("db_after", [])}
     db = []
     for query in case["db_after"]:
         got = parity_call(base, "/parity/query", query["sql"].encode())
-        ok = got["rows"] == query["rows"]
-        db.append({"sql": query["sql"], "columns": query["columns"],
-                   "expected": query["rows"], "actual": got["rows"], "ok": ok})
+        entry = {"sql": query["sql"], "columns": query["columns"],
+                 "expected": approved_db.get(query["sql"], query["rows"]), "actual": got["rows"]}
+        if query["sql"] in approved_db:
+            entry["legacy"] = query["rows"]
+            entry["approved"] = approval["change"]
+        entry["ok"] = got["rows"] == entry["expected"]
+        db.append(entry)
     return case["title"], steps, db, reviewer, "%s#%s" % (PROOF, case["id"])
 
 
@@ -308,25 +423,26 @@ def main():
             problems.append("%s section %s differs from the proof precondition" % (PRECONDITIONS, name))
     if problems:
         raise SystemExit("\n".join(problems))
-    approvals = {e["scenario"]: e for e in routes().get("approved_differences", [])}
+    approvals = {e["scenario"]: e for e in routes().get("approved_differences", [])
+                 if e["scenario"] in scenarios}
 
     rows = []
     failed = False
     for name in scenarios:
         parity_call(args.base, "/parity/reset", params={"scenario": name})
+        approval = approvals.get(name)
         if name in cases:
-            description, steps, db, reviewer, source = replay_case(args.base, cases[name])
+            description, steps, db, reviewer, source = replay_case(args.base, cases[name], approval)
         else:
-            description, steps, db, reviewer, source = replay_transcript(args.base, name)
+            description, steps, db, reviewer, source = replay_transcript(args.base, name, approval)
         diffs = ["step %d %s: expected %s, got %s" % (s["n"], c["what"],
                                                      json.dumps(c["expected"]), json.dumps(c["actual"]))
                  for s in steps for c in s["checks"] if not c["ok"]]
         diffs += ["db %s: expected %s, got %s" % (d["sql"], json.dumps(d["expected"]), json.dumps(d["actual"]))
                   for d in db if not d["ok"]]
-        approval = approvals.get(name)
         if approval:
-            verdict = "FAIL"
-            note = "approved difference %s needs a payment comparison in this tool" % approval["change"]
+            verdict = "CHANGED (%s)" % approval["change"] if not diffs else "FAIL"
+            note = approval["summary"] if not diffs else "; ".join(diffs)
         else:
             verdict = "PASS" if not diffs else "FAIL"
             note = "; ".join(diffs) or "-"

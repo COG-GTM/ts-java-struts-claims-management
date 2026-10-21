@@ -1,6 +1,6 @@
 # SPEC-PAY-001 — Payment issue, history, detail and remittance
 
-Version: 0.1
+Version: 0.2
 
 Scope: the four payment request flows of the claims application:
 `/claims/payment/issue.do`, `history.do`, `detail.do` and `remittance.do`.
@@ -140,7 +140,7 @@ Read: src/main/java/com/northstar/claims/web/PaymentIssueAction.java:25;
 src/main/java/com/northstar/claims/web/ClaimsActionSupport.java:67-69
 Observed: live:issue-required-columns#3
 
-**PAY-R15 (v1)** — Issue has no business checks. A payment is accepted for a
+**PAY-R15 (v1, superseded by v2)** — Issue has no business checks. A payment is accepted for a
 `DENIED` claim (119), a `CLOSED` claim (120), a claim that already has
 payments, an amount far above the settlement amount, and the same request sent
 twice.
@@ -148,6 +148,27 @@ Read: src/main/java/com/northstar/claims/web/PaymentIssueAction.java:22-36;
 src/main/resources/db/seed.sql:253-254
 Observed: live:issue-post#1; live:issue-no-business-checks#1;
 live:issue-no-business-checks#2; live:issue-no-business-checks#3
+
+**PAY-R15 (v2)** — Issue has one business check. After the claim fallback
+and the newest-settlement lookup, the payment amount (the parsed `amount`, or
+the settlement amount when `amount` is missing or not parseable) is compared
+with the newest settlement's `settlement_amount`. When it is greater, the
+request is rejected before the payment id is read and before any write: status
+200 on the issue screen, no fields, and exactly one validation error, key
+`payment.amount.aboveSettlement`. No PAYMENT row is written and no id is used.
+An amount equal to the settlement amount is accepted; `NaN` is never greater,
+so it is accepted. A claim with no settlement still ends on the error page
+first. Every other request is handled as before, with no further business
+checks. This is a deliberate difference from the legacy behaviour of v1, which
+the monolith keeps; it applies to `services/payment-service` only. The
+Observed case records the legacy behaviour the change departs from; parity
+reports it as CHANGED (CHG-002), per the approved difference in
+`parity/routes.json`.
+Approved: docs/changes/CHG-002-payment-amount-cap.md
+Read: src/main/java/com/northstar/claims/web/PaymentIssueAction.java:23;
+src/main/java/com/northstar/claims/web/PaymentIssueAction.java:30-31;
+src/main/java/com/northstar/claims/dao/SettlementDAO.java:100-115
+Observed: live:chg-002-above-settlement#1
 
 **PAY-R16 (v1)** — Any logged-in operator can issue a payment. An adjuster
 login (`adjuster7`) issues payment 61 like the supervisor; the screen shows
@@ -277,6 +298,7 @@ live:unauthenticated#3; live:unauthenticated#4; live:unauthenticated#5
 | PAY-R13 | v1 | Initial rule, version 0.1 |
 | PAY-R14 | v1 | Initial rule, version 0.1 |
 | PAY-R15 | v1 | Initial rule, version 0.1 |
+| PAY-R15 | v2 | Version 0.2: an amount above the newest settlement amount becomes a validation error (status 200, issue screen, no fields, key `payment.amount.aboveSettlement`) with no row written and no id used, per docs/changes/CHG-002-payment-amount-cap.md; v1 text retained above as the legacy behaviour |
 | PAY-R16 | v1 | Initial rule, version 0.1 |
 | PAY-R17 | v1 | Initial rule, version 0.1 |
 | PAY-R18 | v1 | Initial rule, version 0.1 |
