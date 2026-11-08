@@ -1,0 +1,12 @@
+<!-- Legacy field types and marker paths are part of the parity contract. -->
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/settlement/save.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{settlement.saved.heading}"></h2>
+<table class="details" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{settlement.amount}"></th><td><th:block th:replace="~{fragments/ns :: field('settlementAmount', ${settlementAmount}, 'money')}"/></td></tr>
+<tr><th th:text="#{settlement.savedBy}"></th><td><th:block th:replace="~{fragments/ns :: field('savedBy', ${session.user}, 'text')}"/></td></tr>
+</table>
+<p th:text="#{settlement.saved.message}"></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>
