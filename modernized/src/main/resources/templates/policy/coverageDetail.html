@@ -1,0 +1,33 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/policy/coverageDetail.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{jsp.policy.coverage.detail}"></span></h2>
+<table class="detail" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{jsp.policy}"></span></th><td><th:block th:replace="~{fragments/ns :: field('coveragePolicyId', ${policy.policyId}, 'integer')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.policy.number}"></span></th><td><span th:text="${policy.policyNumber}"></span></td></tr>
+<tr>
+<th><span th:text="#{jsp.line.of.business}"></span></th><td><span th:text="${policy.lineOfBusiness}"></span></td></tr>
+<tr>
+<th><span th:text="#{jsp.policy.limit}"></span></th><td><th:block th:replace="~{fragments/ns :: field('coveragePolicyLimit', ${policy.policyLimit}, 'money')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.deductible}"></span></th><td><th:block th:replace="~{fragments/ns :: field('coverageDeductible', ${policy.deductible}, 'money')}"/></td></tr>
+</table>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{jsp.coverage.code}"></span></th>
+<th><span th:text="#{jsp.description}"></span></th>
+<th><span th:text="#{jsp.limit}"></span></th>
+<th><span th:text="#{jsp.status}"></span></th></tr>
+<th:block th:each="coverage : ${coverages}">
+<tr>
+<td><span th:text="${coverage.coverageCode}"></span></td>
+<td><span th:text="${coverage.description}"></span></td>
+<td><th:block th:replace="~{fragments/ns :: field(${'coverageLimit_' + coverage.coverageId}, ${coverage.limit}, 'money')}"/></td>
+<td><span th:text="${coverage.status}"></span></td>
+</tr>
+</th:block>
+</table>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

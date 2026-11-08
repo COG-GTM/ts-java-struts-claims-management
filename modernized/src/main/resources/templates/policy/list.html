@@ -1,0 +1,22 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/policy/list.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{policy.list.heading}"></span></h2>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{policy.number}"></span></th>
+<th><span th:text="#{policy.line}"></span></th>
+<th><span th:text="#{policy.insured}"></span></th>
+<th><span th:text="#{policy.limit}"></span></th>
+<th><span th:text="#{policy.status}"></span></th></tr>
+<th:block th:each="policy : ${policies}">
+<tr><td><a th:href="@{view.do(policyId=${policy.policyId})}"><span th:text="${policy.policyNumber}"></span></a></td>
+<td><span th:text="${policy.lineOfBusiness}"></span></td>
+<td><span th:text="${policy.insuredName}"></span></td>
+<td><th:block th:replace="~{fragments/ns :: field(${'policyLimit_' + policy.policyId}, ${policy.policyLimit}, 'money')}"/></td>
+<td><th:block th:replace="~{fragments/ns :: field(${'policyStatus_' + policy.policyId}, ${policy.status}, 'text')}"/></td></tr>
+</th:block>
+</table>
+<p><span th:text="#{policy.list.instruction}"></span></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

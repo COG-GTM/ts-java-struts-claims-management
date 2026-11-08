@@ -1,0 +1,30 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/policy/insuredParty.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{jsp.insured.party.detail}"></span></h2>
+<table class="detail" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{jsp.policy}"></span></th><td><th:block th:replace="~{fragments/ns :: field('insuredPolicyId', ${policy.policyId}, 'integer')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.policy.number}"></span></th><td th:utext="${policy.policyNumber}"></td></tr>
+<tr>
+<th><span th:text="#{jsp.insured.name}"></span></th><td th:utext="${policy.insuredName}"></td></tr>
+<tr>
+<th><span th:text="#{jsp.address}"></span></th><td th:utext="${policy.insuredAddress}"></td></tr>
+<tr>
+<th><span th:text="#{jsp.city}"></span></th><td><span th:text="#{jsp.address.on.file}"></span></td></tr>
+<tr>
+<th><span th:text="#{jsp.state}"></span></th><td><span th:text="#{jsp.address.on.file}"></span></td></tr>
+<tr>
+<th><span th:text="#{jsp.postal.code}"></span></th><td><span th:text="#{jsp.address.on.file}"></span></td></tr>
+</table>
+<table class="detail" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{jsp.effective.date}"></span></th><td><th:block th:replace="~{fragments/ns :: field('insuredEffective', ${policy.effectiveDate}, 'date')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.expiration.date}"></span></th><td><th:block th:replace="~{fragments/ns :: field('insuredExpiration', ${policy.expiryDate}, 'date')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.policy.status}"></span></th><td><th:block th:replace="~{fragments/ns :: field('insuredPolicyStatus', ${policy.status}, 'text')}"/></td></tr>
+</table>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

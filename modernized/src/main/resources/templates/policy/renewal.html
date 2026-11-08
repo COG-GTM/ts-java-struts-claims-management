@@ -1,0 +1,35 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/policy/renewal.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{jsp.policy.renewal.review}"></span></h2>
+<table class="detail" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{jsp.policy.identifier}"></span></th><td><th:block th:replace="~{fragments/ns :: field('renewalPolicyId', ${policy.policyId}, 'integer')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.policy.number}"></span></th><td><span th:text="${policy.policyNumber}"></span></td></tr>
+<tr>
+<th><span th:text="#{jsp.line}"></span></th><td><span th:text="${policy.lineOfBusiness}"></span></td></tr>
+<tr>
+<th><span th:text="#{jsp.expiration}"></span></th><td><th:block th:replace="~{fragments/ns :: field('renewalExpiration', ${policy.expiryDate}, 'date')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.limit}"></span></th><td><th:block th:replace="~{fragments/ns :: field('renewalLimit', ${policy.policyLimit}, 'money')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.deductible}"></span></th><td><th:block th:replace="~{fragments/ns :: field('renewalDeductible', ${policy.deductible}, 'money')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.status}"></span></th><td><th:block th:replace="~{fragments/ns :: field('renewalStatus', ${policy.status}, 'text')}"/></td></tr>
+</table>
+<table class="instructions" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{jsp.review.item}"></span></th>
+<th><span th:text="#{jsp.required.check}"></span></th></tr>
+<tr><td><span th:text="#{jsp.expiration}"></span></td>
+<td><span th:text="#{jsp.review.expiration}"></span></td></tr>
+<tr><td><span th:text="#{jsp.limit}"></span></td>
+<td><span th:text="#{jsp.review.limit}"></span></td></tr>
+<tr><td><span th:text="#{jsp.deductible}"></span></td>
+<td><span th:text="#{jsp.review.deductible}"></span></td></tr>
+<tr><td><span th:text="#{jsp.coverage}"></span></td>
+<td><span th:text="#{jsp.review.coverage}"></span></td></tr>
+</table>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>
