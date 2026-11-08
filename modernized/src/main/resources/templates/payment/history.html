@@ -1,0 +1,10 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/payment/history.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{payment.history.heading}"></h2>
+<!-- Preserve the duplicate legacy navigation and fixed detail target. -->
+<p><a href="detail.do?paymentId=61" th:text="#{payment.detailLink}"></a> | <a th:href="@{remittance.do(claimId=${claimId})}" th:text="#{payment.remittanceLink}"></a></p>
+<p><a href="detail.do?paymentId=61" th:text="#{payment.detailLink}"></a> | <a th:href="@{remittance.do(claimId=${claimId})}" th:text="#{payment.remittanceLink}"></a></p>
+<table class="results" border="1"><tr><th th:text="#{payment.check}"></th><th th:text="#{payment.amount}"></th><th th:text="#{payment.status}"></th></tr><tr th:each="payment : ${payments}"><td><th:block th:replace="~{fragments/ns :: field('checkNumber_' + ${payment.paymentId}, ${payment.checkNumber}, 'text')}"/></td><td><th:block th:replace="~{fragments/ns :: field('paymentAmount_' + ${payment.paymentId}, ${payment.amount}, 'money')}"/></td><td><th:block th:replace="~{fragments/ns :: field('paymentStatus_' + ${payment.paymentId}, ${payment.status}, 'text')}"/></td></tr></table><p th:text="#{payment.history.instruction}"></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>
