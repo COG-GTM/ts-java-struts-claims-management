@@ -1,0 +1,31 @@
+
+
+
+
+
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/workbench/view.jsp')}"/>
+
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{workbench.view.heading}"></span></h2>
+<table class="details" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{claim.number}"></span></th><td><span th:text="${claim == null ? '' : claim.claimNumber}"></span></td></tr>
+<tr>
+<th><span th:text="#{intake.lossDate}"></span></th><td><th:block th:replace="~{fragments/ns :: field('lossDate', ${lossDate}, 'date')}"/></td></tr>
+<tr>
+<th><span th:text="#{claim.status}"></span></th><td><th:block th:replace="~{fragments/ns :: field('claimStatus', ${claimStatus}, 'text')}"/></td></tr>
+<tr>
+<th><span th:text="#{claim.reserve}"></span></th><td><th:block th:replace="~{fragments/ns :: field('reserveAmount', ${reserveAmount}, 'money')}"/></td></tr>
+<tr>
+<th><span th:text="#{claim.adjuster}"></span></th><td><th:block th:replace="~{fragments/ns :: field('assignedAdjuster', ${assignedAdjuster}, 'text')}"/></td></tr>
+<tr>
+<th><span th:text="#{claim.note}"></span></th><td><th:block th:replace="~{fragments/ns :: field('noteText', ${noteText}, 'text')}"/></td></tr>
+</table>
+<p><a href="assign.do"><span th:text="#{workbench.assign}"></span></a> | <a href="reserve.do"><span th:text="#{workbench.reserve}"></span></a></p>
+<p><a href="status.do?status=INVESTIGATING"><span th:text="#{workbench.investigate}"></span></a> | <a href="note.do"><span th:text="#{workbench.note}"></span></a></p>
+<p><a th:href="@{notes.do(claimId=${claimId})}"><span th:text="#{workbench.notesHistory}"></span></a> |
+<a th:href="@{reserveHistory.do(claimId=${claimId})}"><span th:text="#{workbench.reserveHistory}"></span></a> |
+<a th:href="@{statusHistory.do(claimId=${claimId})}"><span th:text="#{workbench.statusHistory}"></span></a></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

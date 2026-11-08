@@ -1,0 +1,6 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><body>
+<th:block th:fragment="field(name, value, type)" th:utext="${@ns.field(name, value, type)}"/>
+<th:block th:fragment="view(path)" th:utext="${@ns.view(path)}"/>
+<th:block th:fragment="errors(list)"><th:block th:each="key : ${list}" th:utext="${@ns.error(key)}"/></th:block>
+</body></html>

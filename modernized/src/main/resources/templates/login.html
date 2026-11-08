@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><title th:text="#{login.title}"></title>
+<link rel="stylesheet" th:href="@{/northstar.css}"></head><body>
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/login.jsp')}"/>
+<h1 th:text="#{login.title}">Claims Login</h1>
+<form method="post" th:action="@{/login.do}">
+<label><span th:text="#{login.username}"></span><input name="username" autofocus></label>
+<label><span th:text="#{login.password}"></span><input name="password" type="password"></label>
+<button type="submit" th:text="#{login.submit}"></button>
+</form><p th:text="#{login.help}"></p>
+</body></html>

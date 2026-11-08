@@ -1,0 +1,3 @@
+__pycache__/
+# HSQLDB redo logs are part of stopped snapshots, not diagnostic output.
+!parity/snapshots/**/northstar.log
