@@ -26,7 +26,11 @@ Both templates reuse the existing layout and `ns` fragments with the original
   The valid action endpoint remains `/claims/intake/submit.do`; correcting the
   form is deferred until after parity rather than silently changing behavior.
 * Like the Struts actions, mappings do not restrict the HTTP method. GET submit
-  requests can still create claims; this is a post-parity security finding.
+  requests can still create claims; shared Wave 0 security also disables CSRF.
+  An authenticated operator following a cross-site link could therefore create
+  a claim unintentionally. This is Sev 1 if production-exposed (unauthorized
+  mutation of claims), escalated for post-parity POST-only + CSRF hardening;
+  neither method restrictions nor shared security are changed in this stream.
 * Allocate IDs with the existing `max(claim_id)+1` helper (121/122 in the golden
   stateful chain). No sequence, transaction or race-condition fix is added.
 * Keep submitted claimant/description strings untrimmed in the parameterized
