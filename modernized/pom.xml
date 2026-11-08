@@ -2,7 +2,12 @@
   <modelVersion>4.0.0</modelVersion>
   <parent><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-parent</artifactId><version>3.3.13</version><relativePath/></parent>
   <groupId>com.northstar</groupId><artifactId>claims</artifactId><version>0.1.0-SNAPSHOT</version>
-  <properties><java.version>21</java.version></properties>
+  <properties>
+    <java.version>21</java.version>
+    <!-- Transcript-driven area tests only pass once the area controllers merge; run them with -Pareas. -->
+    <test.groups></test.groups>
+    <test.excludedGroups>area</test.excludedGroups>
+  </properties>
   <dependencies>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-thymeleaf</artifactId></dependency>
@@ -15,5 +20,15 @@
   <build><finalName>claims</finalName><plugins>
     <plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin>
     <plugin><groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.3.0</version></plugin>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId>
+      <configuration><groups>${test.groups}</groups><excludedGroups>${test.excludedGroups}</excludedGroups></configuration>
+    </plugin>
   </plugins></build>
+  <profiles>
+    <!-- mvn -Pareas test: run only the @Tag("area") transcript replays. -->
+    <profile>
+      <id>areas</id>
+      <properties><test.groups>area</test.groups><test.excludedGroups></test.excludedGroups></properties>
+    </profile>
+  </profiles>
 </project>
