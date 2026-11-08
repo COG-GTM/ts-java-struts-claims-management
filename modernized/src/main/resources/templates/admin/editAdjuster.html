@@ -1,0 +1,18 @@
+<!-- Read-only legacy admin screen; shared fragments retain the screen contract. -->
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/admin/editAdjuster.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{admin.edit.heading}"></span></h2>
+<!-- Converted for completeness; no action forwards to this template. -->
+<form method="post" th:action="@{/admin/adjusters.do}">
+<th:block th:replace="~{fragments/ns :: errors(${errors})}"/>
+<table class="form" cellpadding="3" cellspacing="0" border="0">
+<tr><td><span th:text="#{admin.name}"></span></td><td><input type="text" name="fullName" th:value="${adjusterForm == null ? '' : adjusterForm.fullName}"/></td></tr>
+<tr><td><span th:text="#{admin.region}"></span></td><td><input type="text" name="region" th:value="${adjusterForm == null ? '' : adjusterForm.region}"/></td></tr>
+<tr><td><span th:text="#{admin.active}"></span></td><td><input type="text" name="active" th:value="${adjusterForm == null ? '' : adjusterForm.active}"/></td></tr>
+<tr><td>&nbsp;</td><td><button type="submit"><span th:text="#{button.save}"></span></button></td></tr>
+</table>
+</form>
+<p><span th:text="#{admin.edit.instruction}"></span></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

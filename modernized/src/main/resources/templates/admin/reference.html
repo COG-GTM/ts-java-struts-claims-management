@@ -1,0 +1,15 @@
+<!-- Read-only legacy admin screen; shared fragments retain the screen contract. -->
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/admin/reference.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{admin.reference.heading}"></span></h2>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr><th><span th:text="#{admin.reference.code}"></span></th><th><span th:text="#{admin.reference.description}"></span></th></tr>
+<tr><td><th:block th:replace="~{fragments/ns :: field('reference_AUTO', 'AUTO', 'text')}"/></td><td><span th:text="#{admin.reference.auto}"></span></td></tr>
+<tr><td><th:block th:replace="~{fragments/ns :: field('reference_HOMEOWNERS', 'HOMEOWNERS', 'text')}"/></td><td><span th:text="#{admin.reference.homeowners}"></span></td></tr>
+<tr><td><th:block th:replace="~{fragments/ns :: field('reference_COMMERCIAL', 'COMMERCIAL_PROPERTY', 'text')}"/></td><td><span th:text="#{admin.reference.commercial}"></span></td></tr>
+<tr><td><th:block th:replace="~{fragments/ns :: field('reference_LIABILITY', 'GENERAL_LIABILITY', 'text')}"/></td><td><span th:text="#{admin.reference.liability}"></span></td></tr>
+</table>
+<p><span th:text="#{admin.reference.note}"></span></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

@@ -1,0 +1,12 @@
+<!-- Read-only legacy admin screen; shared fragments retain the screen contract. -->
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/admin/adjusters.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{admin.adjusters.heading}"></span></h2>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr><th><span th:text="#{admin.username}"></span></th><th><span th:text="#{admin.name}"></span></th><th><span th:text="#{admin.region}"></span></th></tr>
+<tr><td><th:block th:replace="~{fragments/ns :: field('adjusterUsername_1', 'adjuster1', 'text')}"/></td><td><span th:text="#{admin.sampleName}"></span></td><td><span th:text="#{admin.sampleRegion}"></span></td></tr>
+</table>
+<p><a href="editAdjuster.do"><span th:text="#{admin.editLink}"></span></a></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>
