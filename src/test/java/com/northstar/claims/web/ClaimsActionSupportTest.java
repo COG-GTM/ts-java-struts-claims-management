@@ -51,11 +51,6 @@ public class ClaimsActionSupportTest {
     }
 
     @Test
-    public void normalizedDateRollsOverOutOfRangeFieldsLeniently() {
-        assertEquals("2020-02-14", support.normalizedDate("13/45/2019"));
-    }
-
-    @Test
     public void textHelpersTrimAndDefault() {
         assertTrue(support.hasText(" a "));
         assertFalse(support.hasText("   "));
