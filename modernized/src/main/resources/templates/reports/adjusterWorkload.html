@@ -1,0 +1,20 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/report/adjusterWorkload.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{jsp.adjuster.workload}"></h2>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{jsp.adjuster}"></th><th th:text="#{jsp.open.claims}"></th><th th:text="#{jsp.reserve.total}"></th><th th:text="#{jsp.oldest.report}"></th></tr>
+<tr th:each="row : ${reportRows}">
+<td th:text="${row.adjuster}"></td>
+<td><th:block th:replace="~{fragments/ns :: field('workloadOpen_' + ${row.adjuster}, ${row.openCount}, 'integer')}"/></td>
+<td><th:block th:replace="~{fragments/ns :: field('workloadReserve_' + ${row.adjuster}, ${row.reserveTotal}, 'money')}"/></td>
+<!-- ReportDAO never supplies this key; JSP EL renders an empty field. -->
+<td><th:block th:replace="~{fragments/ns :: field('workloadOldest_' + ${row.adjuster}, ${row.get('oldestReportedDate')}, 'date')}"/></td>
+</tr>
+</table>
+<table class="detail" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{jsp.as.of.date}"></th><td><th:block th:replace="~{fragments/ns :: field('workloadAsOf', ${reportAsOf}, 'date')}"/></td></tr>
+<tr><th th:text="#{jsp.rows.returned}"></th><td><th:block th:replace="~{fragments/ns :: field('workloadRows', ${reportRowCount}, 'integer')}"/></td></tr>
+</table>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

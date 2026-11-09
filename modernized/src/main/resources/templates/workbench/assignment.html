@@ -1,0 +1,31 @@
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/workbench/assignment.jsp')}"/>
+
+
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{jsp.assignment.review}"></span></h2>
+<table class="detail" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{jsp.claim}"></span></th><td><th:block th:replace="~{fragments/ns :: field('assignmentClaim', ${claim.claimId}, 'integer')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.claim.number}"></span></th><td><span th:text="${claim.claimNumber}"></span></td></tr>
+<tr>
+<th><span th:text="#{jsp.claimant}"></span></th><td><span th:text="${claim.claimantName}"></span></td></tr>
+<tr>
+<th><span th:text="#{jsp.loss.date}"></span></th><td><th:block th:replace="~{fragments/ns :: field('assignmentLossDate', ${claim.lossDate}, 'date')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.current.adjuster}"></span></th><td><th:block th:replace="~{fragments/ns :: field('assignmentCurrent', ${claim.assignedAdjuster}, 'text')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.current.status}"></span></th><td><th:block th:replace="~{fragments/ns :: field('assignmentStatus', ${claim.status}, 'text')}"/></td></tr>
+</table>
+<form method="post" action="assign.do">
+<input type="hidden" name="claimId" th:value="${claim.claimId}"/>
+<table class="form" cellpadding="3" cellspacing="0" border="0">
+<tr>
+<th><span th:text="#{jsp.assign.to}"></span></th><td><input name="adjuster" value="adjuster2"/></td></tr>
+<tr><td>&nbsp;</td>
+<td><button type="submit"><span th:text="#{jsp.assign.claim}"></span></button></td></tr>
+</table>
+</form>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

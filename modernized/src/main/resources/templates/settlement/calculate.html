@@ -1,0 +1,16 @@
+<!-- Legacy field types and marker paths are part of the parity contract. -->
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/settlement/calculate.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{settlement.heading}"></h2>
+<p><a href="detail.do?claimId=" th:text="#{settlement.detailLink}"></a></p>
+<table class="details" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{settlement.covered}"></th><td><th:block th:replace="~{fragments/ns :: field('coveredAmount', ${settlement.coveredAmount}, 'money')}"/></td></tr>
+<tr><th th:text="#{settlement.deductible}"></th><td><th:block th:replace="~{fragments/ns :: field('deductibleApplied', ${settlement.deductibleApplied}, 'money')}"/></td></tr>
+<tr><th th:text="#{settlement.depreciation}"></th><td><th:block th:replace="~{fragments/ns :: field('depreciation', ${settlement.depreciation}, 'money')}"/></td></tr>
+<tr><th th:text="#{settlement.capped}"></th><td><th:block th:replace="~{fragments/ns :: field('cappedAtLimit', ${settlement.cappedAtLimit}, 'money')}"/></td></tr>
+<tr><th th:text="#{settlement.amount}"></th><td><th:block th:replace="~{fragments/ns :: field('settlementAmount', ${settlement.settlementAmount}, 'money')}"/></td></tr>
+</table>
+<p><a href="save.do" th:text="#{settlement.save}"></a></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

@@ -243,21 +243,41 @@ def write_transcript(opener, scenario):
 
 
 def main():
+    global BASE
     parser = argparse.ArgumentParser()
     parser.add_argument("--no-reset", action="store_true")
+    parser.add_argument("--base-url", default=None)
+    parser.add_argument("--out-dir", default=os.path.join(ROOT, "transcripts"))
     args = parser.parse_args()
     process = None
     try:
-        if not args.no_reset:
-            reset_database()
-        process = start_server()
+        if args.base_url is None:
+            if not args.no_reset:
+                reset_database()
+            process = start_server()
+        else:
+            # An explicitly selected target is owned and seeded by the caller.
+            BASE = args.base_url.rstrip("/")
+            deadline = time.time() + 180
+            while True:
+                try:
+                    code, unused, body = request(urllib.request.build_opener(),
+                                                "GET", "/login.do")
+                    if code == 200 and "Claims Login" in body:
+                        break
+                except Exception:
+                    pass
+                if time.time() >= deadline:
+                    raise RuntimeError("Target did not become ready: " + BASE)
+                time.sleep(1)
+        os.makedirs(args.out_dir, exist_ok=True)
         jar = http.cookiejar.CookieJar()
         opener = urllib.request.build_opener(
             urllib.request.HTTPCookieProcessor(jar))
         request(opener, "GET", "/login.do")
         for scenario in SCENARIOS:
             transcript = write_transcript(opener, scenario)
-            path = os.path.join(ROOT, "transcripts",
+            path = os.path.join(args.out_dir,
                                 transcript["scenario"] + ".json")
             with open(path, "w", encoding="utf-8") as stream:
                 json.dump(transcript, stream, indent=2, sort_keys=True)
@@ -267,7 +287,7 @@ def main():
             "module": scenario[1],
             "description": scenario[2]
         } for scenario in SCENARIOS]
-        with open(os.path.join(ROOT, "transcripts", "index.json"), "w",
+        with open(os.path.join(args.out_dir, "index.json"), "w",
                   encoding="utf-8") as stream:
             json.dump(index, stream, indent=2, sort_keys=True)
             stream.write("\n")

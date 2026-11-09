@@ -1,0 +1,20 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/report/premiumDetail.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{jsp.premium.detail}"></h2>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{jsp.policy}"></th><th th:text="#{jsp.number}"></th><th th:text="#{jsp.line}"></th><th th:text="#{jsp.premium}"></th><th th:text="#{jsp.status}"></th></tr>
+<tr th:each="policy : ${policies}">
+<td><th:block th:replace="~{fragments/ns :: field('premiumPolicy_' + ${policy.policyId}, ${policy.policyId}, 'integer')}"/></td>
+<td th:text="${policy.policyNumber}"></td>
+<td th:text="${policy.lineOfBusiness}"></td>
+<td><th:block th:replace="~{fragments/ns :: field('premiumValue_' + ${policy.policyId}, ${policy.annualPremium}, 'money')}"/></td>
+<td><th:block th:replace="~{fragments/ns :: field('premiumStatus_' + ${policy.policyId}, ${policy.status}, 'text')}"/></td>
+</tr>
+</table>
+<table class="detail" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{jsp.policy.rows}"></th><td><th:block th:replace="~{fragments/ns :: field('premiumRows', ${policyCount}, 'integer')}"/></td></tr>
+<tr><th th:text="#{jsp.as.of.date}"></th><td><th:block th:replace="~{fragments/ns :: field('premiumAsOf', ${reportAsOf}, 'date')}"/></td></tr>
+</table>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

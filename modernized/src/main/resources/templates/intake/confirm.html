@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><body>
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/intake/confirm.jsp')}"/>
+<th:block th:replace="~{fragments/ns :: errors(${nsValidationErrors})}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{intake.confirm.heading}"></h2>
+<table class="details" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{claim.id}"></th><td><th:block th:replace="~{fragments/ns :: field('claimId',${claimId},'integer')}"/></td></tr>
+<tr><th th:text="#{claim.status}"></th><td><th:block th:replace="~{fragments/ns :: field('claimStatus',${claimStatus},'text')}"/></td></tr>
+<tr><th th:text="#{intake.confirm.next}"></th><td><a th:href="@{../workbench/view.do(claimId=${claimId})}" th:text="#{intake.confirm.open}"></a></td></tr>
+</table>
+<p th:text="#{intake.confirm.message}"></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>
+</body></html>

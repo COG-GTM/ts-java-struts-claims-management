@@ -1,0 +1,17 @@
+
+
+
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/error.jsp')}"/>
+<html><head><title><span th:text="#{errors.title}"></span></title></head><body>
+<table class="error" cellpadding="4" cellspacing="0" border="1">
+<tr><td><h1><span th:text="#{errors.title}"></span></h1></td></tr>
+<tr><td><span th:text="#{errors.system}"></span></td></tr>
+<tr><td><span th:text="#{errors.reference}"></span>: null</td></tr>
+<tr><td><a th:href="@{/login.do}"><span th:text="#{errors.loginLink}"></span></a></td></tr>
+<tr><td><span th:text="#{errors.contact}"></span></td></tr>
+<tr><td><span th:text="#{errors.retry}"></span></td></tr>
+<tr><td><span th:text="#{errors.reference}"></span></td></tr>
+<tr><td><span th:text="#{errors.status}"></span></td></tr>
+<tr><td><span th:text="#{errors.session}"></span></td></tr>
+</table>
+</body></html>

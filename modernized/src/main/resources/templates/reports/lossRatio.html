@@ -1,0 +1,16 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/report/lossRatio.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{report.loss.heading}"></h2>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{policy.line}"></th><th th:text="#{report.premiumTotal}"></th><th th:text="#{report.lossTotal}"></th><th th:text="#{report.lossRatio}"></th></tr>
+<tr th:each="row : ${reportRows}">
+<td th:text="${row.lineOfBusiness}"></td>
+<td><th:block th:replace="~{fragments/ns :: field('premiumTotal_' + ${row.lineOfBusiness}, ${row.premiumTotal}, 'money')}"/></td>
+<td><th:block th:replace="~{fragments/ns :: field('lossTotal_' + ${row.lineOfBusiness}, ${row.lossTotal}, 'money')}"/></td>
+<td><th:block th:replace="~{fragments/ns :: field('lossRatio_' + ${row.lineOfBusiness}, ${row.lossRatio}, 'money')}"/></td>
+</tr>
+</table>
+<p th:text="#{report.loss.note}"></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

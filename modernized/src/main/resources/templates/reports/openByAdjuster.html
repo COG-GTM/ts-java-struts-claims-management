@@ -1,0 +1,15 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/report/openByAdjuster.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{report.open.heading}"></h2>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{report.adjuster}"></th><th th:text="#{report.openCount}"></th><th th:text="#{report.reserveTotal}"></th></tr>
+<tr th:each="row : ${reportRows}">
+<td th:text="${row.adjuster}"></td>
+<td><th:block th:replace="~{fragments/ns :: field('openCount_' + ${row.adjuster}, ${row.openCount}, 'integer')}"/></td>
+<td><th:block th:replace="~{fragments/ns :: field('reserveTotal_' + ${row.adjuster}, ${row.reserveTotal}, 'money')}"/></td>
+</tr>
+</table>
+<p th:text="#{report.open.note}"></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

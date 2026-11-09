@@ -1,0 +1,33 @@
+<html xmlns:th="http://www.thymeleaf.org"><body>
+<th:block th:fragment="header"><header><link rel="stylesheet" th:href="@{/northstar.css}"><h1 th:text="#{app.title}"></h1><nav><a th:href="@{/policy/list.do}" th:text="#{nav.policies}"></a> | <a th:href="@{/workbench/list.do}" th:text="#{nav.workbench}"></a> | <a th:href="@{/report/openByAdjuster.do}" th:text="#{nav.reports}"></a> | <a th:href="@{/logout.do}" th:text="#{nav.logout}"></a> | </nav></header></th:block>
+<th:block th:fragment="nav">
+
+<table class="menu" cellpadding="2" cellspacing="0" border="0">
+<tr><td><span th:text="#{nav.quickLinks}"></span></td></tr>
+<tr><td><a th:href="@{/intake/new.do}"><span th:text="#{nav.newClaim}"></span></a></td></tr>
+<tr><td><a th:href="@{/payment/history.do}"><span th:text="#{nav.payments}"></span></a></td></tr>
+<tr><td><a th:href="@{/report/openByAdjuster.do}"><span th:text="#{nav.reports}"></span></a></td></tr>
+<tr><td><a th:href="@{/policy/search.do}"><span th:text="#{nav.policySearch}"></span></a></td></tr>
+<tr><td><a th:href="@{/logout.do}"><span th:text="#{nav.logout}"></span></a></td></tr>
+<tr><td><span th:text="#{nav.operator}"></span>: <span th:text="${session.user}"></span></td></tr>
+<tr><td><span th:text="#{nav.applicationVersion}"></span>: <span th:text="#{nav.applicationVersionValue}"></span></td></tr>
+<tr><td><span th:text="#{nav.environment}"></span>: <span th:text="#{nav.environmentValue}"></span></td></tr>
+<tr><td><span th:text="#{nav.desk}"></span>: <span th:text="#{nav.deskValue}"></span></td></tr>
+<tr><td><span th:text="#{nav.session}"></span>: <span th:text="#{nav.sessionValue}"></span></td></tr>
+</table>
+</th:block>
+<th:block th:fragment="audit"><table class="screen-audit" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{jsp.screen.context}"></span></th>
+<td><span th:text="#{jsp.screen.readOnly}"></span></td>
+</tr>
+<tr>
+<th><span th:text="#{jsp.screen.operator}"></span></th>
+<td><span th:text="${session.user}"></span></td>
+</tr>
+<tr>
+<th><span th:text="#{jsp.screen.asOf}"></span></th>
+<td><span th:text="${asOfDate}"></span></td>
+</tr>
+</table></th:block>
+<footer th:fragment="footer" th:text="#{footer.copyright}"></footer></body></html>

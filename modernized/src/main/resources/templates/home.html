@@ -1,0 +1,31 @@
+
+
+
+
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/home.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{home.heading}"></span></h2>
+<p><span th:text="#{home.introduction}"></span></p>
+<table class="dashboard" cellpadding="3" cellspacing="0" border="1">
+<tr>
+    <th><span th:text="#{home.column.area}"></span></th>
+    <th><span th:text="#{home.column.action}"></span></th>
+</tr>
+<tr>
+    <td><span th:text="#{home.policyArea}"></span></td>
+    <td><a href="policy/list.do"><span th:text="#{home.policyLink}"></span></a></td>
+</tr>
+<tr>
+    <td><span th:text="#{home.claimArea}"></span></td>
+    <td><a href="workbench/list.do"><span th:text="#{home.claimLink}"></span></a></td>
+</tr>
+<tr>
+    <td><span th:text="#{home.reportArea}"></span></td>
+    <td><a href="report/index.do"><span th:text="#{home.reportLink}"></span></a></td>
+</tr>
+</table>
+<p><span th:text="#{home.sessionUser}"></span>:
+<th:block th:replace="~{fragments/ns :: field('signedInUser', ${session.user}, 'text')}"/></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

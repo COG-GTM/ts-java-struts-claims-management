@@ -1,0 +1,32 @@
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/workbench/notes.jsp')}"/>
+
+
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{jsp.claim.note.history}"></span></h2>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{jsp.date}"></span></th>
+<th><span th:text="#{jsp.author}"></span></th>
+<th><span th:text="#{jsp.note}"></span></th>
+<th><span th:text="#{jsp.disposition}"></span></th></tr>
+<th:block th:each="note : ${notes}">
+<tr>
+<td><span th:text="${note.noteDate}"></span></td>
+<td><span th:text="${note.author}"></span></td>
+<td><span th:text="${note.noteText}"></span></td>
+<td><span th:text="#{jsp.note.recorded}"></span></td>
+</tr>
+</th:block>
+<tr><td colspan="4"><span th:text="#{jsp.notes.retained}"></span></td></tr>
+</table>
+<table class="detail" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{jsp.claim.identifier}"></span></th><td><th:block th:replace="~{fragments/ns :: field('noteClaimId', ${claimId}, 'integer')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.current.status}"></span></th><td><th:block th:replace="~{fragments/ns :: field('noteClaimStatus', ${claimStatus}, 'text')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.current.reserve}"></span></th><td><th:block th:replace="~{fragments/ns :: field('noteReserve', ${reserveAmount}, 'money')}"/></td></tr>
+</table>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

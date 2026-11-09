@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><body>
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/intake/new.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{intake.heading}"></h2>
+<!-- Keep the JSP's relative action and empty inputs, including on validation forwards. -->
+<form action="intake/submit.do" method="post">
+<th:block th:replace="~{fragments/ns :: errors(${nsValidationErrors})}"/>
+<table class="form" cellpadding="3" cellspacing="0" border="0">
+<tr><td th:text="#{intake.claimant}"></td><td><input type="text" name="claimantName" size="40"/></td></tr>
+<tr><td th:text="#{intake.lossDate}"></td><td><input type="text" name="lossDate" size="20"/></td></tr>
+<tr><td th:text="#{intake.description}"></td><td><textarea name="description" rows="5" cols="45"></textarea></td></tr>
+<tr><td th:text="#{intake.lossType}"></td><td><input type="text" name="lossType" size="20"/></td></tr>
+<tr><td>&nbsp;</td><td><button type="submit" th:text="#{button.submit}"></button></td></tr>
+</table>
+</form>
+<p th:text="#{intake.instruction}"></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>
+</body></html>

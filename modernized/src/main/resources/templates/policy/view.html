@@ -1,0 +1,27 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/policy/view.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{policy.view.heading}"></span></h2>
+<table class="details" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{policy.number}"></span></th><td><span th:text="${policy.policyNumber}"></span></td></tr>
+<tr>
+<th><span th:text="#{policy.insured}"></span></th><td><span th:text="${policy.insuredName}"></span></td></tr>
+<tr>
+<th><span th:text="#{policy.address}"></span></th><td><span th:text="${policy.insuredAddress}"></span></td></tr>
+<tr>
+<th><span th:text="#{policy.limit}"></span></th><td><th:block th:replace="~{fragments/ns :: field('policyLimit', ${policy.policyLimit}, 'money')}"/></td></tr>
+<tr>
+<th><span th:text="#{policy.deductible}"></span></th><td><th:block th:replace="~{fragments/ns :: field('deductibleApplied', ${policy.deductible}, 'money')}"/></td></tr>
+<tr>
+<th><span th:text="#{policy.status}"></span></th><td><th:block th:replace="~{fragments/ns :: field('policyStatus', ${policy.status}, 'text')}"/></td></tr>
+</table>
+<p><a th:href="@{coverages.do(policyId=${policy.policyId})}"><span th:text="#{policy.coverageLink}"></span></a></p>
+<p><a th:href="@{coverageDetail.do(policyId=${policy.policyId})}"><span th:text="#{policy.coverageDetailLink}"></span></a> |
+<a th:href="@{insuredParty.do(policyId=${policy.policyId})}"><span th:text="#{policy.insuredDetailLink}"></span></a> |
+<a th:href="@{renewal.do(policyId=${policy.policyId})}"><span th:text="#{policy.renewalLink}"></span></a></p>
+<p><a th:href="@{coverageDetail.do(policyId=${policy.policyId})}"><span th:text="#{policy.coverageDetailLink}"></span></a> |
+<a th:href="@{insuredParty.do(policyId=${policy.policyId})}"><span th:text="#{policy.insuredDetailLink}"></span></a> |
+<a th:href="@{renewal.do(policyId=${policy.policyId})}"><span th:text="#{policy.renewalLink}"></span></a></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>
