@@ -1,0 +1,26 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/policy/search.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{policy.search.heading}"></span></h2>
+<form method="post" th:action="@{/policy/search.do}">
+<table class="form" cellpadding="3" cellspacing="0" border="0">
+<tr><td><span th:text="#{policy.line}"></span></td>
+<td><input type="text" name="lineOfBusiness" th:value="${searchLine}"/></td>
+<td><button type="submit"><span th:text="#{button.search}"></span></button></td></tr>
+</table>
+</form>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{policy.number}"></span></th>
+<th><span th:text="#{policy.line}"></span></th>
+<th><span th:text="#{policy.insured}"></span></th>
+<th><span th:text="#{policy.limit}"></span></th></tr>
+<th:block th:each="policy : ${policies}">
+<tr><td><span th:text="${policy.policyNumber}"></span></td>
+<td><span th:text="${policy.lineOfBusiness}"></span></td>
+<td><span th:text="${policy.insuredName}"></span></td>
+<td><th:block th:replace="~{fragments/ns :: field(${'policyLimit_' + policy.policyId}, ${policy.policyLimit}, 'money')}"/></td></tr>
+</th:block>
+</table>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

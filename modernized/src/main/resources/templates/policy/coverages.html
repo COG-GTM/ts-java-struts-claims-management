@@ -1,0 +1,17 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/policy/coverages.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{coverage.heading}"></span></h2>
+<table class="details" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{policy.number}"></span></th><td><span th:text="${policy.policyNumber}"></span></td></tr>
+<tr>
+<th><span th:text="#{coverage.limit}"></span></th><td><th:block th:replace="~{fragments/ns :: field('coverageLimit', ${policy.policyLimit}, 'money')}"/></td></tr>
+<tr>
+<th><span th:text="#{coverage.deductible}"></span></th><td><th:block th:replace="~{fragments/ns :: field('coverageDeductible', ${policy.deductible}, 'money')}"/></td></tr>
+<tr>
+<th><span th:text="#{coverage.description}"></span></th><td><span th:text="#{coverage.standard}"></span></td></tr>
+</table>
+<p><span th:text="#{coverage.note}"></span></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>
