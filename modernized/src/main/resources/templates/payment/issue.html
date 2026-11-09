@@ -1,0 +1,11 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/payment/issue.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{payment.issue.heading}"></h2>
+<table class="details" border="1">
+<tr><th th:text="#{payment.amount}"></th><td><th:block th:replace="~{fragments/ns :: field('paymentAmount', ${paymentAmount}, 'money')}"/></td></tr>
+<tr><th th:text="#{payment.check}"></th><td><th:block th:replace="~{fragments/ns :: field('checkNumber', ${checkNumber}, 'text')}"/></td></tr>
+<tr><th th:text="#{payment.status}"></th><td><th:block th:replace="~{fragments/ns :: field('paymentStatus', ${paymentStatus}, 'text')}"/></td></tr>
+</table><p th:text="#{payment.issue.message}"></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

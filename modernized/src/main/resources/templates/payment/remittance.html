@@ -1,0 +1,10 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/payment/remittance.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{jsp.payment.remittance}"></h2>
+<table class="results" border="1"><tr><th th:text="#{jsp.check}"></th><th th:text="#{jsp.payee}"></th><th th:text="#{jsp.issued.date}"></th><th th:text="#{jsp.amount}"></th><th th:text="#{jsp.status}"></th></tr><tr th:each="payment : ${payments}"><td><th:block th:replace="~{fragments/ns :: field('remitCheck_' + ${payment.paymentId}, ${payment.checkNumber}, 'text')}"/></td><td><span th:text="${payment.payeeName}"></span></td><td><th:block th:replace="~{fragments/ns :: field('remitDate_' + ${payment.paymentId}, ${payment.issuedDate}, 'date')}"/></td><td><th:block th:replace="~{fragments/ns :: field('remitAmount_' + ${payment.paymentId}, ${payment.amount}, 'money')}"/></td><td><th:block th:replace="~{fragments/ns :: field('remitStatus_' + ${payment.paymentId}, ${payment.status}, 'text')}"/></td></tr></table><table class="detail" border="1"><tr><th th:text="#{jsp.claim}"></th><td><th:block th:replace="~{fragments/ns :: field('remitClaimId', ${claimId}, 'integer')}"/></td></tr>
+<tr><th th:text="#{jsp.payment.count}"></th><td><th:block th:replace="~{fragments/ns :: field('remitCount', ${paymentCount}, 'integer')}"/></td></tr>
+<tr><th th:text="#{jsp.total.issued}"></th><td><th:block th:replace="~{fragments/ns :: field('remitTotal', ${paymentTotal}, 'money')}"/></td></tr>
+</table>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>
