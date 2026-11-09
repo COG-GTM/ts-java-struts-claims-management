@@ -1,0 +1,30 @@
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/workbench/statusHistory.jsp')}"/>
+
+
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{jsp.status.history}"></span></h2>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{jsp.date}"></span></th>
+<th><span th:text="#{jsp.old.status}"></span></th>
+<th><span th:text="#{jsp.new.status}"></span></th>
+<th><span th:text="#{jsp.changed.by}"></span></th></tr>
+<th:block th:each="history : ${statusHistory}">
+<tr>
+<td><th:block th:replace="~{fragments/ns :: field(${'statusDate_' + history.historyId}, ${history.changeDate}, 'date')}"/></td>
+<td><span th:text="${history.oldStatus}"></span></td>
+<td><span th:text="${history.newStatus}"></span></td>
+<td><span th:text="${history.changedBy}"></span></td>
+</tr>
+</th:block>
+<tr><td colspan="4">The status history is part of the claim audit trail.</td></tr>
+</table>
+<table class="detail" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{jsp.claim}"></span></th><td><th:block th:replace="~{fragments/ns :: field('statusHistoryClaim', ${claimId}, 'integer')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.current.status}"></span></th><td><th:block th:replace="~{fragments/ns :: field('statusHistoryCurrent', ${claimStatus}, 'text')}"/></td></tr>
+</table>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

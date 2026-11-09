@@ -1,0 +1,32 @@
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/workbench/reserveHistory.jsp')}"/>
+
+
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2><span th:text="#{jsp.reserve.history}"></span></h2>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{jsp.effective.date}"></span></th>
+<th><span th:text="#{jsp.previous.reserve}"></span></th>
+<th><span th:text="#{jsp.new.reserve}"></span></th>
+<th><span th:text="#{jsp.reason}"></span></th></tr>
+<th:block th:each="history : ${reserveHistory}">
+<tr>
+<td><span th:text="${history.changeDate}"></span></td>
+<td><th:block th:replace="~{fragments/ns :: field(${'oldReserve_' + history.historyId}, ${history.previousAmount}, 'money')}"/></td>
+<td><th:block th:replace="~{fragments/ns :: field(${'newReserve_' + history.historyId}, ${history.newAmount}, 'money')}"/></td>
+<td><span th:text="${history.reason}"></span></td>
+</tr>
+</th:block>
+<tr><td colspan="4">Reserve changes are recorded separately from claim notes.</td></tr>
+</table>
+<table class="detail" cellpadding="3" cellspacing="0" border="1">
+<tr>
+<th><span th:text="#{jsp.claim}"></span></th><td><th:block th:replace="~{fragments/ns :: field('reserveHistoryClaim', ${claimId}, 'integer')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.current.reserve}"></span></th><td><th:block th:replace="~{fragments/ns :: field('currentReserve', ${reserveAmount}, 'money')}"/></td></tr>
+<tr>
+<th><span th:text="#{jsp.review.status}"></span></th><td><th:block th:replace="~{fragments/ns :: field('reserveReviewStatus', ${claimStatus}, 'text')}"/></td></tr>
+</table>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>
