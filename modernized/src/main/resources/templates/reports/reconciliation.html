@@ -1,0 +1,21 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/report/reconciliation.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{jsp.claims.reconciliation}"></h2>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{jsp.line}"></th><th th:text="#{jsp.premium}"></th><th th:text="#{jsp.reserve}"></th><th th:text="#{jsp.paid}"></th><th th:text="#{jsp.variance}"></th></tr>
+<tr th:each="row : ${reportRows}">
+<td th:text="${row.lineOfBusiness}"></td>
+<td><th:block th:replace="~{fragments/ns :: field('reconcilePremium_' + ${row.lineOfBusiness}, ${row.premiumTotal}, 'money')}"/></td>
+<!-- These three keys are absent from the legacy loss-ratio maps. -->
+<td><th:block th:replace="~{fragments/ns :: field('reconcileReserve_' + ${row.lineOfBusiness}, ${row.get('reserveTotal')}, 'money')}"/></td>
+<td><th:block th:replace="~{fragments/ns :: field('reconcilePaid_' + ${row.lineOfBusiness}, ${row.get('paidTotal')}, 'money')}"/></td>
+<td><th:block th:replace="~{fragments/ns :: field('reconcileVariance_' + ${row.lineOfBusiness}, ${row.get('variance')}, 'money')}"/></td>
+</tr>
+</table>
+<table class="detail" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{jsp.as.of.date}"></th><td><th:block th:replace="~{fragments/ns :: field('reconcileAsOf', ${reportAsOf}, 'date')}"/></td></tr>
+<tr><th th:text="#{jsp.report.rows}"></th><td><th:block th:replace="~{fragments/ns :: field('reconcileRows', ${reportRowCount}, 'integer')}"/></td></tr>
+</table>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

@@ -1,0 +1,22 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/report/index.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{report.index.heading}"></h2>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{report.index.name}"></th><th th:text="#{report.index.link}"></th></tr>
+<tr><td th:text="#{report.open.heading}"></td><td><a th:href="@{openByAdjuster.do}" th:text="#{button.open}"></a></td></tr>
+<tr><td th:text="#{report.loss.heading}"></td><td><a th:href="@{lossRatio.do}" th:text="#{button.open}"></a></td></tr>
+<tr><td th:text="#{report.aged.heading}"></td><td><a th:href="@{agedClaims.do}" th:text="#{button.open}"></a></td></tr>
+<tr><td th:text="#{report.adjusterWorkload.heading}"></td><td><a th:href="@{adjusterWorkload.do}" th:text="#{button.open}"></a></td></tr>
+<tr><td th:text="#{report.claimAgingDetail.heading}"></td><td><a th:href="@{claimAgingDetail.do}" th:text="#{button.open}"></a></td></tr>
+<tr><td th:text="#{report.reconciliation.heading}"></td><td><a th:href="@{reconciliation.do}" th:text="#{button.open}"></a></td></tr>
+<tr><td th:text="#{report.premiumDetail.heading}"></td><td><a th:href="@{premiumDetail.do}" th:text="#{button.open}"></a></td></tr>
+<!-- The legacy index repeats these four links despite reportCount being seven. -->
+<tr><td th:text="#{report.adjusterWorkload.heading}"></td><td><a th:href="@{adjusterWorkload.do}" th:text="#{button.open}"></a></td></tr>
+<tr><td th:text="#{report.claimAgingDetail.heading}"></td><td><a th:href="@{claimAgingDetail.do}" th:text="#{button.open}"></a></td></tr>
+<tr><td th:text="#{report.reconciliation.heading}"></td><td><a th:href="@{reconciliation.do}" th:text="#{button.open}"></a></td></tr>
+<tr><td th:text="#{report.premiumDetail.heading}"></td><td><a th:href="@{premiumDetail.do}" th:text="#{button.open}"></a></td></tr>
+</table>
+<p th:text="#{report.index.note}"></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

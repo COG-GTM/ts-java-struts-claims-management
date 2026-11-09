@@ -1,0 +1,16 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/report/agedClaims.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{report.aged.heading}"></h2>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{report.ageBucket}"></th><th th:text="#{report.claimCount}"></th><th th:text="#{report.reserveTotal}"></th></tr>
+<tr th:each="row : ${reportRows}">
+<td th:text="${row.bucket}"></td>
+<td><th:block th:replace="~{fragments/ns :: field('agedBucket_' + ${row.bucket}, ${row.claimCount}, 'integer')}"/></td>
+<!-- The legacy JSP truncates reserves to integers, not money. -->
+<td><th:block th:replace="~{fragments/ns :: field('agedReserve_' + ${row.bucket}, ${row.reserveTotal}, 'integer')}"/></td>
+</tr>
+</table>
+<p th:text="#{report.aged.note}"></p>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>

@@ -1,0 +1,20 @@
+<th:block th:replace="~{fragments/ns :: view('/WEB-INF/jsp/report/claimAgingDetail.jsp')}"/>
+<th:block th:replace="~{fragments/layout :: header}"/>
+<th:block th:replace="~{fragments/layout :: nav}"/>
+<h2 th:text="#{jsp.aged.claim.detail}"></h2>
+<table class="results" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{jsp.claim}"></th><th th:text="#{jsp.reported.date}"></th><th th:text="#{jsp.status}"></th><th th:text="#{jsp.reserve}"></th><th th:text="#{jsp.adjuster}"></th></tr>
+<tr th:each="claim : ${claims}">
+<td><th:block th:replace="~{fragments/ns :: field('agingClaim_' + ${claim.claimId}, ${claim.claimId}, 'integer')}"/></td>
+<td><th:block th:replace="~{fragments/ns :: field('agingDate_' + ${claim.claimId}, ${claim.reportedDate}, 'date')}"/></td>
+<td th:text="${claim.status}"></td>
+<td><th:block th:replace="~{fragments/ns :: field('agingReserve_' + ${claim.claimId}, ${claim.reserveAmount}, 'money')}"/></td>
+<td th:text="${claim.assignedAdjuster}"></td>
+</tr>
+</table>
+<table class="detail" cellpadding="3" cellspacing="0" border="1">
+<tr><th th:text="#{jsp.as.of.date}"></th><td><th:block th:replace="~{fragments/ns :: field('agingDetailAsOf', ${reportAsOf}, 'date')}"/></td></tr>
+<tr><th th:text="#{jsp.claim.count}"></th><td><th:block th:replace="~{fragments/ns :: field('agingDetailCount', ${claimCount}, 'integer')}"/></td></tr>
+</table>
+<th:block th:replace="~{fragments/layout :: audit}"/>
+<th:block th:replace="~{fragments/layout :: footer}"/>
