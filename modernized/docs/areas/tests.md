@@ -8,8 +8,8 @@ plus a surefire configuration and an `areas` profile in `modernized/pom.xml`.
 
 | Command | What runs |
 | --- | --- |
-| `make -C modernized test` (`mvn -B test`) | Everything except `@Tag("area")`: Wave 0 tests, unit tests, seeded repository tests, foundation (login) transcript. Must be green. |
-| `mvn -Pareas test` (from `modernized/`, Java 21) | Only the `@Tag("area")` transcript replays (21 tests). Red until the area PRs merge. |
+| `make -C modernized test` (`mvn -B test`) | All tests, including all 22 transcript scenarios. The integrated suite runs 105 tests. |
+| `mvn -Pareas test` (from `modernized/`, Java 21) | Only the `@Tag("area")` transcript replays (21 tests); retained as a focused subset. |
 
 ## Layout
 

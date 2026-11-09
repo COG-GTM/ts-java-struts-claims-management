@@ -31,6 +31,8 @@ make -C modernized replay AREA=intake
 make -C modernized parity
 ```
 
-Snapshots are committed, so children normally only need `build` and `replay`. Replay restores **each** scenario's legacy pre-state, starts/stops the modern jar, logs in, and invokes capture's exact extraction and serialization. Areas: foundation, policy, intake, workbench, settlement, payment, reports, all. Full parity instead seeds once and runs the ordered stateful chain; it returns nonzero until every JSON and index match. Wave 0 only implements the login scenario; other area failures are expected.
+Snapshots are committed, so children normally only need `build` and `replay`. Replay restores **each** scenario's legacy pre-state, starts/stops the modern jar, logs in, and invokes capture's exact extraction and serialization. Areas: foundation, policy, intake, workbench, settlement, payment, reports, all. Full parity instead seeds once and runs the ordered stateful chain; it returns nonzero unless every JSON and index match. All areas are now integrated; default tests include the area transcript suite. See [PARITY.md](PARITY.md) for verification and carried-forward findings.
+
+For a fresh, simultaneous legacy/modern comparison, first build both apps and stop existing servers, then run `bash modernized/parity/side_by_side.sh` from the repository root. It captures both apps into `/tmp/parity/{legacy,modern}`, checks each against the committed transcripts, and deliberately leaves both apps running for QA. Logs and launcher PIDs are in `modernized/target/side-by-side/`. Do not run seed, replay, or legacy `make test` while those servers own their databases/build directories.
 
 Server logs: `modernized/parity/{legacy,modern}.log`. Full-run JSON/diffs are retained under `modernized/target/parity.*`. Scripts stop only processes they start and refuse to drive an already-running target, to avoid corrupting unrelated developer sessions.
