@@ -1,5 +1,7 @@
 package com.northstar.claims.web;
 
+import com.northstar.claims.dao.AdjusterDAO;
+import com.northstar.claims.dao.ClaimDAO;
 import com.northstar.claims.model.Claim;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionForm;
@@ -21,8 +23,14 @@ public class WorkbenchAssignAction extends ClaimsActionSupport {
         if (adjuster == null || adjuster.length() == 0) {
             adjuster = "adjuster2";
         }
-        update("update CLAIM set assigned_adjuster = '" + adjuster
-                + "' where claim_id = " + claimId);
+        if (new AdjusterDAO().findActiveByUsername(adjuster) == null) {
+            log.warn("Rejected assignment of claim " + claimId
+                    + " to unknown or inactive adjuster");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                    "Unknown adjuster");
+            return null;
+        }
+        new ClaimDAO().assign(claimId, adjuster);
         Claim claim = findClaim(claimId);
         request.setAttribute("claim", claim);
         request.setAttribute("assignedAdjuster", adjuster);
