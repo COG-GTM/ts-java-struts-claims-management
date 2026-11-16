@@ -7,11 +7,27 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+import java.util.Locale;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import com.northstar.claims.util.LegacyFormatHelper;
 
 /** Verifies the date and display conversions shared by batch and screen code. */
 public class LegacyFormatHelperTest {
+
+    private static Locale savedLocale;
+
+    @BeforeClass
+    public static void pinLocale() {
+        savedLocale = Locale.getDefault();
+        Locale.setDefault(Locale.US);
+    }
+
+    @AfterClass
+    public static void restoreLocale() {
+        Locale.setDefault(savedLocale);
+    }
 
     private static Date date(int year, int month, int day) {
         Calendar calendar = Calendar.getInstance();

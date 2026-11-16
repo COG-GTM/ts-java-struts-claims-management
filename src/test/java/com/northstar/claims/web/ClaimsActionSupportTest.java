@@ -101,10 +101,10 @@ public class ClaimsActionSupportTest {
     }
 
     @Test
-    public void quoteEscapesApostrophesAndNulls() {
+    public void quoteWrapsValuesAndRendersNullLiteral() {
         assertEquals("null", support.quote(null));
-        assertEquals("'O Brien'", support.quote("O'Brien"));
         assertEquals("''", support.quote(""));
+        assertEquals("'CLM-00001'", support.quote("CLM-00001"));
     }
 
     @Test

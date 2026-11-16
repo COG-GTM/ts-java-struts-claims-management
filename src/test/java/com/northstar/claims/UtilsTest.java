@@ -8,11 +8,27 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import com.northstar.claims.util.Utils;
 
 /** Verifies the conversion helpers shared by the request handlers. */
 public class UtilsTest {
+
+    private static Locale savedLocale;
+
+    @BeforeClass
+    public static void pinLocale() {
+        savedLocale = Locale.getDefault();
+        Locale.setDefault(Locale.US);
+    }
+
+    @AfterClass
+    public static void restoreLocale() {
+        Locale.setDefault(savedLocale);
+    }
 
     private static Date date(int year, int month, int day) {
         Calendar calendar = Calendar.getInstance();
