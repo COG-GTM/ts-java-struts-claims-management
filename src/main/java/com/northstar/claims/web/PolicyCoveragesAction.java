@@ -23,7 +23,7 @@ public class PolicyCoveragesAction extends ClaimsActionSupport {
         List coverages = new java.util.ArrayList();
         request.setAttribute("policy", policy);
         request.setAttribute("coverages", coverages);
-        request.setAttribute("coverageCount", new Integer(coverages.size()));
+        request.setAttribute("coverageCount", Integer.valueOf(coverages.size()));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("coverages");
     }

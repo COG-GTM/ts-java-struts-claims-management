@@ -20,7 +20,7 @@ public class PolicyViewAction extends ClaimsActionSupport {
         int policyId = integer(request.getParameter("policyId"), 1);
         Policy policy = new PolicyDAO().findById(policyId);
         request.setAttribute("policy", policy);
-        request.setAttribute("policyId", new Integer(policyId));
+        request.setAttribute("policyId", Integer.valueOf(policyId));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("policyView");
     }

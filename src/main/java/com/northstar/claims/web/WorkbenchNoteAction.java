@@ -23,7 +23,7 @@ public class WorkbenchNoteAction extends ClaimsActionSupport {
         }
         request.setAttribute("claim", findClaim(claimId));
         request.setAttribute("noteText", note);
-        request.setAttribute("claimId", new Integer(claimId));
+        request.setAttribute("claimId", Integer.valueOf(claimId));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("workbenchView");
     }

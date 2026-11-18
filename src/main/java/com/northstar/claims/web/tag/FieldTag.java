@@ -52,7 +52,7 @@ public class FieldTag extends TagSupport {
         if ("money".equals(type)) {
             try {
                 return String.format("%.2f", new Object[] {
-                        new Double(Double.parseDouble(source)) });
+                        Double.valueOf(Double.parseDouble(source)) });
             } catch (NumberFormatException notMoney) {
                 return source;
             }

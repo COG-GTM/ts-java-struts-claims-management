@@ -20,7 +20,7 @@ public class AgedClaimsReportAction extends ClaimsActionSupport {
         List rows = new ReportDAO().agedClaims();
         request.setAttribute("reportRows", rows);
         request.setAttribute("reportType", "agedClaims");
-        request.setAttribute("reportRowCount", new Integer(rows.size()));
+        request.setAttribute("reportRowCount", Integer.valueOf(rows.size()));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("report");
     }

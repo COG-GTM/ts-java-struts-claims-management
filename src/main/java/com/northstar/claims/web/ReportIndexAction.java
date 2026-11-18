@@ -15,7 +15,7 @@ public class ReportIndexAction extends ClaimsActionSupport {
         request.setAttribute("screenName", "report-index");
         request.setAttribute("screenMode", "read");
         request.setAttribute("operatorScope", "claims");
-        request.setAttribute("reportCount", new Integer(7));
+        request.setAttribute("reportCount", Integer.valueOf(7));
         request.setAttribute("reportArea", "claims operations");
         request.setAttribute("reportNavigation", "standard");
         request.setAttribute("reportAccess", "supervisor");

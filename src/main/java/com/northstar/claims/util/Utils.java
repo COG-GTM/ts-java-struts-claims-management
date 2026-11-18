@@ -48,7 +48,7 @@ public class Utils {
     }
 
     public static String formatMoney(double value) {
-        return String.format("%.2f", new Object[] { new Double(value) });
+        return String.format("%.2f", new Object[] { Double.valueOf(value) });
     }
 
     public static String formatDate(Date value) {

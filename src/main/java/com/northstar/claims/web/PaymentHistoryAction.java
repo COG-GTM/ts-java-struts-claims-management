@@ -20,8 +20,8 @@ public class PaymentHistoryAction extends ClaimsActionSupport {
         int claimId = integer(request.getParameter("claimId"), 119);
         List payments = new PaymentDAO().findByClaim(claimId);
         request.setAttribute("payments", payments);
-        request.setAttribute("claimId", new Integer(claimId));
-        request.setAttribute("paymentCount", new Integer(payments.size()));
+        request.setAttribute("claimId", Integer.valueOf(claimId));
+        request.setAttribute("paymentCount", Integer.valueOf(payments.size()));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("payment");
     }

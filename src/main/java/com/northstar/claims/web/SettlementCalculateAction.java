@@ -37,7 +37,7 @@ public class SettlementCalculateAction extends ClaimsActionSupport {
                         ? "0" : deductible, depreciation, limit);
         settlement.setClaimId(claimId);
         request.setAttribute("settlement", settlement);
-        request.setAttribute("policyLimit", new Double(limit));
+        request.setAttribute("policyLimit", Double.valueOf(limit));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("settlement");
     }

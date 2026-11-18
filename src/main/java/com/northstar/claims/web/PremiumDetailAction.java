@@ -16,7 +16,7 @@ public class PremiumDetailAction extends ClaimsActionSupport {
             throws Exception {
         java.util.List rows = new PolicyDAO().findAll();
         request.setAttribute("policies", rows);
-        request.setAttribute("policyCount", new Integer(rows.size()));
+        request.setAttribute("policyCount", Integer.valueOf(rows.size()));
         request.setAttribute("reportAsOf", reportDate());
         request.setAttribute("screenName", "report-detail");
         request.setAttribute("screenMode", "read");

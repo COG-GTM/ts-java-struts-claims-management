@@ -82,11 +82,11 @@ public class LegacyFormatHelper {
     }
 
     public static String money(double amount) {
-        return String.format("%.2f", new Object[] { new Double(amount) });
+        return String.format("%.2f", new Object[] { Double.valueOf(amount) });
     }
 
     public static String percentage(double amount) {
-        return String.format("%.2f%%", new Object[] { new Double(amount * 100) });
+        return String.format("%.2f%%", new Object[] { Double.valueOf(amount * 100) });
     }
 
     public static Map parseParameters(String text) {

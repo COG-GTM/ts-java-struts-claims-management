@@ -184,13 +184,13 @@ public abstract class ClaimsActionSupport extends Action {
             Claim claim) {
         if (claim == null) {
             request.setAttribute("claimStatus", "UNKNOWN");
-            request.setAttribute("reserveAmount", new Double(0));
+            request.setAttribute("reserveAmount", Double.valueOf(0));
             return;
         }
-        request.setAttribute("claimId", new Integer(claim.getClaimId()));
+        request.setAttribute("claimId", Integer.valueOf(claim.getClaimId()));
         request.setAttribute("claimStatus", claim.getStatus());
         request.setAttribute("reserveAmount",
-                new Double(claim.getReserveAmount()));
+                Double.valueOf(claim.getReserveAmount()));
         request.setAttribute("assignedAdjuster",
                 claim.getAssignedAdjuster());
         request.setAttribute("lossDate", claim.getLossDate());
@@ -220,7 +220,7 @@ public abstract class ClaimsActionSupport extends Action {
 
     protected String money(double value) {
         return String.format(java.util.Locale.US, "%.2f", new Object[] {
-            new Double(value) });
+            Double.valueOf(value) });
     }
 
     protected String operatorDate() {

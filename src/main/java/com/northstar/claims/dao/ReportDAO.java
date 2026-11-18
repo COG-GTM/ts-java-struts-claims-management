@@ -39,8 +39,8 @@ public class ReportDAO {
             while (rs.next()) {
                 Map row = new HashMap();
                 row.put("adjuster", rs.getString("assigned_adjuster"));
-                row.put("openCount", new Double(rs.getDouble("open_count")));
-                row.put("reserveTotal", new Double(rs.getDouble("reserve_total")));
+                row.put("openCount", Double.valueOf(rs.getDouble("open_count")));
+                row.put("reserveTotal", Double.valueOf(rs.getDouble("reserve_total")));
                 rows.add(row);
             }
             return rows;
@@ -73,9 +73,9 @@ public class ReportDAO {
                 double premium = rs.getDouble("premium_total");
                 double loss = rs.getDouble("reserve_total") + rs.getDouble("paid_total");
                 row.put("lineOfBusiness", rs.getString("line_of_business"));
-                row.put("premiumTotal", new Double(premium));
-                row.put("lossTotal", new Double(loss));
-                row.put("lossRatio", new Double(premium == 0 ? 0 : loss / premium));
+                row.put("premiumTotal", Double.valueOf(premium));
+                row.put("lossTotal", Double.valueOf(loss));
+                row.put("lossRatio", Double.valueOf(premium == 0 ? 0 : loss / premium));
                 rows.add(row);
             }
             return rows;
@@ -117,8 +117,8 @@ public class ReportDAO {
             while (rs.next()) {
                 Map row = new HashMap();
                 row.put("bucket", rs.getString("age_bucket").trim());
-                row.put("claimCount", new Double(rs.getDouble("claim_count")));
-                row.put("reserveTotal", new Double(rs.getDouble("reserve_total")));
+                row.put("claimCount", Double.valueOf(rs.getDouble("claim_count")));
+                row.put("reserveTotal", Double.valueOf(rs.getDouble("reserve_total")));
                 rows.add(row);
             }
             return rows;
@@ -142,7 +142,7 @@ public class ReportDAO {
             while (rs.next()) {
                 Map row = new HashMap();
                 row.put("status", rs.getString("status"));
-                row.put("count", new Double(rs.getDouble("count")));
+                row.put("count", Double.valueOf(rs.getDouble("count")));
                 rows.add(row);
             }
             return rows;

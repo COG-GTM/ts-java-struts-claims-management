@@ -20,10 +20,10 @@ public class WorkbenchViewAction extends ClaimsActionSupport {
         Claim claim = findClaim(claimId);
         request.setAttribute("claim", claim);
         if (claim != null) {
-            request.setAttribute("claimId", new Integer(claim.getClaimId()));
+            request.setAttribute("claimId", Integer.valueOf(claim.getClaimId()));
             request.setAttribute("claimStatus", claim.getStatus());
             request.setAttribute("reserveAmount",
-                    new Double(claim.getReserveAmount()));
+                    Double.valueOf(claim.getReserveAmount()));
             request.setAttribute("assignedAdjuster",
                     claim.getAssignedAdjuster());
             request.setAttribute("lossDate", claim.getLossDate());

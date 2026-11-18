@@ -16,7 +16,7 @@ public class ClaimAgingDetailAction extends ClaimsActionSupport {
             throws Exception {
         java.util.List rows = new ClaimDAO().findByStatus("OPEN");
         request.setAttribute("claims", rows);
-        request.setAttribute("claimCount", new Integer(rows.size()));
+        request.setAttribute("claimCount", Integer.valueOf(rows.size()));
         request.setAttribute("reportAsOf", reportDate());
         request.setAttribute("screenName", "report-detail");
         request.setAttribute("screenMode", "read");

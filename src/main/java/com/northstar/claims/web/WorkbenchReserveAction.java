@@ -21,8 +21,8 @@ public class WorkbenchReserveAction extends ClaimsActionSupport {
         update("update CLAIM set reserve_amount = " + reserve
                 + " where claim_id = " + claimId);
         request.setAttribute("claim", findClaim(claimId));
-        request.setAttribute("reserveAmount", new Double(reserve));
-        request.setAttribute("claimId", new Integer(claimId));
+        request.setAttribute("reserveAmount", Double.valueOf(reserve));
+        request.setAttribute("claimId", Integer.valueOf(claimId));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("workbenchView");
     }

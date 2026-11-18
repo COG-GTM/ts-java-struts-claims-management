@@ -34,9 +34,9 @@ public class PaymentIssueAction extends ClaimsActionSupport {
         payment.setIssuedDate("2019-04-03");
         payment.setStatus("ISSUED");
         new PaymentDAO().insert(payment);
-        request.setAttribute("paymentId", new Integer(paymentId));
-        request.setAttribute("claimId", new Integer(claimId));
-        request.setAttribute("paymentAmount", new Double(payment.getAmount()));
+        request.setAttribute("paymentId", Integer.valueOf(paymentId));
+        request.setAttribute("claimId", Integer.valueOf(claimId));
+        request.setAttribute("paymentAmount", Double.valueOf(payment.getAmount()));
         request.setAttribute("checkNumber", payment.getCheckNumber());
         request.setAttribute("paymentStatus", payment.getStatus());
         request.setAttribute("screenName", "detail");
