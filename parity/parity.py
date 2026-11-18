@@ -156,15 +156,31 @@ def do_capture(out):
     print("captured %d requests into %s" % (len(index), out))
 
 
+def expected_count():
+    return 2 + len(capture.SCENARIOS) + len(READ_ENDPOINTS) + 2
+
+
 def do_compare(baseline, candidate):
     names = sorted(os.path.basename(p) for p in glob.glob(os.path.join(baseline, "*.json")))
     other = sorted(os.path.basename(p) for p in glob.glob(os.path.join(candidate, "*.json")))
+    expected = expected_count()
+    errors = []
+    for label, directory, found in (("baseline", baseline, names), ("candidate", candidate, other)):
+        if not found:
+            errors.append("%s %s has no captured requests" % (label, directory))
+        elif len(found) != expected:
+            errors.append("%s %s has %d requests, expected %d" % (label, directory, len(found), expected))
+    for name in sorted(set(names) - set(other)):
+        errors.append("only in baseline: %s" % name)
+    for name in sorted(set(other) - set(names)):
+        errors.append("only in candidate: %s" % name)
+    if errors:
+        for error in errors:
+            print("ERROR " + error)
+        print("compare FAILED: request sets differ, nothing compared")
+        return 1
     mismatches = 0
-    for name in sorted(set(names) | set(other)):
-        if name not in names or name not in other:
-            print("MISSING %s" % name)
-            mismatches += 1
-            continue
+    for name in names:
         a = json.load(open(os.path.join(baseline, name), encoding="utf-8"))
         b = json.load(open(os.path.join(candidate, name), encoding="utf-8"))
         diffs = [key for key in ("status", "content_type", "location", "body") if a.get(key) != b.get(key)]
