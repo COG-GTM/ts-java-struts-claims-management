@@ -17,9 +17,9 @@ public class PaymentRemittanceAction extends ClaimsActionSupport {
         int id = integer(request.getParameter("claimId"), 119);
         java.util.List rows = new PaymentDAO().findByClaim(id);
         request.setAttribute("payments", rows);
-        request.setAttribute("claimId", new Integer(id));
-        request.setAttribute("paymentCount", new Integer(rows.size()));
-        request.setAttribute("paymentTotal", new Double(new PaymentDAO().totalIssued(id)));
+        request.setAttribute("claimId", Integer.valueOf(id));
+        request.setAttribute("paymentCount", Integer.valueOf(rows.size()));
+        request.setAttribute("paymentTotal", Double.valueOf(new PaymentDAO().totalIssued(id)));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("remittance");
     }

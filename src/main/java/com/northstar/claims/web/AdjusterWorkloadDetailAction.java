@@ -15,7 +15,7 @@ public class AdjusterWorkloadDetailAction extends ClaimsActionSupport {
             throws Exception {
         java.util.List rows = new ReportDAO().openClaimsByAdjuster();
         request.setAttribute("reportRows", rows);
-        request.setAttribute("reportRowCount", new Integer(rows.size()));
+        request.setAttribute("reportRowCount", Integer.valueOf(rows.size()));
         request.setAttribute("reportAsOf", reportDate());
         request.setAttribute("screenName", "report-detail");
         request.setAttribute("screenMode", "read");

@@ -1,0 +1,12 @@
+{
+  "body": "<!-- ns:view /WEB-INF/jsp/error.jsp -->\n<html><head><title>Claims System Error</title></head><body>\n<table class=\"error\" cellpadding=\"4\" cellspacing=\"0\" border=\"1\">\n<tr><td><h1>Claims System Error</h1></td></tr>\n<tr><td>The claims system could not complete the request.</td></tr>\n<tr><td>Reference status: 404</td></tr>\n<tr><td><a href=\"/claims/login.do\">Return to login</a></td></tr>\n<tr><td>Contact the claims support desk if the problem continues.</td></tr>\n<tr><td>Return to the previous screen and try the operation again.</td></tr>\n<tr><td>Reference status</td></tr>\n<tr><td>Record the displayed status code.</td></tr>\n<tr><td>Sign in again if the session has expired.</td></tr>\n</table>\n</body></html>",
+  "content_type": "text/html;charset=utf-8",
+  "kind": "read",
+  "location": null,
+  "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/admin/adjusters.do"
+  },
+  "status": 404
+}

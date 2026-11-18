@@ -25,7 +25,7 @@ public class WorkbenchStatusAction extends ClaimsActionSupport {
                 + "' where claim_id = " + claimId);
         request.setAttribute("claim", findClaim(claimId));
         request.setAttribute("claimStatus", status);
-        request.setAttribute("claimId", new Integer(claimId));
+        request.setAttribute("claimId", Integer.valueOf(claimId));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("workbenchView");
     }

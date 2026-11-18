@@ -1,0 +1,12 @@
+{
+  "body": "<!-- ns:view /WEB-INF/jsp/login.jsp -->\n<html><head><title>Claims Login</title>\n<link rel=\"stylesheet\" type=\"text/css\"\n      href=\"/claims/northstar.css\"></head><body>\n<table class=\"login\" cellpadding=\"4\" cellspacing=\"0\" border=\"0\">\n<tr><td colspan=\"2\"><h1>Claims Login</h1></td></tr>\n<tr><td colspan=\"2\"></td></tr>\n<form name=\"loginForm\" method=\"post\" action=\"/claims/login.do\">\n<tr><td>Username</td>\n<td><input type=\"text\" name=\"username\" size=\"25\" value=\"\"></td></tr>\n<tr><td>Password</td>\n<td><input type=\"password\" name=\"password\" size=\"25\" value=\"\"></td></tr>\n<tr><td>&nbsp;</td>\n<td><input type=\"submit\" value=\"Sign In\"></td></tr>\n</form>\n<script type=\"text/javascript\" language=\"JavaScript\">\n  <!--\n  var focusControl = document.forms[\"loginForm\"].elements[\"username\"];\n  if (focusControl != null && focusControl.type != \"hidden\" && !focusControl.disabled && focusControl.style.display != \"none\") {\n     focusControl.focus();\n  }\n  // -->\n</script>\n<tr><td colspan=\"2\">Use your assigned claims workstation credentials.</td></tr>\n</table>\n</body></html>",
+  "content_type": "text/html;charset=utf-8",
+  "kind": "logout",
+  "location": null,
+  "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/logout.do"
+  },
+  "status": 200
+}

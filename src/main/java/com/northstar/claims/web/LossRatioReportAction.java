@@ -20,7 +20,7 @@ public class LossRatioReportAction extends ClaimsActionSupport {
         List rows = new ReportDAO().lossRatioByLine();
         request.setAttribute("reportRows", rows);
         request.setAttribute("reportType", "lossRatio");
-        request.setAttribute("reportRowCount", new Integer(rows.size()));
+        request.setAttribute("reportRowCount", Integer.valueOf(rows.size()));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("report");
     }

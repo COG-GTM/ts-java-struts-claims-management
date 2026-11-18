@@ -1,0 +1,17 @@
+{
+  "body": "<!-- ns:view /WEB-INF/jsp/intake/new.jsp -->\n<table class=\"page\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n<tr><td class=\"banner\"><h1>NorthStar Claims</h1></td></tr>\n<tr><td class=\"navigation\"><a href=\"/claims/policy/list.do\">Policies</a> |\n<a href=\"/claims/workbench/list.do\">Workbench</a> |\n<a href=\"/claims/report/openByAdjuster.do\">Reports</a> |\n<a href=\"/claims/logout.do\">Logout</a></td></tr>\n<tr><td class=\"content\">\n<table class=\"menu\" cellpadding=\"2\" cellspacing=\"0\" border=\"0\">\n<tr><td>Quick Links</td></tr>\n<tr><td><a href=\"/claims/intake/new.do\">New FNOL</a></td></tr>\n<tr><td><a href=\"/claims/payment/history.do\">Payment History</a></td></tr>\n<tr><td><a href=\"/claims/report/openByAdjuster.do\">Reports</a></td></tr>\n<tr><td><a href=\"/claims/policy/search.do\">Policy search</a></td></tr>\n<tr><td><a href=\"/claims/logout.do\">Logout</a></td></tr>\n<tr><td>Operator: supervisor</td></tr>\n<tr><td>Application version: 3.4.1 (build 20081117)</td></tr>\n<tr><td>Claims operations environment: Production claims desk</td></tr>\n<tr><td>Service desk: Claims support</td></tr>\n<tr><td>Session: Authenticated</td></tr>\n</table>\n<h2>First Notice of Loss</h2>\n<form action=\"intake/submit.do\" method=\"post\">\n<!-- ns:error errors.lossdate.format -->\n<table class=\"form\" cellpadding=\"3\" cellspacing=\"0\" border=\"0\">\n<tr><td>Claimant Name</td>\n<td><input type=\"text\" name=\"claimantName\" size=\"40\"/></td></tr>\n<tr><td>Loss Date</td>\n<td><input type=\"text\" name=\"lossDate\" size=\"20\"/></td></tr>\n<tr><td>Loss Description</td>\n<td><textarea name=\"description\" rows=\"5\" cols=\"45\"></textarea></td></tr>\n<tr><td>Loss Type</td>\n<td><input type=\"text\" name=\"lossType\" size=\"20\"/></td></tr>\n<tr><td>&nbsp;</td>\n<td><button type=\"submit\">Submit</button></td></tr>\n</table>\n</form>\n<p>Enter the reported loss as supplied by the caller.</p>\n<table class=\"screen-audit\" cellpadding=\"3\" cellspacing=\"0\" border=\"1\">\n<tr>\n<th>Screen context</th>\n<td>Operational record view</td>\n</tr>\n<tr>\n<th>Operator</th>\n<td>supervisor</td>\n</tr>\n<tr>\n<th>As of date</th>\n<td>2019-04-01</td>\n</tr>\n</table>\n</td></tr>\n<tr><td class=\"footer\">NorthStar Claims Operations</td></tr>\n</table>\n<table class=\"footer-links\" cellpadding=\"2\" cellspacing=\"0\" border=\"0\">\n<tr>\n<td><a href=\"/claims/home.do\">Home</a></td>\n<td><a href=\"/claims/policy/list.do\">Policies</a></td>\n</tr>\n<tr>\n<td><a href=\"/claims/workbench/list.do\">Workbench</a></td>\n<td><a href=\"/claims/logout.do\">Logout</a></td>\n</tr>\n</table>\n<!-- NorthStar claims operator layout -->\n<!-- NorthStar claims operator layout -->\n<!-- NorthStar claims operator layout -->\n<!-- NorthStar claims operator layout -->\n<!-- NorthStar claims operator layout -->\n<!-- NorthStar claims operator layout -->\n<!-- NorthStar claims operator layout -->\n<!-- NorthStar claims operator layout -->",
+  "content_type": "text/html;charset=utf-8",
+  "kind": "scenario:intake_bad_date",
+  "location": null,
+  "request": {
+    "form": {
+      "claimantName": "Bad Date Claimant",
+      "description": "Bad date validation",
+      "lossDate": "2019-02-30",
+      "lossType": "WATER"
+    },
+    "method": "POST",
+    "path": "/claims/intake/submit.do"
+  },
+  "status": 200
+}

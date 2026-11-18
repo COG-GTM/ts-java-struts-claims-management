@@ -26,7 +26,7 @@ public class WorkbenchListAction extends ClaimsActionSupport {
             log.warn("Open claim workbench failed", failure);
         }
         request.setAttribute("claims", claims);
-        request.setAttribute("claimCount", new Integer(claims.size()));
+        request.setAttribute("claimCount", Integer.valueOf(claims.size()));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("workbenchList");
     }

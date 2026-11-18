@@ -20,7 +20,7 @@ public class OpenReportAction extends ClaimsActionSupport {
         List rows = new ReportDAO().openClaimsByAdjuster();
         request.setAttribute("reportRows", rows);
         request.setAttribute("reportType", "openByAdjuster");
-        request.setAttribute("reportRowCount", new Integer(rows.size()));
+        request.setAttribute("reportRowCount", Integer.valueOf(rows.size()));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("report");
     }

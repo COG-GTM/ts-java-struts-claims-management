@@ -26,7 +26,7 @@ public class PolicyListAction extends ClaimsActionSupport {
             policies = new ArrayList();
         }
         request.setAttribute("policies", policies);
-        request.setAttribute("policyCount", new Integer(policies.size()));
+        request.setAttribute("policyCount", Integer.valueOf(policies.size()));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("policyList");
     }

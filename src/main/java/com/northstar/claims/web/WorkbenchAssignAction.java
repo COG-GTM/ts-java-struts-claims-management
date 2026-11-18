@@ -26,7 +26,7 @@ public class WorkbenchAssignAction extends ClaimsActionSupport {
         Claim claim = findClaim(claimId);
         request.setAttribute("claim", claim);
         request.setAttribute("assignedAdjuster", adjuster);
-        request.setAttribute("claimId", new Integer(claimId));
+        request.setAttribute("claimId", Integer.valueOf(claimId));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("workbenchView");
     }

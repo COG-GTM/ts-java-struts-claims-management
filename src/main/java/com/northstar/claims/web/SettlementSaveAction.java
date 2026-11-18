@@ -39,7 +39,7 @@ public class SettlementSaveAction extends ClaimsActionSupport {
         new SettlementDAO().save(value);
         request.setAttribute("settlement", value);
         request.setAttribute("settlementAmount",
-                new Double(value.getSettlementAmount()));
+                Double.valueOf(value.getSettlementAmount()));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("settlement");
     }

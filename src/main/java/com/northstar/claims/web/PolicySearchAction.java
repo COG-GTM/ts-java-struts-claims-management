@@ -31,7 +31,7 @@ public class PolicySearchAction extends ClaimsActionSupport {
         }
         request.setAttribute("policies", policies);
         request.setAttribute("searchLine", line);
-        request.setAttribute("searchCount", new Integer(policies.size()));
+        request.setAttribute("searchCount", Integer.valueOf(policies.size()));
         request.setAttribute("screenName", "detail");
         return mapping.findForward("policySearch");
     }

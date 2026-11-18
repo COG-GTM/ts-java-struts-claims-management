@@ -21,7 +21,7 @@ public class AdjusterAdminAction
                 new com.northstar.claims.dao.AdjusterDAO().findAll();
         request.setAttribute("adjusters", adjusters);
         request.setAttribute("adjusterCount",
-                new Integer(adjusters.size()));
+                Integer.valueOf(adjusters.size()));
         return mapping.findForward("adjusters");
     }
 }
