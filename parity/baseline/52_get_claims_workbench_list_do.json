@@ -1,0 +1,12 @@
+{
+  "body": "",
+  "content_type": "",
+  "kind": "after-logout",
+  "location": "/claims/login.do",
+  "request": {
+    "form": {},
+    "method": "GET",
+    "path": "/claims/workbench/list.do"
+  },
+  "status": 302
+}
