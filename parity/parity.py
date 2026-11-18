@@ -20,6 +20,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+sys.dont_write_bytecode = True
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 _spec = importlib.util.spec_from_file_location(
     "capture", os.path.join(ROOT, "tools", "capture", "capture.py"))
