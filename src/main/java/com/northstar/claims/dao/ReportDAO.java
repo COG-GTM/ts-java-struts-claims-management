@@ -86,7 +86,15 @@ public class ReportDAO {
         }
     }
 
-    /** Places claims into age buckets based on their reported date. */
+    /** Age bucket labels in report order. */
+    private static final String[] AGE_BUCKETS = {"0_30", "31_60", "61_90", "91_PLUS"};
+
+    /**
+     * Places claims into age buckets based on their reported date. A claim is
+     * in a bucket when datediff('day', reported_date, as-of) falls in its day
+     * range, which is the same as reported_date falling between the bucket's
+     * cutoff dates, so all buckets are totalled in one pass over CLAIM.
+     */
     public List agedClaims() throws SQLException {
         Connection conn = null;
         Statement st = null;
@@ -96,30 +104,35 @@ public class ReportDAO {
             conn = ConnectionPool.getInstance().getConnection();
             st = conn.createStatement();
             String asOfDate = ClaimsConfig.get("report.asof.date");
-            rs = st.executeQuery(
-                    "select case "
-                    + "when datediff('day', reported_date, date '" + asOfDate + "') <= 30 "
-                    + "then '0_30' "
-                    + "when datediff('day', reported_date, date '" + asOfDate + "') <= 60 "
-                    + "then '31_60' "
-                    + "when datediff('day', reported_date, date '" + asOfDate + "') <= 90 "
-                    + "then '61_90' else '91_PLUS' end as age_bucket, "
-                    + "count(*) as claim_count, "
-                    + "coalesce(sum(reserve_amount),0) as reserve_total "
-                    + "from CLAIM where status not in ('CLOSED','DENIED') "
-                    + "group by case "
-                    + "when datediff('day', reported_date, date '" + asOfDate + "') <= 30 "
-                    + "then '0_30' "
-                    + "when datediff('day', reported_date, date '" + asOfDate + "') <= 60 "
-                    + "then '31_60' "
-                    + "when datediff('day', reported_date, date '" + asOfDate + "') <= 90 "
-                    + "then '61_90' else '91_PLUS' end order by age_bucket");
-            while (rs.next()) {
-                Map row = new HashMap();
-                row.put("bucket", rs.getString("age_bucket").trim());
-                row.put("claimCount", new Double(rs.getDouble("claim_count")));
-                row.put("reserveTotal", new Double(rs.getDouble("reserve_total")));
-                rows.add(row);
+            String asOf = "date '" + asOfDate + "'";
+            String[] lowerBounds = {
+                asOf + " - 30 day", asOf + " - 60 day", asOf + " - 90 day", null
+            };
+            StringBuffer sql = new StringBuffer("select ");
+            for (int i = 0; i < AGE_BUCKETS.length; i++) {
+                String inBucket = ageBucketCondition(
+                        i == 0 ? null : lowerBounds[i - 1], lowerBounds[i]);
+                if (i > 0) {
+                    sql.append(", ");
+                }
+                sql.append("count(case when ").append(inBucket).append(" then 1 end), ");
+                sql.append("coalesce(sum(case when ").append(inBucket)
+                        .append(" then reserve_amount end),0)");
+            }
+            sql.append(" from CLAIM where status not in ('CLOSED','DENIED')");
+            rs = st.executeQuery(sql.toString());
+            if (rs.next()) {
+                for (int i = 0; i < AGE_BUCKETS.length; i++) {
+                    double count = rs.getDouble(2 * i + 1);
+                    if (count == 0) {
+                        continue;
+                    }
+                    Map row = new HashMap();
+                    row.put("bucket", AGE_BUCKETS[i]);
+                    row.put("claimCount", new Double(count));
+                    row.put("reserveTotal", new Double(rs.getDouble(2 * i + 2)));
+                    rows.add(row);
+                }
             }
             return rows;
         } finally {
@@ -127,6 +140,17 @@ public class ReportDAO {
             try { st.close(); } catch (Exception e) {}
             try { ConnectionPool.getInstance().release(conn); } catch (Exception e) {}
         }
+    }
+
+    /** Builds the reported_date range for a bucket; a null bound is open. */
+    private static String ageBucketCondition(String newerBound, String olderBound) {
+        if (newerBound == null) {
+            return "reported_date >= " + olderBound;
+        }
+        if (olderBound == null) {
+            return "reported_date < " + newerBound;
+        }
+        return "reported_date < " + newerBound + " and reported_date >= " + olderBound;
     }
 
     /** Keeps the report ordering query in the form used by old ad-hoc reports. */
